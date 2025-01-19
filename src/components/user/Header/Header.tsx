@@ -1,12 +1,26 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import AuthModal from "../AuthModal/AuthModal";
 import "./Header.scss";
 
-const Header = () => {
+const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalType, setAuthModalType] = useState<"login" | "signup">(
+    "login"
+  );
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const openAuthModal = (type: "login" | "signup") => {
+    setAuthModalType(type);
+    setIsAuthModalOpen(true);
+  };
+
+  const closeAuthModal = () => {
+    setIsAuthModalOpen(false);
   };
 
   return (
@@ -49,12 +63,18 @@ const Header = () => {
 
             {/* Mobile Authentication Section */}
             <div className="user-mobile-auth">
-              <Link to="/login" className="user-login" onClick={toggleMenu}>
+              <button
+                className="user-auth-link"
+                onClick={() => openAuthModal("login")}
+              >
                 Login
-              </Link>
-              <Link to="/signup" className="user-signup" onClick={toggleMenu}>
-                Signup
-              </Link>
+              </button>
+              <button
+                className="user-auth-link"
+                onClick={() => openAuthModal("signup")}
+              >
+                Sign Up
+              </button>
             </div>
           </div>
         </div>
@@ -72,14 +92,20 @@ const Header = () => {
         </nav>
 
         <div className="user-auth">
-          <Link to="/login" className="user-login">
-            Login →
-          </Link>
-          <Link to="/signup" className="user-signup">
-            Signup
-          </Link>
+          <button
+            className="user-auth-link"
+            onClick={() => openAuthModal("login")}
+          >
+            Login
+          </button>
         </div>
       </div>
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={closeAuthModal}
+        initialSection={authModalType === "login" ? "userLogin" : "userSignup"}
+      />
     </header>
   );
 };

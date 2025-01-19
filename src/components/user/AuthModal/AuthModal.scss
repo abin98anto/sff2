@@ -1,0 +1,154 @@
+.auth-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.auth-modal {
+  background-color: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 800px;
+  height: 500px;
+  position: relative;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-modal-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.auth-form {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.auth-image {
+  flex: 1;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.close-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.3s ease;
+  z-index: 10;
+
+  &:hover {
+    color: #333;
+  }
+}
+
+.auth-section {
+  h2 {
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-size: 1.5rem;
+    color: #333;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    input {
+      padding: 0.75rem;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+
+      &:focus {
+        outline: none;
+        border-color: #666;
+      }
+    }
+
+    button {
+      padding: 0.75rem;
+      background-color: #ff6636;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: #ff4500;
+        transform: scale(1.05);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+    }
+  }
+}
+
+.otp-inputs {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+
+  input {
+    width: 2.5rem;
+    height: 2.5rem;
+    text-align: center;
+    font-size: 1.25rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+
+    &:focus {
+      outline: none;
+      border-color: #666;
+    }
+  }
+}
+
+.auth-links {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background-color: #f8f8f8;
+
+  button {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: #333;
+    }
+  }
+}
+
