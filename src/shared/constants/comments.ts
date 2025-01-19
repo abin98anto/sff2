@@ -1,9 +1,9 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 export const comments = {
+  PASS_REQ: "Password is required",
+  PASS_INVALID: "Password must be at least 8 characters",
+  EMAIL_INVALID: "Invalid email",
+  EMAIL_REQ: "Email is required",
   GET_COMM: "API is running...",
-  SERVER_SUCC: `Server running on port http://localhost:${process.env.PORT}`,
   MONGO_SUCC: "MongoDB connected successfully!",
   MONGO_FAIL: "MongoDB connection failed:",
   CORS_FAIL: "Not allowed by CORS",
