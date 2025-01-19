@@ -1,10 +1,13 @@
 import { Route, Routes } from "react-router-dom";
 import LandingPage from "../pages/user/LandingPage/LandingPage";
+import UserLayout from "../components/user/UserLayout/UserLayout";
 
 const UserRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />;
+      <Route element={<UserLayout />}>
+        <Route path="/" element={<LandingPage />} />
+      </Route>
     </Routes>
   );
 };
