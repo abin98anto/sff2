@@ -72,7 +72,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
           <div className="auth-form">{renderSection()}</div>
           <div className="auth-image">
             <img
-              src={getImageForSection(currentSection) || "/placeholder.svg"}
+              src={getImageForSection(currentSection)}
               alt="Auth illustration"
             />
           </div>
