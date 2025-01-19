@@ -1,8 +1,11 @@
+import { BrowserRouter } from "react-router-dom";
+import UserRoutes from "./routes/UserRoutes";
+
 function App() {
   return (
-    <>
-      <h1>SkillForge</h1>
-    </>
+    <BrowserRouter>
+      <UserRoutes />
+    </BrowserRouter>
   );
 }
 
