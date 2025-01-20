@@ -1,13 +1,36 @@
 import type React from "react";
 import { useRef, useState, useEffect } from "react";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 import "react-circular-progressbar/dist/styles.css";
+import { useSelector } from "react-redux";
+import { AppRootState } from "../../../redux/store";
+import { axiosInstance } from "../../../shared/config/axiosConfig";
+import { API } from "../../../shared/constants/API";
+import { useAppDispatch } from "../../../hooks/reduxHooks";
+import { signUpUser } from "../../../redux/thunks/userSignupServices";
+import { IUser } from "../../../entities/IUser";
 
 const OtpVerification: React.FC = () => {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [timeLeft, setTimeLeft] = useState(60);
   const [isTimerActive, setIsTimerActive] = useState(true);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
+    "error"
+  );
+
+  const dispatch = useAppDispatch();
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
+  const userInfo = useSelector((state: AppRootState) => state.userInfo);
 
   useEffect(() => {
     if (isTimerActive && timeLeft > 0) {
@@ -33,12 +56,23 @@ const OtpVerification: React.FC = () => {
     console.log("Verifying OTP:", otp.join(""));
   };
 
-  const handleResendOtp = () => {
+  const handleResendOtp = async () => {
     console.log("Resending OTP");
-    setTimeLeft(60);
-    setIsTimerActive(true);
-    setOtp(["", "", "", "", "", ""]);
-    inputRefs.current[0]?.focus();
+    try {
+      await axiosInstance.delete(`${API.USER_DELETE}?email=${userInfo?.email}`);
+
+      await dispatch(signUpUser(userInfo as IUser)).unwrap();
+
+      setTimeLeft(60);
+      setIsTimerActive(true);
+      setOtp(["", "", "", "", "", ""]);
+      inputRefs.current[0]?.focus();
+    } catch (error) {
+      console.log("error resending otp", error);
+      setSnackbarMessage(error as string);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
   };
 
   return (
@@ -87,6 +121,21 @@ const OtpVerification: React.FC = () => {
           </button>
         )}
       </form>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

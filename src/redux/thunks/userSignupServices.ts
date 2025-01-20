@@ -10,9 +10,6 @@ export const signUpUser = createAsyncThunk(
   async (userData: IUser, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post(API.OTP_SENT, userData);
-
-      console.log("thunk", response);
-      
       return response.data;
     } catch (error: any) {
       console.error(comments.SIGNUP_THNK_FAIL, error);
