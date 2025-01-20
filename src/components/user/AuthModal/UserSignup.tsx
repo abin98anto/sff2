@@ -73,7 +73,6 @@ const UserSignup: React.FC<UserSignupProps> = ({ onSignupSuccess }) => {
       setSnackbarOpen(true);
       console.log(comments.SIGNUP_SUCC, formData);
 
-      // Navigate to OTP verification after successful signup
       onSignupSuccess();
     } catch (err) {
       if (err instanceof Yup.ValidationError) {

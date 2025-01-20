@@ -11,6 +11,7 @@ import { API } from "../../../shared/constants/API";
 import { useAppDispatch } from "../../../hooks/reduxHooks";
 import { signUpUser } from "../../../redux/thunks/userSignupServices";
 import { IUser } from "../../../entities/IUser";
+import { comments } from "../../../shared/constants/comments";
 
 const OtpVerification: React.FC = () => {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -53,6 +54,14 @@ const OtpVerification: React.FC = () => {
 
   const handleVerify = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (otp.some((digit) => digit.trim() === "")) {
+      setSnackbarMessage(comments.ALL_FIELDS_REQ);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
+
     console.log("Verifying OTP:", otp.join(""));
   };
 
@@ -108,9 +117,7 @@ const OtpVerification: React.FC = () => {
           </div>
         </div>
         {isTimerActive ? (
-          <button type="submit" disabled={otp.join("").length !== 6}>
-            Verify OTP
-          </button>
+          <button type="submit">Verify OTP</button>
         ) : (
           <button
             type="button"
