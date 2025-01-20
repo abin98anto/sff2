@@ -38,7 +38,7 @@
 .auth-form {
   flex: 1;
   padding: 2rem;
-  overflow-y: auto;
+  overflow-y: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -120,7 +120,7 @@
       transition: all 0.3s ease;
 
       &:hover {
-        background: #ff4500;
+        background: #fd7442;
         transform: translateY(-2px);
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       }
@@ -192,5 +192,55 @@
     &:hover {
       color: #333;
     }
+  }
+}
+
+.google-signin-button {
+  width: auto;
+  background-color: white;
+  color: #333;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+
+  &:hover {
+    background-color: #f8f8f8;
+    border-color: #d0d0d0;
+  }
+}
+
+.divider {
+  position: relative;
+  text-align: center;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: calc(50% - 1rem);
+    height: 1px;
+    background-color: #e0e0e0;
+  }
+
+  &::before {
+    left: 0;
+  }
+
+  &::after {
+    right: 0;
+  }
+
+  span {
+    background-color: white;
+    padding: 0 0.5rem;
+    color: #666;
+    font-size: 0.875rem;
   }
 }

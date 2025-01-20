@@ -6,6 +6,7 @@ import { Eye, EyeOff } from "lucide-react";
 
 import { signupSchema } from "../../../shared/config/yupConfig";
 import { comments } from "../../../shared/constants/comments";
+import GoogleButton from "../google-btn/GoogleButton";
 
 const UserSignup: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -113,6 +114,13 @@ const UserSignup: React.FC = () => {
           </button>
         </div>
         <button type="submit">Sign Up</button>
+
+        <div className="divider">
+          <span>or</span>
+        </div>
+        <div className="google-signin-button">
+          <GoogleButton /> <p>Sign in with Google</p>
+        </div>
       </form>
 
       {/* Snackbar for error/success messages */}

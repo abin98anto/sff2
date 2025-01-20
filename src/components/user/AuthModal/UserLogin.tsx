@@ -1,4 +1,5 @@
 import React from "react";
+import GoogleButton from "../google-btn/GoogleButton";
 
 const UserLogin: React.FC = () => {
   return (
@@ -8,6 +9,13 @@ const UserLogin: React.FC = () => {
         <input type="email" placeholder="Email" required />
         <input type="password" placeholder="Password" required />
         <button type="submit">Log In</button>
+
+        <div className="divider">
+          <span>or</span>
+        </div>
+        <div className="google-signin-button">
+          <GoogleButton /> <p>Login with Google</p>
+        </div>
       </form>
     </div>
   );

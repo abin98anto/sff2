@@ -28,6 +28,11 @@ const AuthModal: React.FC<AuthModalProps> = ({
   const [currentSection, setCurrentSection] =
     useState<AuthSection>(initialSection);
 
+  const handleClose = () => {
+    setCurrentSection("userLogin");
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   const getImageForSection = (section: AuthSection) => {
@@ -122,7 +127,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
   return (
     <div className="auth-modal-overlay">
       <div className="auth-modal">
-        <button className="close-button" onClick={onClose}>
+        <button className="close-button" onClick={handleClose}>
           &times;
         </button>
         <div className="auth-modal-content">

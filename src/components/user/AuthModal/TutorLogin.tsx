@@ -1,4 +1,5 @@
 import React from "react";
+import GoogleButton from "../google-btn/GoogleButton";
 
 interface TutorLoginProps {
   heading: string;
@@ -12,6 +13,13 @@ const TutorLogin: React.FC<TutorLoginProps> = ({ heading }) => {
         <input type="email" placeholder="Email" required />
         <input type="password" placeholder="Password" required />
         <button type="submit">Log In</button>
+
+        <div className="divider">
+          <span>or</span>
+        </div>
+        <div className="google-signin-button">
+          <GoogleButton /> <p>Login with Google</p>
+        </div>
       </form>
     </div>
   );
