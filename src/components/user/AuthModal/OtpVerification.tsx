@@ -31,7 +31,7 @@ const OtpVerification: React.FC = () => {
     setSnackbarOpen(false);
   };
 
-  const userInfo = useSelector((state: AppRootState) => state.userInfo);
+  const { userInfo } = useSelector((state: AppRootState) => state.user);
 
   useEffect(() => {
     if (isTimerActive && timeLeft > 0) {

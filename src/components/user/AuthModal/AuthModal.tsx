@@ -7,6 +7,10 @@ import UserLogin from "./UserLogin";
 import TutorLogin from "./TutorLogin";
 import "./AuthModal.scss";
 import { images } from "../../../shared/constants/images";
+import { axiosInstance } from "../../../shared/config/axiosConfig";
+import { API } from "../../../shared/constants/API";
+import { useSelector } from "react-redux";
+import { AppRootState } from "../../../redux/store";
 
 type AuthModalProps = {
   isOpen: boolean;
@@ -28,6 +32,24 @@ const AuthModal: React.FC<AuthModalProps> = ({
 }) => {
   const [currentSection, setCurrentSection] =
     useState<AuthSection>(initialSection);
+
+  const { userInfo } = useSelector((state: AppRootState) => state.user);
+
+  const handleClose = async () => {
+    if (currentSection === "otp") {
+      try {
+        // Run your API call here
+        await axiosInstance.delete(
+          `${API.USER_DELETE}?email=${userInfo?.email}`
+        );
+      } catch (error) {
+        console.error("Error during API call:", error);
+      }
+    }
+    setCurrentSection("userLogin");
+    // Close the modal
+    onClose();
+  };
 
   if (!isOpen) return null;
 
@@ -123,7 +145,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
   return (
     <div className="auth-modal-overlay">
       <div className="auth-modal">
-        <button className="close-button" onClick={onClose}>
+        <button className="close-button" onClick={handleClose}>
           &times;
         </button>
         <div className="auth-modal-content">
