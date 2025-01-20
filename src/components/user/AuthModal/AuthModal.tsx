@@ -62,6 +62,63 @@ const AuthModal: React.FC<AuthModalProps> = ({
     }
   };
 
+  const renderAuthLinks = () => {
+    switch (currentSection) {
+      case "userLogin":
+        return (
+          <>
+            <button onClick={() => setCurrentSection("userSignup")}>
+              Sign Up
+            </button>
+            <button onClick={() => setCurrentSection("tutorLogin")}>
+              Tutor Login
+            </button>
+          </>
+        );
+      case "tutorLogin":
+        return (
+          <>
+            <button onClick={() => setCurrentSection("userLogin")}>
+              User Login
+            </button>
+            <button onClick={() => setCurrentSection("tutorSignup")}>
+              Tutor Sign Up
+            </button>
+          </>
+        );
+      case "userSignup":
+        return (
+          <>
+            <button onClick={() => setCurrentSection("userLogin")}>
+              Login
+            </button>
+            <button onClick={() => setCurrentSection("tutorSignup")}>
+              Tutor Sign Up
+            </button>
+          </>
+        );
+      case "tutorSignup":
+        return (
+          <>
+            <button onClick={() => setCurrentSection("tutorLogin")}>
+              Tutor Login
+            </button>
+            <button onClick={() => setCurrentSection("userSignup")}>
+              User Sign Up
+            </button>
+          </>
+        );
+      case "otp":
+        return (
+          <button onClick={() => setCurrentSection("userLogin")}>
+            Back to Login
+          </button>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="auth-modal-overlay">
       <div className="auth-modal">
@@ -69,62 +126,16 @@ const AuthModal: React.FC<AuthModalProps> = ({
           &times;
         </button>
         <div className="auth-modal-content">
-          <div className="auth-form">{renderSection()}</div>
+          <div className="auth-form-container">
+            <div className="auth-form">{renderSection()}</div>
+            <div className="auth-links">{renderAuthLinks()}</div>
+          </div>
           <div className="auth-image">
             <img
-              src={getImageForSection(currentSection)}
+              src={getImageForSection(currentSection) || "/placeholder.svg"}
               alt="Auth illustration"
             />
           </div>
-        </div>
-        <div className="auth-links">
-          {currentSection === "userLogin" && (
-            <>
-              <button onClick={() => setCurrentSection("userSignup")}>
-                Sign Up
-              </button>
-              <button onClick={() => setCurrentSection("tutorLogin")}>
-                Tutor Login
-              </button>
-            </>
-          )}
-          {currentSection === "tutorLogin" && (
-            <>
-              <button onClick={() => setCurrentSection("userLogin")}>
-                User Login
-              </button>
-              <button onClick={() => setCurrentSection("tutorSignup")}>
-                Tutor Sign Up
-              </button>
-            </>
-          )}
-          {currentSection === "userSignup" && (
-            <>
-              <button onClick={() => setCurrentSection("userLogin")}>
-                Login
-              </button>
-              <button onClick={() => setCurrentSection("tutorSignup")}>
-                Tutor Sign Up
-              </button>
-            </>
-          )}
-          {currentSection === "tutorSignup" && (
-            <>
-              <button onClick={() => setCurrentSection("tutorLogin")}>
-                Tutor Login
-              </button>
-              <button onClick={() => setCurrentSection("userSignup")}>
-                User Sign Up
-              </button>
-            </>
-          )}
-          {currentSection === "otp" && (
-            <>
-              <button onClick={() => setCurrentSection("userLogin")}>
-                Back to Login
-              </button>
-            </>
-          )}
         </div>
       </div>
     </div>

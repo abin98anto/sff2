@@ -14,10 +14,8 @@ export const loginSchema = Yup.object().shape(loginFields);
 
 export const signupSchema = Yup.object().shape({
   ...loginFields,
-  username: Yup.string()
-    .min(3, "Username must be at least 3 characters")
-    .required("Username is required"),
+  name: Yup.string().min(3, comments.NAME_INVALID).required(comments.NAME_REQ),
   confirmPassword: Yup.string()
-    .oneOf([Yup.ref("password")], "Passwords must match")
-    .required("Confirm password is required"),
+    .oneOf([Yup.ref("password")], comments.CPASS_INVALID)
+    .required(comments.CPASS_REQ),
 });

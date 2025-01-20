@@ -1,4 +1,9 @@
 export const comments = {
+  ALL_FIELDS_REQ:"Please fill all the fields.",
+  CPASS_REQ: "Confirm password is required",
+  CPASS_INVALID: "Passwords must match",
+  NAME_REQ: "Username is required",
+  NAME_INVALID: "Username must be at least 3 characters",
   PASS_REQ: "Password is required",
   PASS_INVALID: "Password must be at least 8 characters",
   EMAIL_INVALID: "Invalid email",
@@ -23,4 +28,5 @@ export const comments = {
   USER_DEL_USECASE_FAIL: "Error Deleting User in UseCase.",
   USER_DEL_SUCC: "Deleted User Successfully.",
   USER_DEL_FAIL: "Error Deleting User.",
+  SIGNUP_SUCC: "Form submitted successfully!",
 };
