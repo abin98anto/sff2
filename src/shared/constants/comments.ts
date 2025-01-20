@@ -1,5 +1,5 @@
 export const comments = {
-  ALL_FIELDS_REQ:"Please fill all the fields.",
+  ALL_FIELDS_REQ: "Please fill all the fields.",
   CPASS_REQ: "Confirm password is required",
   CPASS_INVALID: "Passwords must match",
   NAME_REQ: "Username is required",
@@ -29,4 +29,5 @@ export const comments = {
   USER_DEL_SUCC: "Deleted User Successfully.",
   USER_DEL_FAIL: "Error Deleting User.",
   SIGNUP_SUCC: "Form submitted successfully!",
+  SIGNUP_THNK_FAIL: "Error in signUpUser Thunk.",
 };

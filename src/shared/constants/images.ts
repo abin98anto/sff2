@@ -11,7 +11,6 @@ export const images = {
     "https://res.cloudinary.com/dqjjysikb/image/upload/v1734270190/tutor-login_j1w7hq.png",
   TUTOR_LOGIN:
     "https://res.cloudinary.com/dqjjysikb/image/upload/v1734270190/tutor-signup_xclymv.png",
-  OTP: "https://asset.cloudinary.com/dqjjysikb/3823c816c0b268c219caec630a93a8cc",
   TUTOR_ICON:
     "https://asset.cloudinary.com/dqjjysikb/b926173429c1c0d49ffec19dda984fd0",
   GOOGLE_SIGN1: `M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12

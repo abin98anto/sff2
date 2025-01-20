@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 import * as Yup from "yup";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
@@ -7,15 +8,22 @@ import { Eye, EyeOff } from "lucide-react";
 import { signupSchema } from "../../../shared/config/yupConfig";
 import { comments } from "../../../shared/constants/comments";
 import GoogleButton from "../google-btn/GoogleButton";
+import { useAppDispatch } from "../../../hooks/reduxHooks";
+import type { IUser } from "../../../entities/IUser";
+import { signUpUser } from "../../../redux/thunks/userSignupServices";
+import { userRoles } from "../../../entities/misc/userRole";
 
-const UserSignup: React.FC = () => {
+interface UserSignupProps {
+  onSignupSuccess: () => void;
+}
+
+const UserSignup: React.FC<UserSignupProps> = ({ onSignupSuccess }) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
-
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
@@ -23,6 +31,9 @@ const UserSignup: React.FC = () => {
   );
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const dispatch = useAppDispatch();
+  const [userDetails, setUserDetails] = useState<Partial<IUser> | null>(null);
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
@@ -49,13 +60,29 @@ const UserSignup: React.FC = () => {
 
     try {
       await signupSchema.validate(formData, { abortEarly: false });
+
+      const { confirmPassword, ...data } = formData;
+      const userData: IUser = { ...data, role: userRoles.USER };
+      setUserDetails(userData);
+      console.log("user details in state", userDetails);
+      const result = await dispatch(signUpUser(userData)).unwrap();
+      console.log("the result", result);
+
       setSnackbarMessage(comments.SIGNUP_SUCC);
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
       console.log(comments.SIGNUP_SUCC, formData);
+
+      // Navigate to OTP verification after successful signup
+      onSignupSuccess();
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
         setSnackbarMessage(err.errors[0]);
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+      } else {
+        console.log("error in usersignup", err);
+        setSnackbarMessage(err as string);
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
       }
@@ -123,7 +150,6 @@ const UserSignup: React.FC = () => {
         </div>
       </form>
 
-      {/* Snackbar for error/success messages */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={3000}

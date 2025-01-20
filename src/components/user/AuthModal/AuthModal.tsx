@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 import UserSignup from "./UserSignup";
 import TutorSignup from "./TutorSignup";
 import OtpVerification from "./OtpVerification";
@@ -28,11 +29,6 @@ const AuthModal: React.FC<AuthModalProps> = ({
   const [currentSection, setCurrentSection] =
     useState<AuthSection>(initialSection);
 
-  const handleClose = () => {
-    setCurrentSection("userLogin");
-    onClose();
-  };
-
   if (!isOpen) return null;
 
   const getImageForSection = (section: AuthSection) => {
@@ -42,7 +38,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
       case "tutorSignup":
         return images.TUTOR_SIGNUP;
       case "otp":
-        return images.OTP;
+        return images.ROCKET_SIGNUP;
       case "userLogin":
         return images.LOGIN_IMG;
       case "tutorLogin":
@@ -55,7 +51,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
   const renderSection = () => {
     switch (currentSection) {
       case "userSignup":
-        return <UserSignup />;
+        return <UserSignup onSignupSuccess={() => setCurrentSection("otp")} />;
       case "tutorSignup":
         return <TutorSignup />;
       case "otp":
@@ -127,7 +123,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
   return (
     <div className="auth-modal-overlay">
       <div className="auth-modal">
-        <button className="close-button" onClick={handleClose}>
+        <button className="close-button" onClick={onClose}>
           &times;
         </button>
         <div className="auth-modal-content">
@@ -137,7 +133,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
           </div>
           <div className="auth-image">
             <img
-              src={getImageForSection(currentSection)}
+              src={getImageForSection(currentSection) || "/placeholder.svg"}
               alt="Auth illustration"
             />
           </div>
