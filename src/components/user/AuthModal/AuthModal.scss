@@ -118,11 +118,20 @@
       cursor: pointer;
       font-size: 1rem;
       transition: all 0.3s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 42px;
 
-      &:hover {
+      &:hover:not(:disabled) {
         background: #fd7442;
         transform: translateY(-2px);
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
       }
     }
   }
@@ -177,7 +186,7 @@
 
   .password-toggle {
     position: absolute;
-    right: -15px;
+    right: 10px;
     top: 50%;
     transform: translateY(-50%);
     background: none;
@@ -196,7 +205,7 @@
 }
 
 .google-signin-button {
-  width: auto;
+  width: 100%;
   background-color: white;
   color: #333;
   border: 1px solid #e0e0e0;
@@ -208,6 +217,7 @@
   align-items: center;
   justify-content: center;
   gap: 1rem;
+  padding: 0.75rem;
 
   &:hover {
     background-color: #f8f8f8;
@@ -218,6 +228,7 @@
 .divider {
   position: relative;
   text-align: center;
+  margin: 1rem 0;
 
   &::before,
   &::after {
@@ -263,5 +274,33 @@
 
   &:hover {
     background-color: #2980b9;
+  }
+}
+
+.error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ffffff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
   }
 }

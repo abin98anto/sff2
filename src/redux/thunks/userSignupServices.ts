@@ -5,7 +5,7 @@ import { API } from "../../shared/constants/API";
 import { comments } from "../../shared/constants/comments";
 
 // Async thunk to handle sign-up
-export const signUpUser = createAsyncThunk(
+export const sendOTP = createAsyncThunk(
   "user/sendOTP",
   async (userData: IUser, { rejectWithValue }) => {
     try {
@@ -18,6 +18,19 @@ export const signUpUser = createAsyncThunk(
         return rejectWithValue(comments.EMAIL_TAKEN);
       }
       return rejectWithValue(comments.SERVER_ERR);
+    }
+  }
+);
+
+export const verifyOTP = createAsyncThunk(
+  "user/verifyOTP",
+  async (otp: string, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post(API.OTP_VERIFY, otp);
+      return response.data;
+    } catch (error) {
+      console.log(comments.VERIFY_OTP_THUNK_FAIL);
+      return rejectWithValue(comments.VERIFY_OTP_THUNK_FAIL);
     }
   }
 );

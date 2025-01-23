@@ -11,6 +11,8 @@ import { axiosInstance } from "../../../shared/config/axiosConfig";
 import { API } from "../../../shared/constants/API";
 import { useSelector } from "react-redux";
 import { AppRootState } from "../../../redux/store";
+import { useAppDispatch } from "../../../hooks/reduxHooks";
+import { resetUserInfo } from "../../../redux/slices/userSlice";
 
 type AuthModalProps = {
   isOpen: boolean;
@@ -34,20 +36,20 @@ const AuthModal: React.FC<AuthModalProps> = ({
     useState<AuthSection>(initialSection);
 
   const { userInfo } = useSelector((state: AppRootState) => state.user);
+  const dispatch = useAppDispatch();
 
   const handleClose = async () => {
     if (currentSection === "otp") {
       try {
-        // Run your API call here
         await axiosInstance.delete(
           `${API.USER_DELETE}?email=${userInfo?.email}`
         );
+        dispatch(resetUserInfo());
       } catch (error) {
         console.error("Error during API call:", error);
       }
     }
     setCurrentSection("userLogin");
-    // Close the modal
     onClose();
   };
 

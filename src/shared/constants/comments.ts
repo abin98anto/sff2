@@ -31,4 +31,6 @@ export const comments = {
   SIGNUP_SUCC: "Form submitted successfully!",
   SIGNUP_THNK_FAIL: "Error in signUpUser Thunk.",
   SIGNUP_FAIL: "Error in user signup",
+  VERIFY_OTP_THUNK_FAIL: "Error verifying OTP in thunk.",
+  VERIFY_OTP_FE_FAIL: "Error verifying OTP",
 };

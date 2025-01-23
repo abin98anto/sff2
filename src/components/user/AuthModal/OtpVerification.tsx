@@ -5,11 +5,13 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import "react-circular-progressbar/dist/styles.css";
 import { useSelector } from "react-redux";
+import { hourglass } from "ldrs";
+
 import { AppRootState } from "../../../redux/store";
 import { axiosInstance } from "../../../shared/config/axiosConfig";
 import { API } from "../../../shared/constants/API";
 import { useAppDispatch } from "../../../hooks/reduxHooks";
-import { signUpUser } from "../../../redux/thunks/userSignupServices";
+import { sendOTP } from "../../../redux/thunks/userSignupServices";
 import { IUser } from "../../../entities/IUser";
 import { comments } from "../../../shared/constants/comments";
 
@@ -24,6 +26,9 @@ const OtpVerification: React.FC = () => {
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
     "error"
   );
+
+  const { loading } = useSelector((state: AppRootState) => state.user);
+  hourglass.register();
 
   const dispatch = useAppDispatch();
 
@@ -61,6 +66,11 @@ const OtpVerification: React.FC = () => {
       setSnackbarOpen(true);
       return;
     }
+
+    try {
+    } catch (error) {
+      console.log(comments.VERIFY_OTP_FE_FAIL, error);
+    }
   };
 
   const handleResendOtp = async () => {
@@ -68,7 +78,7 @@ const OtpVerification: React.FC = () => {
     try {
       await axiosInstance.delete(`${API.USER_DELETE}?email=${userInfo?.email}`);
 
-      await dispatch(signUpUser(userInfo as IUser)).unwrap();
+      await dispatch(sendOTP(userInfo as IUser)).unwrap();
 
       setTimeLeft(60);
       setIsTimerActive(true);
@@ -115,7 +125,18 @@ const OtpVerification: React.FC = () => {
           </div>
         </div>
         {isTimerActive ? (
-          <button type="submit">Verify OTP</button>
+          <button type="submit" disabled={loading}>
+            {loading ? (
+              <l-hourglass
+                size="20"
+                bg-opacity="0.1"
+                speed="1.75"
+                color="black"
+              ></l-hourglass>
+            ) : (
+              "Verify OTP"
+            )}
+          </button>
         ) : (
           <button
             type="button"
