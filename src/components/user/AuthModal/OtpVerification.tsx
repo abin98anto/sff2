@@ -61,8 +61,6 @@ const OtpVerification: React.FC = () => {
       setSnackbarOpen(true);
       return;
     }
-
-    console.log("Verifying OTP:", otp.join(""));
   };
 
   const handleResendOtp = async () => {

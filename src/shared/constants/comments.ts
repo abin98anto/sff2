@@ -30,4 +30,5 @@ export const comments = {
   USER_DEL_FAIL: "Error Deleting User.",
   SIGNUP_SUCC: "Form submitted successfully!",
   SIGNUP_THNK_FAIL: "Error in signUpUser Thunk.",
+  SIGNUP_FAIL: "Error in user signup",
 };

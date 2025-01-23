@@ -45,34 +45,30 @@ const UserSignup: React.FC<UserSignupProps> = ({ onSignupSuccess }) => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const emptyField = Object.keys(formData).find(
-      (key) => formData[key as keyof typeof formData].trim() === ""
-    );
-
-    if (emptyField) {
-      setSnackbarMessage(comments.ALL_FIELDS_REQ);
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
-      return;
-    }
-
     try {
+      e.preventDefault();
+
+      const emptyField = Object.keys(formData).find(
+        (key) => formData[key as keyof typeof formData].trim() === ""
+      );
+
+      if (emptyField) {
+        setSnackbarMessage(comments.ALL_FIELDS_REQ);
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+        return;
+      }
+
       await signupSchema.validate(formData, { abortEarly: false });
 
       const { confirmPassword, ...data } = formData;
       const userData: IUser = { ...data, role: userRoles.USER };
       setUserDetails(userData);
-      console.log("user details in state", userDetails);
-      const result = await dispatch(signUpUser(userData)).unwrap();
-      console.log("the result", result);
-
+      await dispatch(signUpUser(userData)).unwrap();
+      console.log(`OTP sent to ${userDetails?.email}`);
       setSnackbarMessage(comments.SIGNUP_SUCC);
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-      console.log(comments.SIGNUP_SUCC, formData);
-
       onSignupSuccess();
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
@@ -80,7 +76,7 @@ const UserSignup: React.FC<UserSignupProps> = ({ onSignupSuccess }) => {
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
       } else {
-        console.log("error in usersignup", err);
+        console.log(comments.SIGNUP_FAIL, err);
         setSnackbarMessage(err as string);
         setSnackbarSeverity("error");
         setSnackbarOpen(true);

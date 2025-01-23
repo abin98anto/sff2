@@ -131,12 +131,6 @@ const AuthModal: React.FC<AuthModalProps> = ({
             </button>
           </>
         );
-      case "otp":
-        return (
-          <button onClick={() => setCurrentSection("userLogin")}>
-            Back to Login
-          </button>
-        );
       default:
         return null;
     }
