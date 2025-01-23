@@ -7,15 +7,21 @@ import "react-circular-progressbar/dist/styles.css";
 import { useSelector } from "react-redux";
 import { hourglass } from "ldrs";
 
-import { AppRootState } from "../../../redux/store";
+import type { AppRootState } from "../../../redux/store";
 import { axiosInstance } from "../../../shared/config/axiosConfig";
 import { API } from "../../../shared/constants/API";
 import { useAppDispatch } from "../../../hooks/reduxHooks";
-import { sendOTP } from "../../../redux/thunks/userSignupServices";
-import { IUser } from "../../../entities/IUser";
+import { sendOTP, verifyOTP } from "../../../redux/thunks/userSignupServices";
+import type { IUser } from "../../../entities/IUser";
 import { comments } from "../../../shared/constants/comments";
 
-const OtpVerification: React.FC = () => {
+interface OtpVerificationProps {
+  onVerificationSuccess: () => void;
+}
+
+const OtpVerification: React.FC<OtpVerificationProps> = ({
+  onVerificationSuccess,
+}) => {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [timeLeft, setTimeLeft] = useState(60);
   const [isTimerActive, setIsTimerActive] = useState(true);
@@ -57,7 +63,7 @@ const OtpVerification: React.FC = () => {
     }
   };
 
-  const handleVerify = (e: React.FormEvent) => {
+  const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (otp.some((digit) => digit.trim() === "")) {
@@ -68,8 +74,24 @@ const OtpVerification: React.FC = () => {
     }
 
     try {
+      const result = await dispatch(
+        verifyOTP({ email: userInfo?.email, otp: otp.join("") })
+      ).unwrap();
+      if (result.success) {
+        setSnackbarMessage("OTP verified successfully!");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
+        onVerificationSuccess();
+      } else {
+        setSnackbarMessage("OTP verification failed. Please try again.");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+      }
     } catch (error) {
       console.log(comments.VERIFY_OTP_FE_FAIL, error);
+      setSnackbarMessage("An error occurred. Please try again.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 

@@ -3,6 +3,7 @@ import { IUser } from "../../entities/IUser";
 import { axiosInstance } from "../../shared/config/axiosConfig";
 import { API } from "../../shared/constants/API";
 import { comments } from "../../shared/constants/comments";
+import { VerifyOTPData } from "../../entities/misc/verifyOtpData";
 
 // Async thunk to handle sign-up
 export const sendOTP = createAsyncThunk(
@@ -24,12 +25,12 @@ export const sendOTP = createAsyncThunk(
 
 export const verifyOTP = createAsyncThunk(
   "user/verifyOTP",
-  async (otp: string, { rejectWithValue }) => {
+  async (data: VerifyOTPData, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post(API.OTP_VERIFY, otp);
+      const response = await axiosInstance.post(API.OTP_VERIFY, { data });
       return response.data;
     } catch (error) {
-      console.log(comments.VERIFY_OTP_THUNK_FAIL);
+      console.log(comments.VERIFY_OTP_THUNK_FAIL, error);
       return rejectWithValue(comments.VERIFY_OTP_THUNK_FAIL);
     }
   }

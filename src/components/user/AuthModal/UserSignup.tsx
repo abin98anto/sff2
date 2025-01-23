@@ -4,8 +4,6 @@ import * as Yup from "yup";
 import { useSelector } from "react-redux";
 import { Eye, EyeOff } from "lucide-react";
 import Swal from "sweetalert2";
-import "sweetalert2/dist/sweetalert2.min.css";
-import "../../../shared/utils/sweetalert-custom.scss";
 import { hourglass } from "ldrs";
 
 import { signupSchema } from "../../../shared/config/yupConfig";

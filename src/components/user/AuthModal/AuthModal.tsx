@@ -10,7 +10,7 @@ import { images } from "../../../shared/constants/images";
 import { axiosInstance } from "../../../shared/config/axiosConfig";
 import { API } from "../../../shared/constants/API";
 import { useSelector } from "react-redux";
-import { AppRootState } from "../../../redux/store";
+import type { AppRootState } from "../../../redux/store";
 import { useAppDispatch } from "../../../hooks/reduxHooks";
 import { resetUserInfo } from "../../../redux/slices/userSlice";
 
@@ -53,6 +53,10 @@ const AuthModal: React.FC<AuthModalProps> = ({
     onClose();
   };
 
+  const handleVerificationSuccess = () => {
+    setCurrentSection("userLogin");
+  };
+
   if (!isOpen) return null;
 
   const getImageForSection = (section: AuthSection) => {
@@ -79,7 +83,9 @@ const AuthModal: React.FC<AuthModalProps> = ({
       case "tutorSignup":
         return <TutorSignup />;
       case "otp":
-        return <OtpVerification />;
+        return (
+          <OtpVerification onVerificationSuccess={handleVerificationSuccess} />
+        );
       case "userLogin":
         return <UserLogin />;
       case "tutorLogin":
