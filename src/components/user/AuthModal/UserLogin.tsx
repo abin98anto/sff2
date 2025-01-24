@@ -14,7 +14,7 @@ const UserLogin: React.FC = () => {
           <span>or</span>
         </div>
         <div className="google-signin-button">
-          <GoogleButton /> <p>Login with Google</p>
+          <GoogleButton /> <span>Login with Google</span>
         </div>
       </form>
     </div>

@@ -18,7 +18,7 @@ const TutorLogin: React.FC<TutorLoginProps> = ({ heading }) => {
           <span>or</span>
         </div>
         <div className="google-signin-button">
-          <GoogleButton /> <p>Login with Google</p>
+          <GoogleButton /> <span>Login with Google</span>
         </div>
       </form>
     </div>
