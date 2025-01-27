@@ -8,4 +8,5 @@ export const API = {
   OTP_VERIFY: "/verify-otp",
   USER_DELETE: "/delete-user",
   USER_LOGIN: "/login",
+  USER_LOGOUT: "/logout",
 };

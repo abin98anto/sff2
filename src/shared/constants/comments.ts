@@ -36,4 +36,5 @@ export const comments = {
   OTP_RESND_FAIL: "error resending otp",
   LOGIN_FE_ERR: "Error sending user data to backend.",
   LOGIN_THNK_FAIL: "Error in login thunk",
+  LOGOUT_THNK_ERR: "Error in Logout thunk",
 };

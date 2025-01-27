@@ -55,3 +55,19 @@ export const login = createAsyncThunk(
     }
   }
 );
+
+export const logout = createAsyncThunk(
+  "user/logout",
+  async (_, { rejectWithValue }) => {
+    try {
+      const result = await axiosInstance.post(API.USER_LOGOUT);
+      return result.data;
+    } catch (error) {
+      console.log(comments.LOGOUT_THNK_ERR, error);
+      if (error instanceof AxiosError) {
+        return rejectWithValue(error?.response?.data?.message);
+      }
+      return rejectWithValue(comments.SERVER_ERR);
+    }
+  }
+);
