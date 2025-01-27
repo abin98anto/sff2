@@ -1,16 +1,19 @@
-import type React from "react";
-import { useState } from "react";
-import { sendOTP } from "../../../redux/thunks/userSignupServices";
+import React, { useState } from "react";
+
 import { Eye, EyeOff } from "lucide-react";
-import Swal from "sweetalert2";
 import { hourglass } from "ldrs";
+// import Swal from "sweetalert2";
+
+import GoogleButton from "../google-btn/GoogleButton";
+import { sendOTP } from "../../../redux/thunks/userSignupServices";
 import { signupSchema } from "../../../shared/config/yupConfig";
 import { comments } from "../../../shared/constants/comments";
-import GoogleButton from "../google-btn/GoogleButton";
-import type { IUser } from "../../../entities/IUser";
+import { IUser } from "../../../entities/IUser";
 import { userRoles } from "../../../entities/misc/userRole";
 import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
 import { AppRootState } from "../../../redux/store";
+import { useSnackbar } from "../../../hooks/useSnackbar";
+import CustomSnackbar from "../common/CustomSnackbar";
 
 interface UserSignupProps {
   onSignupSuccess: () => void;
@@ -30,10 +33,11 @@ const UserSignup: React.FC<UserSignupProps> = ({
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
+
   const { loading } = useAppSelector((state: AppRootState) => state.user);
-
   const dispatch = useAppDispatch();
-
   hourglass.register();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,20 +54,7 @@ const UserSignup: React.FC<UserSignupProps> = ({
       );
 
       if (emptyField) {
-        Swal.fire({
-          text: comments.ALL_FIELDS_REQ,
-          icon: "error",
-          position: "top-end",
-          toast: true,
-          timer: 3000,
-          timerProgressBar: true,
-          showConfirmButton: false,
-          customClass: {
-            popup: "swal-compact",
-            title: "swal-compact-title",
-            htmlContainer: "swal-compact-content",
-          },
-        });
+        showSnackbar(comments.ALL_FIELDS_REQ, "error");
         return;
       }
 
@@ -74,25 +65,18 @@ const UserSignup: React.FC<UserSignupProps> = ({
         ...data,
         role: userRole === "tutor" ? userRoles.TUTOR : userRoles.USER,
       };
-      // setSignupData(userData);
       await dispatch(sendOTP(userData));
       onSignupSuccess();
     } catch (err) {
-      if (err instanceof Error) {
-        Swal.fire({
-          text: err.message,
-          icon: "error",
-          position: "top-end",
-          toast: true,
-          timer: 3000,
-          timerProgressBar: true,
-          showConfirmButton: false,
-          customClass: {
-            popup: "swal-compact",
-            title: "swal-compact-title",
-            htmlContainer: "swal-compact-content",
-          },
-        });
+      if (err instanceof Error && "inner" in err) {
+        const yupError = err as any;
+        if (yupError.inner && yupError.inner.length > 0) {
+          const errors = yupError.inner.map((error: any) => error.message);
+          const errorMessage = errors.join("\n");
+          showSnackbar(errorMessage, "error");
+        }
+      } else if (err instanceof Error) {
+        showSnackbar(err.message, "error");
       } else {
         console.log(comments.SIGNUP_FAIL, err);
       }
@@ -170,6 +154,13 @@ const UserSignup: React.FC<UserSignupProps> = ({
           <span>Sign in with Google</span>
         </div>
       </form>
+
+      <CustomSnackbar
+        open={snackbar.open}
+        message={snackbar.message}
+        severity={snackbar.severity}
+        onClose={hideSnackbar}
+      />
     </div>
   );
 };

@@ -1,16 +1,16 @@
-import type React from "react";
-import { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert";
 import "react-circular-progressbar/dist/styles.css";
 import { hourglass } from "ldrs";
+
 import { axiosInstance } from "../../../shared/config/axiosConfig";
+import { comments } from "../../../shared/constants/comments";
 import { API } from "../../../shared/constants/API";
 import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
 import { sendOTP, verifyOTP } from "../../../redux/thunks/userSignupServices";
-import type { IUser } from "../../../entities/IUser";
-import { comments } from "../../../shared/constants/comments";
+import { IUser } from "../../../entities/IUser";
+import { useSnackbar } from "../../../hooks/useSnackbar";
+import CustomSnackbar from "../common/CustomSnackbar";
 
 interface OtpVerificationProps {
   onVerificationSuccess: () => void;
@@ -24,20 +24,11 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
   const [isTimerActive, setIsTimerActive] = useState(true);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
 
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
-    "error"
-  );
+  const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
 
   const { loading, userInfo } = useAppSelector((state) => state.user);
-  hourglass.register();
-
   const dispatch = useAppDispatch();
-
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false);
-  };
+  hourglass.register();
 
   useEffect(() => {
     if (isTimerActive && timeLeft > 0) {
@@ -62,9 +53,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
     e.preventDefault();
 
     if (otp.some((digit) => digit.trim() === "")) {
-      setSnackbarMessage(comments.ALL_FIELDS_REQ);
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
+      showSnackbar(comments.ALL_FIELDS_REQ, "error");
       return;
     }
 
@@ -73,21 +62,15 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
         verifyOTP({ email: userInfo?.email, otp: otp.join("") })
       ).unwrap();
       if (result.success) {
-        setSnackbarMessage(comments.USER_VERIFIED);
-        setSnackbarSeverity("success");
-        setSnackbarOpen(true);
+        showSnackbar(comments.USER_VERIFIED, "success");
         onVerificationSuccess();
       } else {
         console.log(comments.VERIFY_OTP_FAIL, result);
-        setSnackbarMessage(result);
-        setSnackbarSeverity("error");
-        setSnackbarOpen(true);
+        showSnackbar(result, "error");
       }
     } catch (error) {
       console.log(comments.VERIFY_OTP_FE_FAIL, error);
-      setSnackbarMessage(error as string);
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
+      showSnackbar(error as string, "error");
     }
   };
 
@@ -102,9 +85,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
       inputRefs.current[0]?.focus();
     } catch (error) {
       console.log(comments.OTP_RESND_FAIL, error);
-      setSnackbarMessage(error as string);
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
+      showSnackbar(error as string, "error");
     }
   };
 
@@ -173,20 +154,12 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
         )}
       </form>
 
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={3000}
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleSnackbarClose}
-          severity={snackbarSeverity}
-          sx={{ width: "100%" }}
-        >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
+      <CustomSnackbar
+        open={snackbar.open}
+        message={snackbar.message}
+        severity={snackbar.severity}
+        onClose={hideSnackbar}
+      />
     </div>
   );
 };

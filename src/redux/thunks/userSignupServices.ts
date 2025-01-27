@@ -29,13 +29,13 @@ export const verifyOTP = createAsyncThunk(
   async (data: VerifyOTPData, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post(API.OTP_VERIFY, { data });
-      console.log("v otp ", response);
       return response.data;
     } catch (error) {
       console.log(comments.VERIFY_OTP_THUNK_FAIL, error);
       if (error instanceof AxiosError) {
         return rejectWithValue(error?.response?.data?.message);
       }
+      return rejectWithValue(comments.SERVER_ERR);
     }
   }
 );
