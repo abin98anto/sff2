@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { IUserState } from "../../entities/misc/IUserState";
-import { sendOTP, verifyOTP } from "../thunks/userSignupServices";
+import { login, sendOTP, verifyOTP } from "../thunks/userAuthServices";
 import { comments } from "../../shared/constants/comments";
 
 const initialState: IUserState = {
@@ -55,6 +55,21 @@ const userSlice = createSlice({
       .addCase(verifyOTP.rejected, (state) => {
         state.loading = false;
         state.message = comments.VERIFY_OTP_FAIL;
+      })
+
+      // User/Tutor Login.
+      .addCase(login.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.userInfo = action.payload.data;
+        state.error = "";
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });

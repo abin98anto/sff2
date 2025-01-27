@@ -1,11 +1,9 @@
 import React, { useState } from "react";
-
 import { Eye, EyeOff } from "lucide-react";
 import { hourglass } from "ldrs";
-// import Swal from "sweetalert2";
 
-import GoogleButton from "../google-btn/GoogleButton";
-import { sendOTP } from "../../../redux/thunks/userSignupServices";
+import GoogleButton from "./google-btn/GoogleButton";
+import { sendOTP } from "../../../redux/thunks/userAuthServices";
 import { signupSchema } from "../../../shared/config/yupConfig";
 import { comments } from "../../../shared/constants/comments";
 import { IUser } from "../../../entities/IUser";
@@ -13,7 +11,7 @@ import { userRoles } from "../../../entities/misc/userRole";
 import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
 import { AppRootState } from "../../../redux/store";
 import { useSnackbar } from "../../../hooks/useSnackbar";
-import CustomSnackbar from "../common/CustomSnackbar";
+import CustomSnackbar from "../../common/CustomSnackbar";
 
 interface UserSignupProps {
   onSignupSuccess: () => void;

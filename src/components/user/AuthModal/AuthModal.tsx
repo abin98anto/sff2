@@ -10,6 +10,7 @@ import { resetUserInfo } from "../../../redux/slices/userSlice";
 import { images } from "../../../shared/constants/images";
 import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
 import { AppRootState } from "../../../redux/store";
+import { comments } from "../../../shared/constants/comments";
 
 type AuthSection = "signup" | "otp" | "login";
 type UserRole = "user" | "tutor";
@@ -41,7 +42,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
         );
         dispatch(resetUserInfo());
       } catch (error) {
-        console.error("Error during API call:", error);
+        console.error(comments.USER_DEL_FAIL, error);
       }
     }
     setCurrentSection("login");
@@ -85,6 +86,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
           <UserLogin
             userRole={userRole}
             image={getImageForSection(currentSection, userRole)}
+            onClose={onClose}
           />
         );
     }

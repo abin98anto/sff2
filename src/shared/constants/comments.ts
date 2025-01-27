@@ -34,4 +34,6 @@ export const comments = {
   VERIFY_OTP_THUNK_FAIL: "Error verifying OTP in thunk.",
   VERIFY_OTP_FE_FAIL: "Error verifying OTP",
   OTP_RESND_FAIL: "error resending otp",
+  LOGIN_FE_ERR: "Error sending user data to backend.",
+  LOGIN_THNK_FAIL: "Error in login thunk",
 };
