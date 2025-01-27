@@ -4,13 +4,10 @@ import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import "react-circular-progressbar/dist/styles.css";
-import { useSelector } from "react-redux";
 import { hourglass } from "ldrs";
-
-import type { AppRootState } from "../../../redux/store";
 import { axiosInstance } from "../../../shared/config/axiosConfig";
 import { API } from "../../../shared/constants/API";
-import { useAppDispatch } from "../../../hooks/reduxHooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
 import { sendOTP, verifyOTP } from "../../../redux/thunks/userSignupServices";
 import type { IUser } from "../../../entities/IUser";
 import { comments } from "../../../shared/constants/comments";
@@ -33,7 +30,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
     "error"
   );
 
-  const { loading } = useSelector((state: AppRootState) => state.user);
+  const { loading, userInfo } = useAppSelector((state) => state.user);
   hourglass.register();
 
   const dispatch = useAppDispatch();
@@ -41,8 +38,6 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
   };
-
-  const { userInfo } = useSelector((state: AppRootState) => state.user);
 
   useEffect(() => {
     if (isTimerActive && timeLeft > 0) {
@@ -78,28 +73,27 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
         verifyOTP({ email: userInfo?.email, otp: otp.join("") })
       ).unwrap();
       if (result.success) {
-        setSnackbarMessage("OTP verified successfully!");
+        setSnackbarMessage(comments.USER_VERIFIED);
         setSnackbarSeverity("success");
         setSnackbarOpen(true);
         onVerificationSuccess();
       } else {
-        setSnackbarMessage("OTP verification failed. Please try again.");
+        console.log(comments.VERIFY_OTP_FAIL, result);
+        setSnackbarMessage(result);
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
       }
     } catch (error) {
       console.log(comments.VERIFY_OTP_FE_FAIL, error);
-      setSnackbarMessage("An error occurred. Please try again.");
+      setSnackbarMessage(error as string);
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     }
   };
 
   const handleResendOtp = async () => {
-    console.log("Resending OTP");
     try {
       await axiosInstance.delete(`${API.USER_DELETE}?email=${userInfo?.email}`);
-
       await dispatch(sendOTP(userInfo as IUser)).unwrap();
 
       setTimeLeft(60);
@@ -107,7 +101,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
       setOtp(["", "", "", "", "", ""]);
       inputRefs.current[0]?.focus();
     } catch (error) {
-      console.log("error resending otp", error);
+      console.log(comments.OTP_RESND_FAIL, error);
       setSnackbarMessage(error as string);
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
@@ -165,7 +159,16 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
             onClick={handleResendOtp}
             className="resend-otp-button"
           >
-            Resend OTP
+            {loading ? (
+              <l-hourglass
+                size="20"
+                bg-opacity="0.1"
+                speed="1.75"
+                color="black"
+              ></l-hourglass>
+            ) : (
+              "Resend OTP"
+            )}
           </button>
         )}
       </form>

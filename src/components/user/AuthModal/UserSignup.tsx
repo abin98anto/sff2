@@ -1,28 +1,27 @@
 import type React from "react";
 import { useState } from "react";
-import * as Yup from "yup";
-import { useSelector } from "react-redux";
+import { sendOTP } from "../../../redux/thunks/userSignupServices";
 import { Eye, EyeOff } from "lucide-react";
 import Swal from "sweetalert2";
 import { hourglass } from "ldrs";
-
 import { signupSchema } from "../../../shared/config/yupConfig";
 import { comments } from "../../../shared/constants/comments";
 import GoogleButton from "../google-btn/GoogleButton";
-import { useAppDispatch } from "../../../hooks/reduxHooks";
 import type { IUser } from "../../../entities/IUser";
-import { sendOTP } from "../../../redux/thunks/userSignupServices";
 import { userRoles } from "../../../entities/misc/userRole";
-import type { AppRootState } from "../../../redux/store";
+import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
+import { AppRootState } from "../../../redux/store";
 
 interface UserSignupProps {
   onSignupSuccess: () => void;
+  userRole: "user" | "tutor";
+  image: string;
 }
 
-const UserSignup: React.FC<UserSignupProps> = ({ onSignupSuccess }) => {
-  const { loading } = useSelector((state: AppRootState) => state.user);
-  hourglass.register();
-
+const UserSignup: React.FC<UserSignupProps> = ({
+  onSignupSuccess,
+  userRole,
+}) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -31,9 +30,11 @@ const UserSignup: React.FC<UserSignupProps> = ({ onSignupSuccess }) => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [userDetails, setUserDetails] = useState<Partial<IUser> | null>(null);
+  const { loading } = useAppSelector((state: AppRootState) => state.user);
 
   const dispatch = useAppDispatch();
+
+  hourglass.register();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -69,15 +70,17 @@ const UserSignup: React.FC<UserSignupProps> = ({ onSignupSuccess }) => {
       await signupSchema.validate(formData, { abortEarly: false });
 
       const { confirmPassword, ...data } = formData;
-      const userData: IUser = { ...data, role: userRoles.USER };
-      setUserDetails(userData);
-      await dispatch(sendOTP(userData)).unwrap();
-      console.log(`OTP sent to ${userDetails?.email}`);
+      const userData: IUser = {
+        ...data,
+        role: userRole === "tutor" ? userRoles.TUTOR : userRoles.USER,
+      };
+      // setSignupData(userData);
+      await dispatch(sendOTP(userData));
       onSignupSuccess();
     } catch (err) {
-      if (err instanceof Yup.ValidationError) {
+      if (err instanceof Error) {
         Swal.fire({
-          text: err.errors[0],
+          text: err.message,
           icon: "error",
           position: "top-end",
           toast: true,
@@ -92,27 +95,13 @@ const UserSignup: React.FC<UserSignupProps> = ({ onSignupSuccess }) => {
         });
       } else {
         console.log(comments.SIGNUP_FAIL, err);
-        Swal.fire({
-          text: err as string,
-          icon: "error",
-          position: "top-end",
-          toast: true,
-          timer: 3000,
-          timerProgressBar: true,
-          showConfirmButton: false,
-          customClass: {
-            popup: "swal-compact",
-            title: "swal-compact-title",
-            htmlContainer: "swal-compact-content",
-          },
-        });
       }
     }
   };
 
   return (
     <div className="auth-section">
-      <h2>Sign Up</h2>
+      <h2>{userRole === "tutor" ? "Tutor Sign Up" : "User Sign Up"}</h2>
       <form onSubmit={handleSubmit}>
         <input
           name="name"
@@ -158,7 +147,7 @@ const UserSignup: React.FC<UserSignupProps> = ({ onSignupSuccess }) => {
             {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
         </div>
-        <button type="submit" disabled={loading}>
+        <button type="submit">
           {loading ? (
             <l-hourglass
               size="20"
@@ -166,6 +155,8 @@ const UserSignup: React.FC<UserSignupProps> = ({ onSignupSuccess }) => {
               speed="1.75"
               color="black"
             ></l-hourglass>
+          ) : userRole === "tutor" ? (
+            "Sign Up as Tutor"
           ) : (
             "Sign Up"
           )}

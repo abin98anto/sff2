@@ -1,20 +1,21 @@
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import AuthModal from "../AuthModal/AuthModal";
 import "./Header.scss";
 
+type AuthModalType = "login" | "signup";
+
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authModalType, setAuthModalType] = useState<"login" | "signup">(
-    "login"
-  );
+  const [authModalType, setAuthModalType] = useState<AuthModalType>("login");
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const openAuthModal = (type: "login" | "signup") => {
+  const openAuthModal = (type: AuthModalType) => {
     setAuthModalType(type);
     setIsAuthModalOpen(true);
   };
@@ -104,7 +105,7 @@ const Header: React.FC = () => {
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={closeAuthModal}
-        initialSection={authModalType === "login" ? "userLogin" : "userSignup"}
+        initialSection={authModalType}
       />
     </header>
   );

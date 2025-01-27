@@ -1,31 +1,24 @@
 import type React from "react";
 import { useState } from "react";
-import UserSignup from "./UserSignup";
-import TutorSignup from "./TutorSignup";
-import OtpVerification from "./OtpVerification";
 import UserLogin from "./UserLogin";
-import TutorLogin from "./TutorLogin";
+import UserSignup from "./UserSignup";
+import OtpVerification from "./OtpVerification";
 import "./AuthModal.scss";
-import { images } from "../../../shared/constants/images";
 import { axiosInstance } from "../../../shared/config/axiosConfig";
 import { API } from "../../../shared/constants/API";
-import { useSelector } from "react-redux";
-import type { AppRootState } from "../../../redux/store";
-import { useAppDispatch } from "../../../hooks/reduxHooks";
 import { resetUserInfo } from "../../../redux/slices/userSlice";
+import { images } from "../../../shared/constants/images";
+import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
+import { AppRootState } from "../../../redux/store";
 
-type AuthModalProps = {
+type AuthSection = "signup" | "otp" | "login";
+type UserRole = "user" | "tutor";
+
+interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialSection: AuthSection;
-};
-
-type AuthSection =
-  | "userSignup"
-  | "tutorSignup"
-  | "otp"
-  | "userLogin"
-  | "tutorLogin";
+}
 
 const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
@@ -34,8 +27,10 @@ const AuthModal: React.FC<AuthModalProps> = ({
 }) => {
   const [currentSection, setCurrentSection] =
     useState<AuthSection>(initialSection);
+  const [userRole, setUserRole] = useState<UserRole>("user");
 
-  const { userInfo } = useSelector((state: AppRootState) => state.user);
+  const { userInfo } = useAppSelector((state: AppRootState) => state.user);
+
   const dispatch = useAppDispatch();
 
   const handleClose = async () => {
@@ -49,28 +44,23 @@ const AuthModal: React.FC<AuthModalProps> = ({
         console.error("Error during API call:", error);
       }
     }
-    setCurrentSection("userLogin");
+    setCurrentSection("login");
+    setUserRole("user");
     onClose();
   };
 
   const handleVerificationSuccess = () => {
-    setCurrentSection("userLogin");
+    setCurrentSection("login");
   };
 
-  if (!isOpen) return null;
-
-  const getImageForSection = (section: AuthSection) => {
+  const getImageForSection = (section: AuthSection, role: UserRole) => {
     switch (section) {
-      case "userSignup":
-        return images.ROCKET_SIGNUP;
-      case "tutorSignup":
-        return images.TUTOR_SIGNUP;
+      case "signup":
+        return role === "tutor" ? images.TUTOR_SIGNUP : images.ROCKET_SIGNUP;
       case "otp":
-        return images.ROCKET_SIGNUP;
-      case "userLogin":
-        return images.LOGIN_IMG;
-      case "tutorLogin":
-        return images.TUTOR_LOGIN;
+        return role === "tutor" ? images.TUTOR_SIGNUP : images.ROCKET_SIGNUP;
+      case "login":
+        return role === "tutor" ? images.TUTOR_LOGIN : images.LOGIN_IMG;
       default:
         return images.ROCKET_SIGNUP;
     }
@@ -78,64 +68,53 @@ const AuthModal: React.FC<AuthModalProps> = ({
 
   const renderSection = () => {
     switch (currentSection) {
-      case "userSignup":
-        return <UserSignup onSignupSuccess={() => setCurrentSection("otp")} />;
-      case "tutorSignup":
-        return <TutorSignup />;
+      case "signup":
+        return (
+          <UserSignup
+            onSignupSuccess={() => setCurrentSection("otp")}
+            userRole={userRole}
+            image={getImageForSection(currentSection, userRole)}
+          />
+        );
       case "otp":
         return (
           <OtpVerification onVerificationSuccess={handleVerificationSuccess} />
         );
-      case "userLogin":
-        return <UserLogin />;
-      case "tutorLogin":
-        return <TutorLogin heading="Tutor Login" />;
+      case "login":
+        return (
+          <UserLogin
+            userRole={userRole}
+            image={getImageForSection(currentSection, userRole)}
+          />
+        );
     }
   };
 
   const renderAuthLinks = () => {
     switch (currentSection) {
-      case "userLogin":
+      case "login":
         return (
           <>
-            <button onClick={() => setCurrentSection("userSignup")}>
-              Sign Up
-            </button>
-            <button onClick={() => setCurrentSection("tutorLogin")}>
-              Tutor Login
+            <button onClick={() => setCurrentSection("signup")}>Sign Up</button>
+            <button
+              onClick={() => {
+                setUserRole(userRole === "user" ? "tutor" : "user");
+              }}
+            >
+              {userRole === "user" ? "Tutor Login" : "User Login"}
             </button>
           </>
         );
-      case "tutorLogin":
+      case "signup":
         return (
           <>
-            <button onClick={() => setCurrentSection("userLogin")}>
-              User Login
-            </button>
-            <button onClick={() => setCurrentSection("tutorSignup")}>
-              Tutor Sign Up
-            </button>
-          </>
-        );
-      case "userSignup":
-        return (
-          <>
-            <button onClick={() => setCurrentSection("userLogin")}>
-              Login
-            </button>
-            <button onClick={() => setCurrentSection("tutorSignup")}>
-              Tutor Sign Up
-            </button>
-          </>
-        );
-      case "tutorSignup":
-        return (
-          <>
-            <button onClick={() => setCurrentSection("tutorLogin")}>
-              Tutor Login
-            </button>
-            <button onClick={() => setCurrentSection("userSignup")}>
-              User Sign Up
+            <button onClick={() => setCurrentSection("login")}>Login</button>
+            <button
+              onClick={() => {
+                setUserRole(userRole === "user" ? "tutor" : "user");
+              }}
+            >
+              {userRole === "user" ? "Tutor Sign Up" : "User Sign Up"}
             </button>
           </>
         );
@@ -143,6 +122,8 @@ const AuthModal: React.FC<AuthModalProps> = ({
         return null;
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="auth-modal-overlay">
@@ -157,7 +138,10 @@ const AuthModal: React.FC<AuthModalProps> = ({
           </div>
           <div className="auth-image">
             <img
-              src={getImageForSection(currentSection) || "/placeholder.svg"}
+              src={
+                getImageForSection(currentSection, userRole) ||
+                "/placeholder.svg"
+              }
               alt="Auth illustration"
             />
           </div>
