@@ -50,9 +50,11 @@ const userSlice = createSlice({
       .addCase(verifyOTP.fulfilled, (state) => {
         state.loading = false;
         state.userInfo = null;
+        state.message = "";
       })
       .addCase(verifyOTP.rejected, (state) => {
         state.loading = false;
+        state.message = comments.VERIFY_OTP_FAIL;
       });
   },
 });
