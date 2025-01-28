@@ -8,6 +8,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../../hooks/reduxHooks";
 import Modal from "../../common/Modal/Modal";
+import { logout } from "../../../redux/thunks/userAuthServices";
 // import Modal from "./Modal";
 
 const menuItems = [
@@ -51,13 +52,10 @@ export const TutorSidebar = () => {
     setIsModalOpen(false);
   };
 
-  const handleLogoutConfirm = () => {
-    // Implement logout logic here
-    console.log("Logging out...");
+  const handleLogoutConfirm = async () => {
     closeLogoutModal();
-    // You might want to dispatch a logout action and redirect the user
-    // dispatch(logoutAction());
-    // navigate('/login');
+    await dispatch(logout());
+    navigate("/");
   };
 
   const handleLogoutCancel = () => {
