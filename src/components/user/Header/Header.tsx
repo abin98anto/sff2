@@ -4,43 +4,18 @@ import { Link } from "react-router-dom";
 import AuthModal from "../AuthModal/AuthModal";
 import "./Header.scss";
 import { AppRootState } from "../../../redux/store";
-import { useAppSelector } from "../../../hooks/reduxHooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
 
-import {
-  Avatar,
-  Menu,
-  MenuItem,
-  IconButton,
-  // Dialog,
-  // DialogActions,
-  // DialogTitle,
-  // Button,
-} from "@mui/material";
+import { Avatar, Menu, MenuItem, IconButton } from "@mui/material";
+import Modal from "../../common/Modal/Modal";
+import { logout } from "../../../redux/thunks/userAuthServices";
 
 type AuthModalType = "login" | "signup";
 
 const Header: React.FC = () => {
+  // Auth modal functions.
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalType, setAuthModalType] = useState<AuthModalType>("login");
-
-  const { isAuthenticated, userInfo } = useAppSelector(
-    (state: AppRootState) => state.user
-  );
-
-  // const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-  // const toggleMenu = () => {
-  //   setIsMenuOpen(!isMenuOpen);
-  // };
-
-  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleProfileMenuClose = () => {
-    setAnchorEl(null);
-  };
 
   const openAuthModal = (type: AuthModalType) => {
     setAuthModalType(type);
@@ -49,6 +24,40 @@ const Header: React.FC = () => {
 
   const closeAuthModal = () => {
     setIsAuthModalOpen(false);
+  };
+
+  // Profile menu functions.
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { isAuthenticated, userInfo } = useAppSelector(
+    (state: AppRootState) => state.user
+  );
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleProfileMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  // logout function.
+  const dispatch = useAppDispatch();
+  const openLogoutModal = () => {
+    setIsModalOpen(true);
+  };
+  const closeLogoutModal = () => {
+    setIsModalOpen(false);
+  };
+  const handleLogoutConfirm = async () => {
+    try {
+      await dispatch(logout());
+      closeLogoutModal();
+    } catch (error) {
+      console.log("logout error", error);
+    }
+  };
+  const handleLogoutCancel = () => {
+    console.log("Logout cancelled");
+    closeLogoutModal();
   };
 
   return (
@@ -115,9 +124,7 @@ const Header: React.FC = () => {
                   Profile
                 </Link>
               </MenuItem>
-              <MenuItem onClick={() => console.log("logout clicked")}>
-                Logout
-              </MenuItem>
+              <MenuItem onClick={openLogoutModal}>Logout</MenuItem>
             </Menu>
           </div>
         )}
@@ -127,6 +134,14 @@ const Header: React.FC = () => {
         isOpen={isAuthModalOpen}
         onClose={closeAuthModal}
         initialSection={authModalType}
+      />
+      <Modal
+        isOpen={isModalOpen}
+        onClose={closeLogoutModal}
+        onYes={handleLogoutConfirm}
+        onNo={handleLogoutCancel}
+        title="Confirm Logout"
+        content="Are you sure you want to log out?"
       />
     </header>
   );

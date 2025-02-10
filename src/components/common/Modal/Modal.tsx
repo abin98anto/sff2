@@ -46,13 +46,19 @@ const Modal: React.FC<ModalProps> = ({
   return createPortal(
     <div className="modal-overlay">
       <div className="modal" ref={modalRef}>
-        <div className="modal-content">
+        <div className="modal-header">
           <h2>{title}</h2>
+        </div>
+        <div className="modal-content">
           <p>{content}</p>
         </div>
         <div className="modal-actions">
-          <button onClick={onYes}>Yes</button>
-          <button onClick={onNo}>No</button>
+          <button onClick={onYes} className="btn btn-yes">
+            Yes
+          </button>
+          <button onClick={onNo} className="btn btn-no">
+            No
+          </button>
         </div>
       </div>
     </div>,
