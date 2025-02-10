@@ -1,11 +1,13 @@
-import { BrowserRouter } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import UserRoutes from "./routes/UserRoutes";
+import TutorRoutes from "./routes/TutorRoutes";
 
 function App() {
   return (
-    <BrowserRouter>
-      <UserRoutes />
-    </BrowserRouter>
+    <Routes>
+      <Route path="/*" element={<UserRoutes />} />
+      <Route path="/tutor/*" element={<TutorRoutes />} />
+    </Routes>
   );
 }
 

@@ -1,37 +1,37 @@
 import { useState } from "react";
 import {
   BarChart2,
-  Users,
-  MessageCircleMore,
-  CircleUserRound,
+  // Users,
+  // MessageCircleMore,
+  // CircleUserRound,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../../hooks/reduxHooks";
 import Modal from "../../common/Modal/Modal";
 import { logout } from "../../../redux/thunks/userAuthServices";
-// import Modal from "./Modal";
+import "./TutorSidebar.scss";
 
 const menuItems = [
   {
     title: "Dashboard",
     icon: BarChart2,
-    path: "/tutor/dashboard",
+    path: "/tutor",
   },
-  {
-    title: "My Students",
-    icon: Users,
-    path: "/tutor/my-students",
-  },
-  {
-    title: "Messages",
-    icon: MessageCircleMore,
-    path: "/tutor/messages",
-  },
-  {
-    title: "Profile",
-    icon: CircleUserRound,
-    path: "/tutor/profile",
-  },
+  // {
+  //   title: "My Students",
+  //   icon: Users,
+  //   path: "/tutor/my-students",
+  // },
+  // {
+  //   title: "Messages",
+  //   icon: MessageCircleMore,
+  //   path: "/tutor/messages",
+  // },
+  // {
+  //   title: "Profile",
+  //   icon: CircleUserRound,
+  //   path: "/tutor/profile",
+  // },
 ];
 
 export const TutorSidebar = () => {

@@ -11,6 +11,7 @@ import { AppRootState } from "../../../redux/store";
 import { LoginData } from "../../../entities/misc/LoginData";
 import { userRoles } from "../../../entities/misc/userRole";
 import { login } from "../../../redux/thunks/userAuthServices";
+import { useNavigate } from "react-router-dom";
 
 interface UserLoginProps {
   userRole: "user" | "tutor";
@@ -29,6 +30,8 @@ const UserLogin: React.FC<UserLoginProps> = ({ userRole, onClose }) => {
   const { loading } = useAppSelector((state: AppRootState) => state.user);
   const dispatch = useAppDispatch();
   hourglass.register();
+
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -52,7 +55,7 @@ const UserLogin: React.FC<UserLoginProps> = ({ userRole, onClose }) => {
         role: userRole === "tutor" ? userRoles.TUTOR : userRoles.USER,
       };
       await dispatch(login(userData)).unwrap();
-      onClose();
+      userRole === "tutor" ? navigate("/tutor") : onClose();
     } catch (error) {
       console.log(comments.LOGIN_FE_ERR, error);
       showSnackbar(error as string, "error");
