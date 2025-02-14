@@ -9,12 +9,12 @@ import CustomSnackbar from "../../common/CustomSnackbar";
 import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
 import { AppRootState } from "../../../redux/store";
 import { LoginData } from "../../../entities/misc/LoginData";
-import { userRoles } from "../../../entities/misc/userRole";
+// import { userRoles } from "../../../entities/misc/userRole";
 import { login } from "../../../redux/thunks/userAuthServices";
 import { useNavigate } from "react-router-dom";
 
 interface UserLoginProps {
-  userRole: "user" | "tutor";
+  userRole: "user" | "tutor" | "admin";
   image: string;
   onClose: () => void;
 }
@@ -52,10 +52,15 @@ const UserLogin: React.FC<UserLoginProps> = ({ userRole, onClose }) => {
 
       const userData: LoginData = {
         ...formData,
-        role: userRole === "tutor" ? userRoles.TUTOR : userRoles.USER,
+        role: userRole,
       };
-      await dispatch(login(userData)).unwrap();
-      userRole === "tutor" ? navigate("/tutor") : onClose();
+
+      if (userRole === "admin") {
+        onClose();
+      } else {
+        await dispatch(login(userData)).unwrap();
+        userRole === "tutor" ? navigate("/tutor") : onClose();
+      }
     } catch (error) {
       console.log(comments.LOGIN_FE_ERR, error);
       showSnackbar(error as string, "error");
@@ -65,10 +70,11 @@ const UserLogin: React.FC<UserLoginProps> = ({ userRole, onClose }) => {
 
   return (
     <div className="auth-section">
-      <h2>{userRole === "tutor" ? "Tutor Login" : "User Login"}</h2>
+      {userRole === "admin" && <h1>Admin Login</h1>}
+      {userRole === "tutor" && <h2>Tutor Login</h2>}
+      {userRole === "user" && <h2>User Login</h2>}
       <form onSubmit={handleSubmit}>
         <input
-          type="email"
           name="email"
           placeholder="Email"
           value={formData.email}
@@ -105,13 +111,18 @@ const UserLogin: React.FC<UserLoginProps> = ({ userRole, onClose }) => {
           )}
         </button>
 
-        <div className="divider">
-          <span>or</span>
-        </div>
-        <div className="google-signin-button">
-          <GoogleButton />
-          <span>Login with Google</span>
-        </div>
+        {userRole !== "admin" && (
+          <div className="divider">
+            <span>or</span>
+          </div>
+        )}
+
+        {userRole !== "admin" && (
+          <div className="google-signin-button">
+            <GoogleButton />
+            <span>Login with Google</span>
+          </div>
+        )}
       </form>
 
       <CustomSnackbar
