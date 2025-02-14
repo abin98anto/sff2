@@ -28,6 +28,7 @@ export const comments = {
   USER_DEL_USECASE_FAIL: "Error Deleting User in UseCase.",
   USER_DEL_SUCC: "Deleted User Successfully.",
   USER_DEL_FAIL: "Error Deleting User.",
+  USER_DEL_THK_FAIL: "Error Deleting User in Thunk.",
   SIGNUP_SUCC: "Form submitted successfully!",
   SIGNUP_THNK_FAIL: "Error in signUpUser Thunk.",
   SIGNUP_FAIL: "Error in user signup",

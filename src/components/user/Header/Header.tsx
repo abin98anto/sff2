@@ -49,7 +49,7 @@ const Header: React.FC = () => {
   };
   const handleLogoutConfirm = async () => {
     try {
-      await dispatch(logout());
+      await dispatch(logout()).unwrap();
       closeLogoutModal();
     } catch (error) {
       console.log("logout error", error);

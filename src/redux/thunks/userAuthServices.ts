@@ -71,3 +71,20 @@ export const logout = createAsyncThunk(
     }
   }
 );
+
+export const deleteUser = createAsyncThunk(
+  "user/delete",
+  async (email: string, { rejectWithValue }) => {
+    try {
+      const result = await axiosInstance.delete(
+        `${API.USER_DELETE}?email=${email}`
+      );
+      return result.data;
+    } catch (error) {
+      console.log(comments.USER_DEL_THK_FAIL, error);
+      if (error instanceof AxiosError) {
+        return rejectWithValue(error?.response?.data?.message);
+      }
+    }
+  }
+);
