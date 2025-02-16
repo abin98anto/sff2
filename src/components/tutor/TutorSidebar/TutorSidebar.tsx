@@ -1,3 +1,5 @@
+import "./TutorSidebar.scss";
+
 import { useState } from "react";
 import {
   BarChart2,
@@ -9,7 +11,6 @@ import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../../hooks/reduxHooks";
 import Modal from "../../common/Modal/Modal";
 import { logout } from "../../../redux/thunks/userAuthServices";
-import "./TutorSidebar.scss";
 
 const menuItems = [
   {
@@ -59,7 +60,6 @@ export const TutorSidebar = () => {
   };
 
   const handleLogoutCancel = () => {
-    console.log("Logout cancelled");
     closeLogoutModal();
   };
 

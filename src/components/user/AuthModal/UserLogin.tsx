@@ -55,12 +55,19 @@ const UserLogin: React.FC<UserLoginProps> = ({ userRole, onClose }) => {
         role: userRole,
       };
 
-      if (userRole === "admin") {
-        onClose();
+      // if (userRole === "admin") {
+      //   onClose();
+      // } else {
+      await dispatch(login(userData)).unwrap();
+      if (userRole === "tutor") {
+        navigate("/tutor");
+      } else if (userRole === "admin") {
+        navigate("/admin/dashboard");
       } else {
-        await dispatch(login(userData)).unwrap();
-        userRole === "tutor" ? navigate("/tutor") : onClose();
+        onClose();
       }
+      // userRole === "tutor" ? navigate("/tutor") : onClose();
+      // }
     } catch (error) {
       console.log(comments.LOGIN_FE_ERR, error);
       showSnackbar(error as string, "error");
