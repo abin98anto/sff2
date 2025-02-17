@@ -8,6 +8,7 @@ import { API } from "../../../shared/constants/API";
 import { comments } from "../../../shared/constants/comments";
 import type { ICategory } from "../../../entities/misc/ICategory";
 import DataTable, { Column } from "../../../components/common/Table/DataTable";
+import ConfirmationModal from "../../../components/common/Modal/ConfirmationModal/ConfirmationModal";
 
 interface CategoryFormData {
   _id?: string;
@@ -29,6 +30,9 @@ export default function CategoryManagement() {
   });
   const [isEditing, setIsEditing] = useState(false);
   const refetchData = useRef<(() => void) | undefined>();
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const columns: Column<ICategory>[] = [
     {
@@ -69,7 +73,10 @@ export default function CategoryManagement() {
             <Pencil size={16} />
           </button>
           <button
-            onClick={() => handleDelete(row._id)}
+            onClick={() => {
+              setDeleteId(row._id);
+              setIsDeleteModalOpen(true);
+            }}
             className="action-button delete"
           >
             <Trash2 size={16} />
@@ -129,13 +136,14 @@ export default function CategoryManagement() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this category?")) {
+  const handleDelete = async () => {
+    if (deleteId) {
       try {
         await axiosInstance.delete(API.CATEGORY_DELETE, {
-          data: { _id: id },
+          data: { _id: deleteId },
         });
         refetchData.current?.();
+        setIsDeleteModalOpen(false);
       } catch (err) {
         console.error(comments.CAT_DELETE_FAIL, err);
         setError(comments.CAT_DELETE_FAIL);
@@ -223,6 +231,14 @@ export default function CategoryManagement() {
             </select>
           </div>
         </AddModal>
+        <ConfirmationModal
+          isOpen={isDeleteModalOpen}
+          title="Delete Category"
+          content="Are you sure you want to delete this category?"
+          onYes={handleDelete}
+          onNo={() => setIsDeleteModalOpen(false)}
+          onClose={() => setIsDeleteModalOpen(false)}
+        />
       </div>
     </div>
   );
