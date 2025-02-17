@@ -166,13 +166,21 @@ export default function CategoryManagement() {
         message: "Category updated successfully!",
         severity: "success",
       });
-    } catch (err) {
-      setSnackbar({
-        open: true,
-        message: comments.CAT_UPDATE_FAIL,
-        severity: "error",
-      });
-      console.error(comments.CAT_UPDATE_FAIL, err);
+    } catch (err: any) {
+      if (err.response?.status === 409) {
+        setSnackbar({
+          open: true,
+          message: "Category name already exists!",
+          severity: "error",
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: comments.CAT_ADD_FAIL,
+          severity: "error",
+        });
+      }
+      console.error(comments.CAT_ADD_FAIL, err);
     }
   };
 

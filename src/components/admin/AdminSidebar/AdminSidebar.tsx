@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   BarChart2,
-  //   BookOpen,
+  BookOpen,
   //   Users,
   //   UserCog,
   //   Layers,
@@ -14,17 +14,19 @@ import {
 import { useAppDispatch } from "../../../hooks/reduxHooks";
 import { logout } from "../../../redux/thunks/userAuthServices";
 import ConfirmationModal from "../../common/Modal/ConfirmationModal/ConfirmationModal";
-// import LogoutModal from "./LogoutMoal";
-// import { useAppDispatch } from "../../../hooks/hooks";
-// import { logoutAdmin } from "../../../redux/services/AdminAuthServices";
 
 const menuItems = [
   { title: "Dashboard", icon: BarChart2, path: "/admin/dashboard" },
-  //   {
-  //     title: "Course Management",
-  //     icon: BookOpen,
-  //     path: "/admin/course-management",
-  //   },
+  {
+    title: "Category Management",
+    icon: SquareStack,
+    path: "/admin/category-management",
+  },
+  {
+    title: "Course Management",
+    icon: BookOpen,
+    path: "/admin/course-management",
+  },
   //   { title: "Tutor Management", icon: UserCog, path: "/admin/tutor-management" },
   //   { title: "User Management", icon: Users, path: "/admin/user-management" },
   //   {
@@ -33,11 +35,6 @@ const menuItems = [
   //     path: "/admin/batch-management",
   //   },
   //   { title: "Ledger", icon: BookCheck, path: "/admin/ledger" },
-  {
-    title: "Category Management",
-    icon: SquareStack,
-    path: "/admin/category-management",
-  },
 ];
 
 export default function AdminSidebar() {
