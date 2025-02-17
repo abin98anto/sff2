@@ -1,7 +1,7 @@
 import type React from "react";
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import "./Modal.scss";
+import "./ConfirmationModal.scss";
 
 interface ModalProps {
   isOpen: boolean;
@@ -12,7 +12,7 @@ interface ModalProps {
   content: string;
 }
 
-const Modal: React.FC<ModalProps> = ({
+const ConfirmationModal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
   onYes,
@@ -44,19 +44,19 @@ const Modal: React.FC<ModalProps> = ({
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="modal-overlay">
-      <div className="modal" ref={modalRef}>
-        <div className="modal-header">
+    <div className="conf-modal-overlay">
+      <div className="conf-modal" ref={modalRef}>
+        <div className="conf-modal-header">
           <h2>{title}</h2>
         </div>
-        <div className="modal-content">
+        <div className="conf-modal-content">
           <p>{content}</p>
         </div>
-        <div className="modal-actions">
-          <button onClick={onYes} className="btn btn-yes">
+        <div className="conf-modal-actions">
+          <button onClick={onYes} className="conf-btn btn-yes">
             Yes
           </button>
-          <button onClick={onNo} className="btn btn-no">
+          <button onClick={onNo} className="conf-btn btn-no">
             No
           </button>
         </div>
@@ -66,4 +66,4 @@ const Modal: React.FC<ModalProps> = ({
   );
 };
 
-export default Modal;
+export default ConfirmationModal;

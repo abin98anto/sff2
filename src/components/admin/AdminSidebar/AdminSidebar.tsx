@@ -9,11 +9,11 @@ import {
   //   UserCog,
   //   Layers,
   //   BookCheck,
-  //   SquareStack,
+  SquareStack,
 } from "lucide-react";
 import { useAppDispatch } from "../../../hooks/reduxHooks";
 import { logout } from "../../../redux/thunks/userAuthServices";
-import Modal from "../../common/Modal/Modal";
+import ConfirmationModal from "../../common/Modal/ConfirmationModal/ConfirmationModal";
 // import LogoutModal from "./LogoutMoal";
 // import { useAppDispatch } from "../../../hooks/hooks";
 // import { logoutAdmin } from "../../../redux/services/AdminAuthServices";
@@ -33,11 +33,11 @@ const menuItems = [
   //     path: "/admin/batch-management",
   //   },
   //   { title: "Ledger", icon: BookCheck, path: "/admin/ledger" },
-  //   {
-  //     title: "Category Management",
-  //     icon: SquareStack,
-  //     path: "/admin/category-management",
-  //   },
+  {
+    title: "Category Management",
+    icon: SquareStack,
+    path: "/admin/category-management",
+  },
 ];
 
 export default function AdminSidebar() {
@@ -98,7 +98,7 @@ export default function AdminSidebar() {
         </button>
       </div>
 
-      <Modal
+      <ConfirmationModal
         isOpen={isModalOpen}
         onClose={closeLogoutModal}
         onYes={handleLogoutConfirm}

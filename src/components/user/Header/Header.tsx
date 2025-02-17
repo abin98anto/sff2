@@ -7,7 +7,7 @@ import { AppRootState } from "../../../redux/store";
 import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
 
 import { Avatar, Menu, MenuItem, IconButton } from "@mui/material";
-import Modal from "../../common/Modal/Modal";
+import ConfirmationModal from "../../common/Modal/ConfirmationModal/ConfirmationModal";
 import { logout } from "../../../redux/thunks/userAuthServices";
 
 type AuthModalType = "login" | "signup";
@@ -135,7 +135,7 @@ const Header: React.FC = () => {
         onClose={closeAuthModal}
         initialSection={authModalType}
       />
-      <Modal
+      <ConfirmationModal
         isOpen={isModalOpen}
         onClose={closeLogoutModal}
         onYes={handleLogoutConfirm}

@@ -9,4 +9,10 @@ export const API = {
   USER_DELETE: "/delete-user",
   USER_LOGIN: "/login",
   USER_LOGOUT: "/logout",
+
+  // Categories
+  CATEGORY_ADD: "/categories/add",
+  CATEGORY_DELETE: "/categories/delete",
+  CATEGORY_UPDATE: "/categories/update",
+  CATEGORY_GET: "/categories",
 };

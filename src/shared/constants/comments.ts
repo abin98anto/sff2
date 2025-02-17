@@ -38,4 +38,8 @@ export const comments = {
   LOGIN_FE_ERR: "Error sending user data to backend.",
   LOGIN_THNK_FAIL: "Error in login thunk",
   LOGOUT_THNK_ERR: "Error in Logout thunk",
+  CAT_FETCH_FAIL: "Error fetching categories",
+  CAT_ADD_FAIL: "Error adding category",
+  CAT_UPDATE_FAIL: "Error updating category",
+  CAT_DELETE_FAIL: "Error deleting category",
 };

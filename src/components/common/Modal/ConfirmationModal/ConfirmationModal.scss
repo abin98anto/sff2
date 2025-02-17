@@ -1,4 +1,4 @@
-.modal-overlay {
+.conf-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -11,7 +11,7 @@
   z-index: 9999;
 }
 
-.modal {
+.conf-modal {
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
@@ -22,7 +22,7 @@
   min-height: 200px;
 }
 
-.modal-header {
+.conf-modal-header {
   padding: 20px;
   border-bottom: 1px solid #e0e0e0;
   text-align: center;
@@ -34,7 +34,7 @@
   }
 }
 
-.modal-content {
+.conf-modal-content {
   flex-grow: 1;
   padding: 20px;
   overflow-y: auto;
@@ -47,14 +47,14 @@
   }
 }
 
-.modal-actions {
+.conf-modal-actions {
   padding: 20px;
   display: flex;
   justify-content: center;
   gap: 20px;
 }
 
-.btn {
+.conf-btn {
   padding: 12px 24px;
   border: none;
   border-radius: 6px;

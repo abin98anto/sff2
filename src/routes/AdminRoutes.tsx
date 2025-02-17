@@ -3,6 +3,7 @@ import AdminLogin from "../pages/admin/AdminLogin/AdminLogin";
 import AdminDashboard from "../pages/admin/AdminDashboard/AdminDashboard";
 import AdminLayout from "../components/admin/AdminLayout/AdminLayout";
 import PageNotFound from "../components/common/PageNotFound/PageNotFound";
+import Categories from "../pages/admin/CategoryManagement/CategoryManagement";
 
 const AdminRoutes = () => {
   return (
@@ -10,6 +11,7 @@ const AdminRoutes = () => {
       <Route index element={<AdminLogin />} />
       <Route element={<AdminLayout />}>
         <Route path="/dashboard" element={<AdminDashboard />} />
+        <Route path="/category-management" element={<Categories />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

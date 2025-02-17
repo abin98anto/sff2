@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../../hooks/reduxHooks";
-import Modal from "../../common/Modal/Modal";
+import ConfirmationModal from "../../common/Modal/ConfirmationModal/ConfirmationModal";
 import { logout } from "../../../redux/thunks/userAuthServices";
 
 const menuItems = [
@@ -93,7 +93,7 @@ export const TutorSidebar = () => {
         </div>
       </div>
 
-      <Modal
+      <ConfirmationModal
         isOpen={isModalOpen}
         onClose={closeLogoutModal}
         onYes={handleLogoutConfirm}

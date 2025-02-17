@@ -54,10 +54,7 @@ const UserLogin: React.FC<UserLoginProps> = ({ userRole, onClose }) => {
         ...formData,
         role: userRole,
       };
-
-      // if (userRole === "admin") {
-      //   onClose();
-      // } else {
+      
       await dispatch(login(userData)).unwrap();
       if (userRole === "tutor") {
         navigate("/tutor");
@@ -65,9 +62,7 @@ const UserLogin: React.FC<UserLoginProps> = ({ userRole, onClose }) => {
         navigate("/admin/dashboard");
       } else {
         onClose();
-      }
-      // userRole === "tutor" ? navigate("/tutor") : onClose();
-      // }
+      } 
     } catch (error) {
       console.log(comments.LOGIN_FE_ERR, error);
       showSnackbar(error as string, "error");
