@@ -1,7 +1,7 @@
-"use client";
-
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import "./DataTable.scss";
+import { comments } from "../../../shared/constants/comments";
+import Pagination from "../Pagination/Pagination";
 
 export interface Column<T = any> {
   key: string;
@@ -29,7 +29,7 @@ interface TableData<T = any> {
 }
 
 interface ReusableTableProps<T extends Record<string, any>> {
-  columns: Column<T>[]; // Ensuring T is applied correctly
+  columns: Column<T>[];
   fetchData: (params: QueryParams) => Promise<TableData<T>>;
   pageSize?: number;
   initialSort?: SortConfig | null;
@@ -45,6 +45,7 @@ const DataTable = <T extends Record<string, any>>({
   initialFilters = {},
   refetchRef,
 }: ReusableTableProps<T>) => {
+  const [searchInput, setSearchInput] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [sortConfig, setSortConfig] = useState<SortConfig | null>(initialSort);
@@ -70,7 +71,7 @@ const DataTable = <T extends Record<string, any>>({
         setData(response.data);
         setTotalPages(Math.ceil(response.total / pageSize));
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error(comments.DATA_FETCH_ERR, error);
       } finally {
         setLoading(false);
       }
@@ -104,6 +105,12 @@ const DataTable = <T extends Record<string, any>>({
     });
   };
 
+  const handleSearch = async () => {
+    setSearchTerm(searchInput);
+    setCurrentPage(1);
+    await loadData({ search: searchInput, page: 1 });
+  };
+
   const refetchFunction = useMemo(() => () => loadData({}), [loadData]);
 
   if (refetchRef) {
@@ -117,21 +124,13 @@ const DataTable = <T extends Record<string, any>>({
           <input
             type="text"
             placeholder="Search..."
-            value={searchTerm}
+            value={searchInput}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setSearchTerm(e.target.value)
+              setSearchInput(e.target.value)
             }
-            onKeyPress={(e: React.KeyboardEvent) => {
-              if (e.key === "Enter") {
-                loadData({ search: searchTerm, page: 1 });
-              }
-            }}
             className="search-input"
           />
-          <button
-            onClick={() => loadData({ search: searchTerm, page: 1 })}
-            className="search-button"
-          >
+          <button onClick={handleSearch} className="search-button">
             Search
           </button>
         </div>
@@ -180,35 +179,11 @@ const DataTable = <T extends Record<string, any>>({
             </tbody>
           </table>
 
-          <div className="pagination">
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="pagination-button"
-            >
-              Previous
-            </button>
-
-            {[...Array(totalPages)].map((_, index) => (
-              <button
-                key={index + 1}
-                onClick={() => handlePageChange(index + 1)}
-                className={`pagination-button ${
-                  currentPage === index + 1 ? "active" : ""
-                }`}
-              >
-                {index + 1}
-              </button>
-            ))}
-
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="pagination-button"
-            >
-              Next
-            </button>
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         </>
       )}
     </div>

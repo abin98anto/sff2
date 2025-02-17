@@ -42,4 +42,5 @@ export const comments = {
   CAT_ADD_FAIL: "Error adding category",
   CAT_UPDATE_FAIL: "Error updating category",
   CAT_DELETE_FAIL: "Error deleting category",
+  DATA_FETCH_ERR: "Error fetching data",
 };
