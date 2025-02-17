@@ -3,12 +3,12 @@ import { Plus, Trash2, Pencil } from "lucide-react";
 import "./CategoryManagement.scss";
 import { axiosInstance } from "../../../shared/config/axiosConfig";
 import AddModal from "../../../components/common/Modal/AddModal/AddModal";
-import Placeholder from "../../../components/common/Placeholder/Placeholder";
 import { API } from "../../../shared/constants/API";
 import { comments } from "../../../shared/constants/comments";
 import type { ICategory } from "../../../entities/misc/ICategory";
 import DataTable, { Column } from "../../../components/common/Table/DataTable";
 import ConfirmationModal from "../../../components/common/Modal/ConfirmationModal/ConfirmationModal";
+import CustomSnackbar from "../../../components/common/CustomSnackbar";
 
 interface CategoryFormData {
   _id?: string;
@@ -22,7 +22,12 @@ interface TableData {
 }
 
 export default function CategoryManagement() {
-  const [error, setError] = useState<string | null>(null);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success" as "success" | "error",
+  });
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<CategoryFormData>({
     name: "",
@@ -59,7 +64,11 @@ export default function CategoryManagement() {
       key: "createdAt",
       label: "Created At",
       render: (item: ICategory) =>
-        new Date(item.createdAt).toLocaleDateString(),
+        new Intl.DateTimeFormat("en-GB", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        }).format(new Date(item.createdAt)),
     },
     {
       key: "actions",
@@ -104,7 +113,11 @@ export default function CategoryManagement() {
           total: response.data.data.data.total,
         };
       } catch (err) {
-        setError(comments.CAT_FETCH_FAIL);
+        setSnackbar({
+          open: true,
+          message: comments.CAT_FETCH_FAIL,
+          severity: "error",
+        });
         console.error(comments.CAT_FETCH_FAIL, err);
         return { data: [], total: 0 };
       }
@@ -114,13 +127,31 @@ export default function CategoryManagement() {
 
   const handleAdd = async () => {
     try {
-      await axiosInstance.post(API.CATEGORY_ADD, formData);
+      const result = await axiosInstance.post(API.CATEGORY_ADD, formData);
+      console.log("add reslult", result);
       setIsModalOpen(false);
       resetForm();
       refetchData.current?.();
-    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: "Category added successfully!",
+        severity: "success",
+      });
+    } catch (err: any) {
+      if (err.response?.status === 409) {
+        setSnackbar({
+          open: true,
+          message: "Category name already exists!",
+          severity: "error",
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: comments.CAT_ADD_FAIL,
+          severity: "error",
+        });
+      }
       console.error(comments.CAT_ADD_FAIL, err);
-      setError(comments.CAT_ADD_FAIL);
     }
   };
 
@@ -130,9 +161,18 @@ export default function CategoryManagement() {
       setIsModalOpen(false);
       resetForm();
       refetchData.current?.();
+      setSnackbar({
+        open: true,
+        message: "Category updated successfully!",
+        severity: "success",
+      });
     } catch (err) {
+      setSnackbar({
+        open: true,
+        message: comments.CAT_UPDATE_FAIL,
+        severity: "error",
+      });
       console.error(comments.CAT_UPDATE_FAIL, err);
-      setError(comments.CAT_UPDATE_FAIL);
     }
   };
 
@@ -144,9 +184,18 @@ export default function CategoryManagement() {
         });
         refetchData.current?.();
         setIsDeleteModalOpen(false);
+        setSnackbar({
+          open: true,
+          message: "Category deleted successfully!",
+          severity: "success",
+        });
       } catch (err) {
+        setSnackbar({
+          open: true,
+          message: comments.CAT_DELETE_FAIL,
+          severity: "error",
+        });
         console.error(comments.CAT_DELETE_FAIL, err);
-        setError(comments.CAT_DELETE_FAIL);
       }
     }
   };
@@ -178,17 +227,13 @@ export default function CategoryManagement() {
           Add Category
         </button>
 
-        {error ? (
-          <Placeholder message={error} />
-        ) : (
-          <DataTable
-            columns={columns as Column<Record<string, any>>[]}
-            fetchData={fetchTableData}
-            pageSize={10}
-            initialSort={{ field: "createdAt", order: "desc" }}
-            refetchRef={refetchData}
-          />
-        )}
+        <DataTable
+          columns={columns as Column<Record<string, any>>[]}
+          fetchData={fetchTableData}
+          pageSize={10}
+          initialSort={{ field: "createdAt", order: "desc" }}
+          refetchRef={refetchData}
+        />
 
         <AddModal
           isOpen={isModalOpen}
@@ -231,6 +276,7 @@ export default function CategoryManagement() {
             </select>
           </div>
         </AddModal>
+
         <ConfirmationModal
           isOpen={isDeleteModalOpen}
           title="Delete Category"
@@ -238,6 +284,13 @@ export default function CategoryManagement() {
           onYes={handleDelete}
           onNo={() => setIsDeleteModalOpen(false)}
           onClose={() => setIsDeleteModalOpen(false)}
+        />
+
+        <CustomSnackbar
+          open={snackbar.open}
+          message={snackbar.message}
+          severity={snackbar.severity}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
         />
       </div>
     </div>
