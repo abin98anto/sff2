@@ -43,4 +43,12 @@ export const comments = {
   CAT_UPDATE_FAIL: "Error updating category",
   CAT_DELETE_FAIL: "Error deleting category",
   DATA_FETCH_ERR: "Error fetching data",
+  CAT_ADD_SUCC: "Category added successfully!",
+  CAT_NAME_DUP: "Category name already exists!",
+  CAT_UPDATE_SUCC: "Category updated successfully!",
+  CAT_DELETE_SUCC: "Category deleted successfully!",
+  COURSE_FETCH_FAIL: "Error fetching courses",
+  COURSE_UNLIST: "Are you sure you want to unlist this course?",
+  S3_UPLOAD_ERR: "Error uploading file to S3",
+  S3_DELETE_ERR: "Error deleting file from S3",
 };

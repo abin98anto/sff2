@@ -15,4 +15,11 @@ export const API = {
   CATEGORY_DELETE: "/categories/delete",
   CATEGORY_UPDATE: "/categories/update",
   CATEGORY_GET: "/categories",
+
+  // Courses
+  COURSE_MNGMT: "/admin/course-management",
+  COURSE_ADD: "/courses/add",
+  COURSE_DELETE: "/courses/delete",
+  COURSE_UPDATE: "/courses/update",
+  COURSE_GET: "/courses",
 };

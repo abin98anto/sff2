@@ -1,0 +1,348 @@
+// Variables
+$primary-color: #ff7052;
+$secondary-color: #f3f4f6;
+$success-color: #10b981;
+$border-color: #e5e7eb;
+$text-primary: #000000;
+$text-secondary: #6b7280;
+$white: #ffffff;
+
+// Mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+// Form Container
+.form-container {
+  max-width: 80rem;
+  margin: 0 auto;
+  background-color: $white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+  .header {
+    padding: 1.5rem;
+    border-bottom: 1px solid $border-color;
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      text-align: center;
+    }
+  }
+}
+
+// Progress Steps
+.progress-steps-container {
+  @include flex-between;
+  padding: 1rem 4rem;
+  background-color: $secondary-color;
+}
+
+.step-box {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+
+  &.completed,
+  &.active {
+    background-color: $white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.step-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  @include flex-center;
+  margin-right: 0.5rem;
+  font-size: 0.75rem;
+  color: $white;
+
+  &.completed {
+    background-color: $success-color;
+  }
+
+  &:not(.completed) {
+    background-color: $border-color;
+  }
+}
+
+.step-text {
+  font-size: 0.875rem;
+  color: $text-secondary;
+
+  &.completed {
+    color: $success-color;
+  }
+
+  &.active {
+    color: $text-primary;
+    font-weight: 600;
+  }
+}
+
+.step-progress {
+  font-size: 0.75rem;
+  color: $text-secondary;
+  margin-left: 0.5rem;
+}
+
+// Form Sections
+.form-section {
+  padding: 2rem 4rem;
+}
+
+.input-group {
+  margin-bottom: 1.5rem;
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+
+  input,
+  textarea,
+  select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid $border-color;
+    border-radius: 0.375rem;
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba($primary-color, 0.5);
+    }
+  }
+}
+
+.char-count {
+  font-size: 0.875rem;
+  color: $text-secondary;
+  text-align: right;
+  margin-top: 0.25rem;
+}
+
+// Buttons
+.button-group {
+  @include flex-between;
+  margin-top: 2rem;
+}
+
+.button {
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  cursor: pointer;
+
+  &.primary {
+    background-color: $primary-color;
+    color: $white;
+
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+
+  &.secondary {
+    background-color: $secondary-color;
+    color: $text-secondary;
+
+    &:hover {
+      background-color: $border-color;
+    }
+  }
+}
+
+// Upload Section
+.upload-section {
+  border: 2px dashed $border-color;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+
+  .upload-icon {
+    margin: 0 auto 1rem;
+    color: #9ca3af;
+  }
+
+  .upload-text {
+    font-size: 0.875rem;
+    color: $text-secondary;
+  }
+
+  .upload-button {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: $primary-color;
+    color: $white;
+    border-radius: 0.375rem;
+    cursor: pointer;
+
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+}
+
+// Curriculum Section
+.curriculum-section {
+  .section-item {
+    background-color: #f9fafb;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0.5rem;
+  }
+
+  .section-header {
+    @include flex-between;
+  }
+
+  .lecture-item {
+    background-color: $white;
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+    border-radius: 0.375rem;
+    @include flex-between;
+  }
+}
+
+.add-section-button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: rgba($primary-color, 0.1);
+  color: $primary-color;
+  text-align: center;
+  border-radius: 0.5rem;
+  margin-top: 1rem;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+// Modal Styles
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  @include flex-center;
+}
+
+.modal-content {
+  background-color: $white;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  max-width: 400px;
+  width: 100%;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.modal-button-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+// Snackbar
+.snackbar-container {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #323232;
+  color: $white;
+  padding: 16px;
+  border-radius: 4px;
+  z-index: 1000;
+  transition: opacity 0.3s;
+
+  &.visible {
+    opacity: 1;
+  }
+
+  &:not(.visible) {
+    opacity: 0;
+  }
+}
+
+// Modal Styles Object
+.modal-styles {
+  &-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    @include flex-center;
+    z-index: 1000;
+  }
+
+  &-modal {
+    background-color: $white;
+    padding: 20px;
+    border-radius: 8px;
+    min-width: 400px;
+    max-width: 600px;
+    width: 100%;
+  }
+
+  &-input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  &-button-container {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  &-file-list {
+    margin-top: 10px;
+  }
+
+  &-file-item {
+    @include flex-between;
+    padding: 5px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    margin-bottom: 5px;
+  }
+}
+
+// Success Modal Animation
+@keyframes progress {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}

@@ -9,6 +9,7 @@ import type { ICategory } from "../../../entities/misc/ICategory";
 import DataTable, { Column } from "../../../components/common/Table/DataTable";
 import ConfirmationModal from "../../../components/common/Modal/ConfirmationModal/ConfirmationModal";
 import CustomSnackbar from "../../../components/common/CustomSnackbar";
+import { useSnackbar } from "../../../hooks/useSnackbar";
 
 interface CategoryFormData {
   _id?: string;
@@ -21,12 +22,8 @@ interface TableData {
   total: number;
 }
 
-export default function CategoryManagement() {
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success" as "success" | "error",
-  });
+const CategoryManagement = () => {
+  const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<CategoryFormData>({
@@ -113,11 +110,7 @@ export default function CategoryManagement() {
           total: response.data.data.data.total,
         };
       } catch (err) {
-        setSnackbar({
-          open: true,
-          message: comments.CAT_FETCH_FAIL,
-          severity: "error",
-        });
+        showSnackbar(comments.CAT_FETCH_FAIL, "error");
         console.error(comments.CAT_FETCH_FAIL, err);
         return { data: [], total: 0 };
       }
@@ -127,29 +120,21 @@ export default function CategoryManagement() {
 
   const handleAdd = async () => {
     try {
-      const result = await axiosInstance.post(API.CATEGORY_ADD, formData);
-      console.log("add reslult", result);
+      if (!formData.name.trim()) {
+        showSnackbar(comments.ALL_FIELDS_REQ, "error");
+        return;
+      }
+
+      await axiosInstance.post(API.CATEGORY_ADD, formData);
       setIsModalOpen(false);
       resetForm();
       refetchData.current?.();
-      setSnackbar({
-        open: true,
-        message: "Category added successfully!",
-        severity: "success",
-      });
+      showSnackbar(comments.CAT_ADD_SUCC, "success");
     } catch (err: any) {
       if (err.response?.status === 409) {
-        setSnackbar({
-          open: true,
-          message: "Category name already exists!",
-          severity: "error",
-        });
+        showSnackbar(comments.CAT_NAME_DUP, "error");
       } else {
-        setSnackbar({
-          open: true,
-          message: comments.CAT_ADD_FAIL,
-          severity: "error",
-        });
+        showSnackbar(comments.CAT_ADD_FAIL, "error");
       }
       console.error(comments.CAT_ADD_FAIL, err);
     }
@@ -157,28 +142,21 @@ export default function CategoryManagement() {
 
   const handleUpdate = async () => {
     try {
+      if (!formData.name.trim()) {
+        showSnackbar(comments.ALL_FIELDS_REQ, "error");
+        return;
+      }
+
       await axiosInstance.put(API.CATEGORY_UPDATE, formData);
       setIsModalOpen(false);
       resetForm();
       refetchData.current?.();
-      setSnackbar({
-        open: true,
-        message: "Category updated successfully!",
-        severity: "success",
-      });
+      showSnackbar(comments.CAT_UPDATE_SUCC, "success");
     } catch (err: any) {
       if (err.response?.status === 409) {
-        setSnackbar({
-          open: true,
-          message: "Category name already exists!",
-          severity: "error",
-        });
+        showSnackbar(comments.CAT_NAME_DUP, "error");
       } else {
-        setSnackbar({
-          open: true,
-          message: comments.CAT_ADD_FAIL,
-          severity: "error",
-        });
+        showSnackbar(comments.CAT_ADD_FAIL, "error");
       }
       console.error(comments.CAT_ADD_FAIL, err);
     }
@@ -192,17 +170,10 @@ export default function CategoryManagement() {
         });
         refetchData.current?.();
         setIsDeleteModalOpen(false);
-        setSnackbar({
-          open: true,
-          message: "Category deleted successfully!",
-          severity: "success",
-        });
+        showSnackbar(comments.CAT_DELETE_SUCC, "error");
       } catch (err) {
-        setSnackbar({
-          open: true,
-          message: comments.CAT_DELETE_FAIL,
-          severity: "error",
-        });
+        showSnackbar(comments.CAT_DELETE_FAIL, "error");
+
         console.error(comments.CAT_DELETE_FAIL, err);
       }
     }
@@ -298,9 +269,11 @@ export default function CategoryManagement() {
           open={snackbar.open}
           message={snackbar.message}
           severity={snackbar.severity}
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          onClose={hideSnackbar}
         />
       </div>
     </div>
   );
-}
+};
+
+export default CategoryManagement;
