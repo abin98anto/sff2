@@ -5,7 +5,7 @@ import {
   BarChart2,
   // Users,
   // MessageCircleMore,
-  // CircleUserRound,
+  CircleUserRound,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../../hooks/reduxHooks";
@@ -28,11 +28,11 @@ const menuItems = [
   //   icon: MessageCircleMore,
   //   path: "/tutor/messages",
   // },
-  // {
-  //   title: "Profile",
-  //   icon: CircleUserRound,
-  //   path: "/tutor/profile",
-  // },
+  {
+    title: "Profile",
+    icon: CircleUserRound,
+    path: "/tutor/profile",
+  },
 ];
 
 export const TutorSidebar = () => {

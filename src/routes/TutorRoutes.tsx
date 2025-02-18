@@ -9,7 +9,7 @@ const TutorRoutes = () => {
     <Routes>
       <Route element={<TutorLayout />}>
         <Route index element={<Dashboard />} />
-        <Route path="/tutor/profile" element={<Profile />} />
+        <Route path="profile" element={<Profile />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
