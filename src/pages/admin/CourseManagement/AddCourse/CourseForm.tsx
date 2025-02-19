@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import type { FormData } from "./form-types";
 import BasicInformation from "./components/BasicInformation";
 import { Curriculum } from "./components/Curriculum";
 import { ProgressSteps } from "./components/ProgressSteps";
-import { useNavigate } from "react-router-dom";
 import "./CourseForm.scss";
 import { useSnackbar } from "../../../../hooks/useSnackbar";
 import ConfirmationModal from "../../../../components/common/Modal/ConfirmationModal/ConfirmationModal";
@@ -13,7 +13,7 @@ import { API } from "../../../../shared/constants/API";
 
 const STORAGE_KEY = "courseFormData";
 
-export default function CourseForm() {
+const CourseForm = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const initialCourseData: FormData = {
@@ -31,8 +31,8 @@ export default function CourseForm() {
       sections: [],
     },
   };
-  const [formData, setFormData] = useState<FormData>(initialCourseData);
 
+  const [formData, setFormData] = useState<FormData>(initialCourseData);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
 
@@ -46,7 +46,7 @@ export default function CourseForm() {
         parsedData.curriculum.sections &&
         parsedData.curriculum.sections.length > 0
       ) {
-        setCurrentStep(2); // Now there are only 2 steps
+        setCurrentStep(2);
       } else {
         setCurrentStep(1);
       }
@@ -54,7 +54,6 @@ export default function CourseForm() {
   }, []);
 
   useEffect(() => {
-    // Since we're no longer using advanceInfo, we just store basicInfo and curriculum
     const dataToStore = {
       ...formData,
       basicInfo: {
@@ -68,7 +67,7 @@ export default function CourseForm() {
   }, [formData]);
 
   const handleNext = () => {
-    setCurrentStep((prev) => Math.min(prev + 1, 2)); // Only 2 steps now
+    setCurrentStep((prev) => Math.min(prev + 1, 2));
   };
 
   const handlePrevious = () => {
@@ -146,4 +145,6 @@ export default function CourseForm() {
       />
     </div>
   );
-}
+};
+
+export default CourseForm;

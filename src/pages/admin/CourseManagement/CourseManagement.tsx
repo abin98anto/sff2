@@ -1,11 +1,11 @@
 import { Pencil, Plus, Trash2 } from "lucide-react";
+import { useCallback, useRef, useState } from "react";
 
 import "./CourseManagement.scss";
 import DataTable, { Column } from "../../../components/common/Table/DataTable";
 import CustomSnackbar from "../../../components/common/CustomSnackbar";
 import { useSnackbar } from "../../../hooks/useSnackbar";
 import { ICourse } from "../../../entities/ICourse";
-import { useCallback, useRef, useState } from "react";
 import ConfirmationModal from "../../../components/common/Modal/ConfirmationModal/ConfirmationModal";
 import { axiosInstance } from "../../../shared/config/axiosConfig";
 import { API } from "../../../shared/constants/API";
@@ -20,13 +20,16 @@ const CourseManagement = () => {
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
 
   const [toggleModalOpen, setToggleModalOpen] = useState(false);
-  const [toggleId, setToggleId] = useState<string | null>(null);
+  const [_, setToggleId] = useState<string | null>(null);
 
   const [toggleCourse, setToggleCourse] = useState<ICourse | null>(null);
+  setToggleCourse(null);
 
   const refetchData = useRef<(() => void) | undefined>();
 
-  const handleEdit = (row: ICourse) => {};
+  const handleEdit = (row: ICourse) => {
+    console.log(row);
+  };
   const handleToggle = () => {};
 
   const columns: Column<ICourse>[] = [

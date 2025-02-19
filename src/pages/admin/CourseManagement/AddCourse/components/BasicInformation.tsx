@@ -1,4 +1,12 @@
 import { useEffect, useState } from "react";
+import {
+  AlertCircle,
+  DeleteIcon,
+  EditIcon,
+  ImageIcon,
+  UploadIcon,
+} from "lucide-react";
+
 import type { BasicInfo } from "../form-types";
 import "../CourseForm.scss";
 import { axiosInstance } from "../../../../../shared/config/axiosConfig";
@@ -10,13 +18,6 @@ import {
   handleFileUpload,
   validateImageFile,
 } from "../../../../../shared/utils/cloudinary/fileUpload";
-import {
-  AlertCircle,
-  DeleteIcon,
-  EditIcon,
-  ImageIcon,
-  UploadIcon,
-} from "lucide-react";
 
 interface BasicInformationProps {
   data: BasicInfo;

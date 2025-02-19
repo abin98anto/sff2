@@ -1,4 +1,3 @@
-// ProgressSteps.tsx
 import { CheckIcon } from "lucide-react";
 import "../CourseForm.scss";
 

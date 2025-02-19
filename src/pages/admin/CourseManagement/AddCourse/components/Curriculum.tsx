@@ -8,14 +8,15 @@ import {
   XIcon,
   CheckCircle,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+import "../CourseForm.scss";
 import type {
   Curriculum,
   CurriculumSection,
   Lecture,
   FormData,
 } from "../form-types";
-import { useNavigate } from "react-router-dom";
-import "../CourseForm.scss";
 import {
   handleFileUpload,
   validatePdfFile,
