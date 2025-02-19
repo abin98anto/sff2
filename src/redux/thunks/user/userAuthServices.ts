@@ -61,6 +61,8 @@ export const logout = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const result = await axiosInstance.post(API.USER_LOGOUT);
+      const { persistor } = await import("../../store");
+      persistor.purge();
       return result.data;
     } catch (error) {
       console.log(comments.LOGOUT_THNK_ERR, error);
