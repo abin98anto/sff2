@@ -7,7 +7,7 @@ import {
   IconButton,
   Avatar,
   Grid,
-  Paper,
+  // Paper,
 } from "@mui/material";
 import { Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import "./Profile.scss";
@@ -124,10 +124,10 @@ const ProfileSection = () => {
       const updatedUser = await dispatch(updateUser({ resume: "" }));
       if (updatedUser) {
         setResume(null);
-        showSnackbar("Resume deleted successfully", "success");
+        showSnackbar(comments.RESUME_DELETE_SUCC, "success");
       }
     } catch (error) {
-      showSnackbar("Failed to delete resume", "error");
+      showSnackbar(comments.RESUME_DELETE_FAIL, "error");
     }
   };
 
@@ -138,10 +138,10 @@ const ProfileSection = () => {
       setLoading(true);
       const updatedUser = await dispatch(updateUser(formData)).unwrap();
       if (updatedUser) {
-        showSnackbar("Profile updated successfully", "success");
+        showSnackbar(comments.USR_UPDATED_SUCC, "success");
       }
     } catch (error) {
-      showSnackbar("Failed to update profile", "error");
+      showSnackbar(comments.USR_UPDATED_FAIL, "error");
     } finally {
       setLoading(false);
     }

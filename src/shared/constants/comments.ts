@@ -58,4 +58,8 @@ export const comments = {
   USER_UPDATE_THK_FAIL: "Error updating user in thunk",
   RESUME_UPLOAD_FAIL: "Error uploading resume",
   RESUME_UPLOAD_SUCC: "Resume uploaded successfully!",
+  RESUME_DELETE_FAIL: "Error deleting resume",
+  RESUME_DELETE_SUCC: "Resume deleted successfully!",
+  USR_UPDATED_SUCC: "User updated successfully!",
+  USR_UPDATED_FAIL: "Error updating user",
 };
