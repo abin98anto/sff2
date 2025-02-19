@@ -1,16 +1,18 @@
 export interface BasicInfo {
+  description: string;
   title: string;
   subtitle: string;
   category: string;
   topic: string;
   language: string;
   duration: string;
+  thumbnail: string | null;
 }
 
-export interface AdvanceInfo {
-  thumbnail: string | null;
-  description: string;
-}
+// export interface AdvanceInfo {
+//   thumbnail: string | null;
+//   description: string;
+// }
 
 export interface Lecture {
   id: number;
@@ -31,7 +33,6 @@ export interface Curriculum {
 
 export interface FormData {
   basicInfo: BasicInfo;
-  advanceInfo: AdvanceInfo;
+  // advanceInfo: AdvanceInfo;
   curriculum: Curriculum;
 }
-

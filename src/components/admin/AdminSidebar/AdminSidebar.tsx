@@ -1,7 +1,7 @@
 import "./AdminSidebar.scss";
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   BarChart2,
   BookOpen,
@@ -37,16 +37,19 @@ const menuItems = [
   //   { title: "Ledger", icon: BookCheck, path: "/admin/ledger" },
 ];
 
-export default function AdminSidebar() {
+const AdminSidebar = () => {
   const dispatch = useAppDispatch();
-  const [isCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  //   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  //   const location = useLocation();
+  const location = useLocation();
 
   const handleNavClick = (path: string) => {
     navigate(path);
+  };
+
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
   };
 
   const openLogoutModal = () => {
@@ -70,7 +73,9 @@ export default function AdminSidebar() {
   return (
     <div className={`admin-sidebar ${isCollapsed ? "admin-collapsed" : ""}`}>
       <div className="admin-sidebar-header">
-        <h1 className="admin-logo">SkillForge</h1>
+        <h1 className="admin-logo" onClick={toggleSidebar}>
+          SkillForge
+        </h1>
       </div>
 
       <nav className="admin-sidebar-nav">
@@ -105,4 +110,6 @@ export default function AdminSidebar() {
       />
     </div>
   );
-}
+};
+
+export default AdminSidebar;

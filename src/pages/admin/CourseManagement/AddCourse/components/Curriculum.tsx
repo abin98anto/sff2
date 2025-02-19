@@ -14,29 +14,16 @@ import type {
   Lecture,
   FormData,
 } from "../form-types";
-import {
-  FormSection,
-  ButtonGroup,
-  Button,
-  CurriculumSection as StyledCurriculumSection,
-  AddSectionButton,
-  ModalOverlay,
-  ModalContent,
-  ModalTitle,
-  ModalButtonGroup,
-  InputGroup,
-  UploadButton,
-  modalStyles,
-} from "../StyledComponents";
+import { useNavigate } from "react-router-dom";
+import "../CourseForm.scss";
 import {
   handleFileUpload,
-  validateVideoFile,
   validatePdfFile,
-} from "../../../../../utils/fileUpload";
-import axiosInstance from "../../../../../utils/axiosConfig";
-import { useNavigate } from "react-router-dom";
-import { API_ENDPOINTS, someMessages } from "../../../../../utils/constants";
-import "../course-form.scss";
+  validateVideoFile,
+} from "../../../../../shared/utils/cloudinary/fileUpload";
+import { comments } from "../../../../../shared/constants/comments";
+import { axiosInstance } from "../../../../../shared/config/axiosConfig";
+import { API } from "../../../../../shared/constants/API";
 
 interface CurriculumProps {
   data: Curriculum;
@@ -45,7 +32,6 @@ interface CurriculumProps {
   onCancel: () => void;
   setError: (error: string) => void;
   courseFormData: FormData;
-  isEditing?: boolean;
 }
 
 export function Curriculum({
@@ -55,7 +41,6 @@ export function Curriculum({
   onCancel,
   setError,
   courseFormData,
-  isEditing,
 }: CurriculumProps) {
   const navigate = useNavigate();
   const [sections, setSections] = useState<CurriculumSection[]>(
@@ -126,7 +111,7 @@ export function Curriculum({
     if (file && validateVideoFile(file)) {
       setNewLessonVideo(file);
     } else {
-      setError(someMessages.INVALID_VIDEO);
+      setError(comments.INVALID_VIDEO);
     }
   };
 
@@ -144,12 +129,12 @@ export function Curriculum({
 
   const handleCreateLesson = async () => {
     if (!newLessonName.trim()) {
-      setError(someMessages.LESSON_REQ);
+      setError(comments.LESSON_REQ);
       return;
     }
 
     if (!newLessonVideo) {
-      setError("Video is required");
+      setError(comments.VIDEO_REQ);
       return;
     }
 
@@ -161,8 +146,8 @@ export function Curriculum({
     });
 
     if (!videoUploadResult.success) {
-      console.log(someMessages.VIDEO_UPLOAD_FAIL, videoUploadResult.error);
-      setError(someMessages.VIDEO_UPLOAD_FAIL);
+      console.log(comments.VIDEO_UPLOAD_FAIL, videoUploadResult.error);
+      setError(comments.VIDEO_UPLOAD_FAIL);
       return;
     }
 
@@ -208,12 +193,12 @@ export function Curriculum({
 
   const validateForm = () => {
     if (sections.length === 0) {
-      setError(someMessages.SECTION_REQ);
+      setError(comments.SECTION_REQ);
       return false;
     }
     for (const section of sections) {
       if (section.lectures.length === 0) {
-        setError(someMessages.LESSON_REQ2);
+        setError(comments.LESSON_REQ2);
         return false;
       }
     }
@@ -225,17 +210,17 @@ export function Curriculum({
       try {
         setPublishing(true);
         const response = await axiosInstance.post(
-          API_ENDPOINTS.ADD_COURSE,
+          API.COURSE_ADD,
           courseFormData
         );
-        console.log(someMessages.COURSE_PUB_SUCC, response.data);
+        console.log(comments.COURSE_PUB_SUCC, response.data);
         setIsSuccessModalOpen(true);
         setTimeout(() => {
-          navigate(API_ENDPOINTS.COURSE_M);
+          navigate(API.COURSE_MNGMT);
         }, 4000);
       } catch (error) {
-        console.error(someMessages.COURSE_PUB_FAIL, error);
-        setError(someMessages.COURSE_PUB_FAIL);
+        console.error(comments.COURSE_PUB_FAIL, error);
+        setError(comments.COURSE_PUB_FAIL);
       } finally {
         setPublishing(false);
       }
@@ -256,7 +241,7 @@ export function Curriculum({
 
   const handleUpdateLesson = async () => {
     if (!newLessonName.trim()) {
-      setError(someMessages.LESSON_REQ);
+      setError(comments.LESSON_REQ);
       return;
     }
 
@@ -270,8 +255,8 @@ export function Curriculum({
       });
 
       if (!videoUploadResult.success) {
-        console.log(someMessages.VIDEO_UPLOAD_FAIL, videoUploadResult.error);
-        setError(someMessages.VIDEO_UPLOAD_FAIL);
+        console.log(comments.VIDEO_UPLOAD_FAIL, videoUploadResult.error);
+        setError(comments.VIDEO_UPLOAD_FAIL);
         return;
       }
       videoUrl = videoUploadResult.url as string;
@@ -383,12 +368,12 @@ export function Curriculum({
   };
 
   return (
-    <FormSection>
+    <div className="form-section">
       <h2>Course Curriculum</h2>
 
-      <StyledCurriculumSection>
+      <div className="curriculum-section">
         {sections.map((section: CurriculumSection) => (
-          <div key={section.id} className="curriculum-section">
+          <div key={section.id} className="section-item">
             <div className="section-header">
               <h3>
                 Section {String(section.id).padStart(2, "0")}: {section.name}
@@ -440,45 +425,51 @@ export function Curriculum({
             ))}
           </div>
         ))}
-      </StyledCurriculumSection>
+      </div>
 
-      <AddSectionButton onClick={addSection}>Add Section</AddSectionButton>
+      <button className="add-section-button" onClick={addSection}>
+        Add Section
+      </button>
 
       {isEditModalOpen && (
-        <ModalOverlay>
-          <ModalContent>
-            <ModalTitle>Edit Section Name</ModalTitle>
-            <input
-              type="text"
-              value={editingName}
-              onChange={(e) => setEditingName(e.target.value)}
-              style={modalStyles.input}
-            />
-            <ModalButtonGroup>
-              <Button onClick={() => setIsEditModalOpen(false)}>Cancel</Button>
-              <Button onClick={handleSaveEdit}>Save</Button>
-            </ModalButtonGroup>
-          </ModalContent>
-        </ModalOverlay>
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2 className="modal-title">Edit Section Name</h2>
+            <div className="input-group">
+              <label htmlFor="sectionName">Name</label>
+              <input
+                id="sectionName"
+                type="text"
+                value={editingName}
+                onChange={(e) => setEditingName(e.target.value)}
+                className="input-group"
+              />
+            </div>
+            <div className="modal-button-group">
+              <button onClick={() => setIsEditModalOpen(false)}>Cancel</button>
+              <button onClick={handleSaveEdit}>Save</button>
+            </div>
+          </div>
+        </div>
       )}
 
       {isAddLessonModalOpen && (
-        <ModalOverlay>
-          <ModalContent>
-            <ModalTitle>Add New Lesson</ModalTitle>
-            <InputGroup>
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2 className="modal-title">Add New Lesson</h2>
+            <div className="input-group">
               <label htmlFor="lessonName">Lesson Name</label>
               <input
                 id="lessonName"
                 type="text"
                 value={newLessonName}
                 onChange={(e) => setNewLessonName(e.target.value)}
-                style={modalStyles.input}
+                className="input-group"
               />
-            </InputGroup>
-            <InputGroup>
+            </div>
+            <div className="input-group">
               <label htmlFor="lessonVideo">Upload Video</label>
-              <UploadButton as="label" htmlFor="lessonVideo">
+              <div className="upload-button">
                 <input
                   id="lessonVideo"
                   type="file"
@@ -486,14 +477,16 @@ export function Curriculum({
                   onChange={handleVideoUpload}
                   style={{ display: "none" }}
                 />
-                <UploadIcon size={16} />
-                {newLessonVideo ? "Change Video" : "Upload Video"}
-              </UploadButton>
-              {newLessonVideo && <p>{newLessonVideo.name}</p>}
-            </InputGroup>
-            <InputGroup>
+                <label htmlFor="lessonVideo">
+                  <UploadIcon size={16} />
+                  {newLessonVideo ? "Change Video" : "Upload Video"}
+                </label>
+                {newLessonVideo && <p>{newLessonVideo.name}</p>}
+              </div>
+            </div>
+            <div className="input-group">
               <label htmlFor="lessonPdfs">Upload PDFs</label>
-              <UploadButton as="label" htmlFor="lessonPdfs">
+              <div className="upload-button">
                 <input
                   id="lessonPdfs"
                   type="file"
@@ -502,12 +495,14 @@ export function Curriculum({
                   onChange={handlePdfUpload}
                   style={{ display: "none" }}
                 />
-                <UploadIcon size={16} />
-                Upload PDFs
-              </UploadButton>
-              <div style={modalStyles.fileList}>
+                <label htmlFor="lessonPdfs">
+                  <UploadIcon size={16} />
+                  Upload PDFs
+                </label>
+              </div>
+              <div className="file-list">
                 {newLessonPdfs.map((pdf, index) => (
-                  <div key={index} style={modalStyles.fileItem}>
+                  <div key={index} className="file-item">
                     <span>{pdf.name}</span>
                     <button onClick={() => handleRemovePdf(index)}>
                       <XIcon size={16} />
@@ -515,41 +510,41 @@ export function Curriculum({
                   </div>
                 ))}
               </div>
-            </InputGroup>
-            <ModalButtonGroup>
-              <Button onClick={() => setIsAddLessonModalOpen(false)}>
+            </div>
+            <div className="modal-button-group">
+              <button onClick={() => setIsAddLessonModalOpen(false)}>
                 Cancel
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={handleCreateLesson}
                 disabled={uploadingVideo || uploadingPdfs}
               >
                 {uploadingVideo || uploadingPdfs
-                  ? someMessages.UPLOADING
-                  : someMessages.ADD_LESSSON}
-              </Button>
-            </ModalButtonGroup>
-          </ModalContent>
-        </ModalOverlay>
+                  ? comments.UPLOADING
+                  : comments.ADD_LESSSON}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {isEditLessonModalOpen && (
-        <ModalOverlay>
-          <ModalContent>
-            <ModalTitle>Edit Lesson</ModalTitle>
-            <InputGroup>
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2 className="modal-title">Edit Lesson</h2>
+            <div className="input-group">
               <label htmlFor="editLessonName">Lesson Name</label>
               <input
                 id="editLessonName"
                 type="text"
                 value={newLessonName}
                 onChange={(e) => setNewLessonName(e.target.value)}
-                style={modalStyles.input}
+                className="input-group"
               />
-            </InputGroup>
-            <InputGroup>
+            </div>
+            <div className="input-group">
               <label htmlFor="editLessonVideo">Change Video</label>
-              <UploadButton as="label" htmlFor="editLessonVideo">
+              <div className="upload-button">
                 <input
                   id="editLessonVideo"
                   type="file"
@@ -557,16 +552,18 @@ export function Curriculum({
                   onChange={handleVideoUpload}
                   style={{ display: "none" }}
                 />
-                <UploadIcon size={16} />
-                {newLessonVideo
-                  ? someMessages.VIDEO_CHANGE
-                  : someMessages.VIDEO_UPLOAD}
-              </UploadButton>
-              {newLessonVideo && <p>{newLessonVideo.name}</p>}
-            </InputGroup>
-            <InputGroup>
+                <label htmlFor="editLessonVideo">
+                  <UploadIcon size={16} />
+                  {newLessonVideo
+                    ? comments.VIDEO_CHANGE
+                    : comments.VIDEO_UPLOAD}
+                </label>
+                {newLessonVideo && <p>{newLessonVideo.name}</p>}
+              </div>
+            </div>
+            <div className="input-group">
               <label htmlFor="editLessonPdfs">Add PDFs</label>
-              <UploadButton as="label" htmlFor="editLessonPdfs">
+              <div className="upload-button">
                 <input
                   id="editLessonPdfs"
                   type="file"
@@ -575,15 +572,17 @@ export function Curriculum({
                   onChange={handlePdfUpload}
                   style={{ display: "none" }}
                 />
-                <UploadIcon size={16} />
-                Add PDFs
-              </UploadButton>
-              <div style={modalStyles.fileList}>
+                <label htmlFor="editLessonPdfs">
+                  <UploadIcon size={16} />
+                  Add PDFs
+                </label>
+              </div>
+              <div className="file-list">
                 {sections
                   .find((s) => s.id === editingSectionId)
                   ?.lectures.find((l) => l.id === editingLessonId)
                   ?.pdfUrls.map((pdfUrl, index) => (
-                    <div key={index} style={modalStyles.fileItem}>
+                    <div key={index} className="file-item">
                       <span>{pdfUrl.split("/").pop()}</span>
                       <button
                         onClick={() =>
@@ -599,7 +598,7 @@ export function Curriculum({
                     </div>
                   ))}
                 {newLessonPdfs.map((pdf, index) => (
-                  <div key={`new-${index}`} style={modalStyles.fileItem}>
+                  <div key={`new-${index}`} className="file-item">
                     <span>{pdf.name}</span>
                     <button onClick={() => handleRemovePdf(index)}>
                       <XIcon size={16} />
@@ -607,48 +606,49 @@ export function Curriculum({
                   </div>
                 ))}
               </div>
-            </InputGroup>
-            <ModalButtonGroup>
-              <Button onClick={() => setIsEditLessonModalOpen(false)}>
+            </div>
+            <div className="modal-button-group">
+              <button onClick={() => setIsEditLessonModalOpen(false)}>
                 Cancel
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={handleUpdateLesson}
                 disabled={uploadingVideo || uploadingPdfs}
               >
                 {uploadingVideo || uploadingPdfs
-                  ? someMessages.UPLOADING
-                  : someMessages.LESSON_UPDATE}
-              </Button>
-            </ModalButtonGroup>
-          </ModalContent>
-        </ModalOverlay>
+                  ? comments.UPLOADING
+                  : comments.LESSON_UPDATE}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {isDeleteConfirmationOpen && (
-        <ModalOverlay>
-          <ModalContent>
-            <ModalTitle>Confirm Deletion</ModalTitle>
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2 className="modal-title">Confirm Deletion</h2>
             <p>Are you sure you want to delete this {deletingItemType}?</p>
             <p>This action cannot be undone.</p>
-            <ModalButtonGroup>
-              <Button onClick={() => setIsDeleteConfirmationOpen(false)}>
+            <div className="modal-button-group">
+              <button onClick={() => setIsDeleteConfirmationOpen(false)}>
                 Cancel
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={handleConfirmDelete}
                 style={{ backgroundColor: "red", color: "white" }}
               >
                 Delete
-              </Button>
-            </ModalButtonGroup>
-          </ModalContent>
-        </ModalOverlay>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {isSuccessModalOpen && (
-        <ModalOverlay>
-          <ModalContent
+        <div className="modal-overlay">
+          <div
+            className="modal-content"
             style={{
               background: "linear-gradient(135deg, #4CAF50, #45a049)",
               borderRadius: "16px",
@@ -659,9 +659,9 @@ export function Curriculum({
             }}
           >
             <CheckCircle size={64} style={{ marginBottom: "1rem" }} />
-            <ModalTitle style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>
+            <h2 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>
               Course Created Successfully!
-            </ModalTitle>
+            </h2>
             <p style={{ fontSize: "1rem", marginBottom: "1rem" }}>
               Your course has been published. Redirecting to course
               management...
@@ -684,23 +684,31 @@ export function Curriculum({
                 }}
               />
             </div>
-          </ModalContent>
-        </ModalOverlay>
+          </div>
+        </div>
       )}
 
-      {!isEditing && (
-        <ButtonGroup>
-          <div>
-            <Button onClick={onCancel} style={{ marginRight: "1rem" }}>
-              Cancel
-            </Button>
-            <Button onClick={onPrevious}>Back</Button>
-          </div>
-          <Button onClick={handlePublish} disabled={publishing}>
-            {publishing ? someMessages.PUBLISHING : someMessages.COURSE_PUB}
-          </Button>
-        </ButtonGroup>
-      )}
-    </FormSection>
+      <div className="button-group">
+        <div>
+          <button
+            onClick={onCancel}
+            className="secondary"
+            style={{ marginRight: "1rem" }}
+          >
+            Cancel
+          </button>
+          <button onClick={onPrevious} className="secondary">
+            Back
+          </button>
+        </div>
+        <button
+          onClick={handlePublish}
+          className="primary"
+          disabled={publishing}
+        >
+          {publishing ? comments.PUBLISHING : comments.COURSE_PUB}
+        </button>
+      </div>
+    </div>
   );
 }

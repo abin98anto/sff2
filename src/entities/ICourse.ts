@@ -26,8 +26,6 @@ export interface ICourse {
     language: string;
     level: string;
     prerequisites: string;
-  };
-  advanceInfo: {
     thumbnail: string;
     description: string;
   };

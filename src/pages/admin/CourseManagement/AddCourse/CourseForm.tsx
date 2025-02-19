@@ -1,23 +1,22 @@
 import { useState, useEffect } from "react";
 import type { FormData } from "./form-types";
-import { BasicInformation } from "./components/basic-information";
-import { AdvanceInformation } from "./components/advance-information";
-import { Curriculum } from "./components/curriculum";
-import { ProgressSteps } from "./components/progress-steps";
-import { ConfirmationModal } from "./components/ConfirmationModal";
-import { FormContainer, Header } from "./StyledComponents";
+import BasicInformation from "./components/BasicInformation";
+import { Curriculum } from "./components/Curriculum";
+import { ProgressSteps } from "./components/ProgressSteps";
 import { useNavigate } from "react-router-dom";
-import { API } from "../../../../shared/constants/API";
-import { comments } from "../../../../shared/constants/comments";
+import "./CourseForm.scss";
 import { useSnackbar } from "../../../../hooks/useSnackbar";
+import ConfirmationModal from "../../../../components/common/Modal/ConfirmationModal/ConfirmationModal";
+import { comments } from "../../../../shared/constants/comments";
 import CustomSnackbar from "../../../../components/common/CustomSnackbar";
+import { API } from "../../../../shared/constants/API";
 
 const STORAGE_KEY = "courseFormData";
 
-const CourseForm = () => {
+export default function CourseForm() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<FormData>({
+  const initialCourseData: FormData = {
     basicInfo: {
       title: "",
       subtitle: "",
@@ -25,18 +24,16 @@ const CourseForm = () => {
       topic: "",
       language: "",
       duration: "",
-    },
-    advanceInfo: {
       thumbnail: null,
       description: "",
     },
     curriculum: {
       sections: [],
     },
-  });
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  };
+  const [formData, setFormData] = useState<FormData>(initialCourseData);
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
 
   useEffect(() => {
@@ -49,12 +46,7 @@ const CourseForm = () => {
         parsedData.curriculum.sections &&
         parsedData.curriculum.sections.length > 0
       ) {
-        setCurrentStep(3);
-      } else if (
-        parsedData.advanceInfo &&
-        (parsedData.advanceInfo.description || parsedData.advanceInfo.thumbnail)
-      ) {
-        setCurrentStep(2);
+        setCurrentStep(2); // Now there are only 2 steps
       } else {
         setCurrentStep(1);
       }
@@ -62,11 +54,12 @@ const CourseForm = () => {
   }, []);
 
   useEffect(() => {
+    // Since we're no longer using advanceInfo, we just store basicInfo and curriculum
     const dataToStore = {
       ...formData,
-      advanceInfo: {
-        ...formData.advanceInfo,
-        thumbnail: formData.advanceInfo.thumbnail
+      basicInfo: {
+        ...formData.basicInfo,
+        thumbnail: formData.basicInfo.thumbnail
           ? "thumbnail_placeholder"
           : null,
       },
@@ -75,7 +68,7 @@ const CourseForm = () => {
   }, [formData]);
 
   const handleNext = () => {
-    setCurrentStep((prev) => Math.min(prev + 1, 3));
+    setCurrentStep((prev) => Math.min(prev + 1, 2)); // Only 2 steps now
   };
 
   const handlePrevious = () => {
@@ -87,23 +80,7 @@ const CourseForm = () => {
   };
 
   const confirmCancel = () => {
-    setFormData({
-      basicInfo: {
-        title: "",
-        subtitle: "",
-        category: "",
-        topic: "",
-        language: "",
-        duration: "",
-      },
-      advanceInfo: {
-        thumbnail: null,
-        description: "",
-      },
-      curriculum: {
-        sections: [],
-      },
-    });
+    setFormData(initialCourseData);
     setCurrentStep(1);
     localStorage.removeItem(STORAGE_KEY);
     setIsModalOpen(false);
@@ -121,14 +98,14 @@ const CourseForm = () => {
   };
 
   const handleError = (errorMessage: string) => {
-    setError(errorMessage);
+    showSnackbar(errorMessage, "error");
   };
 
   return (
-    <FormContainer>
-      <Header>
+    <div className="course-form">
+      <div className="header">
         <h1>Add a Course</h1>
-      </Header>
+      </div>
 
       <ProgressSteps currentStep={currentStep} />
 
@@ -141,19 +118,7 @@ const CourseForm = () => {
           setError={handleError}
         />
       )}
-
       {currentStep === 2 && (
-        <AdvanceInformation
-          data={formData.advanceInfo}
-          onUpdate={(data) => updateFormData("advanceInfo", data)}
-          onNext={handleNext}
-          onPrevious={handlePrevious}
-          onCancel={handleCancel}
-          setError={handleError}
-        />
-      )}
-
-      {currentStep === 3 && (
         <Curriculum
           data={formData.curriculum}
           onUpdate={(data) => updateFormData("curriculum", data)}
@@ -167,9 +132,10 @@ const CourseForm = () => {
       <ConfirmationModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onConfirm={confirmCancel}
+        onYes={confirmCancel}
+        onNo={() => setIsModalOpen(false)}
         title="Discard Course"
-        message={comments.COURSE_UNLIST}
+        content={comments.COURSE_DISCARD}
       />
 
       <CustomSnackbar
@@ -178,8 +144,6 @@ const CourseForm = () => {
         severity={snackbar.severity}
         onClose={hideSnackbar}
       />
-    </FormContainer>
+    </div>
   );
-};
-
-export default CourseForm;
+}

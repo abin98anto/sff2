@@ -118,3 +118,15 @@
     }
   }
 }
+
+@media (max-width: 768px) {
+  .admin-sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+
+    &.admin-collapsed {
+      width: 70px;
+    }
+  }
+}
