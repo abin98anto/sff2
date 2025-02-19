@@ -10,7 +10,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../../hooks/reduxHooks";
 import ConfirmationModal from "../../common/Modal/ConfirmationModal/ConfirmationModal";
-import { logout } from "../../../redux/thunks/userAuthServices";
+import { logout } from "../../../redux/thunks/user/userAuthServices";
 
 const menuItems = [
   {

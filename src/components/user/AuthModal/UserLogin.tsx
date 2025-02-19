@@ -10,7 +10,7 @@ import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
 import { AppRootState } from "../../../redux/store";
 import { LoginData } from "../../../entities/misc/LoginData";
 // import { userRoles } from "../../../entities/misc/userRole";
-import { login } from "../../../redux/thunks/userAuthServices";
+import { login } from "../../../redux/thunks/user/userAuthServices";
 import { useNavigate } from "react-router-dom";
 
 interface UserLoginProps {
@@ -54,7 +54,7 @@ const UserLogin: React.FC<UserLoginProps> = ({ userRole, onClose }) => {
         ...formData,
         role: userRole,
       };
-      
+
       await dispatch(login(userData)).unwrap();
       if (userRole === "tutor") {
         navigate("/tutor");
@@ -62,7 +62,7 @@ const UserLogin: React.FC<UserLoginProps> = ({ userRole, onClose }) => {
         navigate("/admin/dashboard");
       } else {
         onClose();
-      } 
+      }
     } catch (error) {
       console.log(comments.LOGIN_FE_ERR, error);
       showSnackbar(error as string, "error");

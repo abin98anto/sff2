@@ -12,7 +12,7 @@ import {
   SquareStack,
 } from "lucide-react";
 import { useAppDispatch } from "../../../hooks/reduxHooks";
-import { logout } from "../../../redux/thunks/userAuthServices";
+import { logout } from "../../../redux/thunks/user/userAuthServices";
 import ConfirmationModal from "../../common/Modal/ConfirmationModal/ConfirmationModal";
 
 const menuItems = [

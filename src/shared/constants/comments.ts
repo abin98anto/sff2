@@ -51,4 +51,11 @@ export const comments = {
   COURSE_UNLIST: "Are you sure you want to unlist this course?",
   S3_UPLOAD_ERR: "Error uploading file to S3",
   S3_DELETE_ERR: "Error deleting file from S3",
+  IMG_UPLOAD_FAIL: "Error uploading image",
+  IMG_UPLOAD_SUCC: "Image uploaded successfully!",
+  FILE_UPLOAD_FAIL: "Failed to upload file",
+  FILE_UPLOAD_SUCC: "File uploaded successfully!",
+  USER_UPDATE_THK_FAIL: "Error updating user in thunk",
+  RESUME_UPLOAD_FAIL: "Error uploading resume",
+  RESUME_UPLOAD_SUCC: "Resume uploaded successfully!",
 };

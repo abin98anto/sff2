@@ -1,7 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { IUserState } from "../../entities/misc/IUserState";
-import { login, logout, sendOTP, verifyOTP } from "../thunks/userAuthServices";
+import {
+  login,
+  logout,
+  sendOTP,
+  verifyOTP,
+} from "../thunks/user/userAuthServices";
 import { comments } from "../../shared/constants/comments";
+import { updateUser } from "../thunks/user/userUpdateServices";
 
 const initialState: IUserState = {
   loading: false,
@@ -83,6 +89,18 @@ const userSlice = createSlice({
         state.error = "";
       })
       .addCase(logout.rejected, (state) => {
+        state.loading = false;
+      })
+
+      // Update User.
+      .addCase(updateUser.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(updateUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.userInfo = action.payload.data;
+      })
+      .addCase(updateUser.rejected, (state) => {
         state.loading = false;
       });
   },

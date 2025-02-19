@@ -1,11 +1,12 @@
 .profile-section {
   width: 100%;
-  padding: 2rem;
   color: #ffffff;
+  text-align: center;
 
-  .profile-header {
-    text-align: center;
-    margin-bottom: 3rem;
+  .profile-header,
+  .section-title,
+  .text-content,
+  .field-label {
     color: #ffffff;
   }
 
@@ -23,7 +24,7 @@
       .profile-avatar {
         width: 150px;
         height: 150px;
-        background-color: #555555;
+        background-color: #555;
       }
 
       .profile-picture-actions {
@@ -31,7 +32,8 @@
         gap: 1rem;
         align-items: center;
 
-        .change-photo-btn {
+        .change-photo-btn,
+        .upload-btn {
           color: #2196f3;
           border-color: #2196f3;
 
@@ -51,49 +53,33 @@
     }
   }
 
-  .section-title {
-    color: #ffffff;
-    font-weight: 500;
-    text-align: center;
-    margin-bottom: 1.5rem;
-  }
-
-  .text-content {
-    color: #ffffff;
-  }
-
   .form-field {
     margin-bottom: 1.5rem;
 
-    .field-label {
-      color: #ffffff;
+    input {
+      color: #ffffff !important;
+    }
+  }
+
+  .MuiOutlinedInput-root {
+    fieldset {
+      border-color: rgba(255, 255, 255, 0.5);
     }
 
-    .input-field {
-      color: #ffffff;
-
-      &::before,
-      &::after {
-        border-color: rgba(255, 255, 255, 0.5);
-      }
-
-      input {
-        color: #ffffff;
-      }
+    &:hover fieldset {
+      border-color: rgba(255, 255, 255, 0.7);
     }
 
-    .MuiOutlinedInput-root {
-      fieldset {
-        border-color: rgba(255, 255, 255, 0.5);
-      }
+    &.Mui-focused fieldset {
+      border-color: #2196f3;
+    }
+  }
 
-      &:hover fieldset {
-        border-color: rgba(255, 255, 255, 0.7);
-      }
+  .MuiInputLabel-root {
+    color: rgba(255, 255, 255, 0.7) !important;
 
-      &.Mui-focused fieldset {
-        border-color: #2196f3;
-      }
+    &.Mui-focused {
+      color: #2196f3 !important;
     }
   }
 
@@ -113,15 +99,6 @@
         padding: 0.5rem;
         background-color: rgba(255, 255, 255, 0.1);
         border-radius: 4px;
-      }
-
-      .upload-btn {
-        color: #2196f3;
-        border-color: #2196f3;
-
-        &:hover {
-          background-color: rgba(33, 150, 243, 0.1);
-        }
       }
     }
   }
@@ -158,22 +135,11 @@
       }
     }
   }
-
-  .personal-info-actions {
-    margin-top: 1rem;
-  }
-
-  .password-actions {
-    margin-bottom: 0;
-  }
 }
 
-// Responsive adjustments
 @media (max-width: 960px) {
-  .profile-section {
-    .password-section {
-      padding: 1.5rem;
-      margin-top: 2rem;
-    }
+  .password-section {
+    padding: 1.5rem;
+    margin-top: 2rem;
   }
 }

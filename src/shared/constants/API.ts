@@ -10,6 +10,9 @@ export const API = {
   USER_LOGIN: "/login",
   USER_LOGOUT: "/logout",
 
+  // User Update
+  USER_UPDATE: "/update",
+
   // Categories
   CATEGORY_ADD: "/categories/add",
   CATEGORY_DELETE: "/categories/delete",
@@ -22,4 +25,9 @@ export const API = {
   COURSE_DELETE: "/courses/delete",
   COURSE_UPDATE: "/courses/update",
   COURSE_GET: "/courses",
+
+  // Cloudinary
+  CLOUDI_UPLOAD: `https://api.cloudinary.com/v1_1/${
+    import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
+  }/raw/upload`,
 };

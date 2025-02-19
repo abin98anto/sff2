@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
 
 import { Avatar, Menu, MenuItem, IconButton } from "@mui/material";
 import ConfirmationModal from "../../common/Modal/ConfirmationModal/ConfirmationModal";
-import { logout } from "../../../redux/thunks/userAuthServices";
+import { logout } from "../../../redux/thunks/user/userAuthServices";
 
 type AuthModalType = "login" | "signup";
 

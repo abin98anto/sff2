@@ -3,7 +3,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { hourglass } from "ldrs";
 
 import GoogleButton from "./google-btn/GoogleButton";
-import { sendOTP } from "../../../redux/thunks/userAuthServices";
+import { sendOTP } from "../../../redux/thunks/user/userAuthServices";
 import { signupSchema } from "../../../shared/config/yupConfig";
 import { comments } from "../../../shared/constants/comments";
 import { IUser } from "../../../entities/IUser";
