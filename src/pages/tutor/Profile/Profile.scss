@@ -103,12 +103,12 @@
     }
   }
 
-  .password-section {
+  /* .password-section {
     background-color: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 8px;
     padding: 2rem;
-  }
+  } */
 
   .action-buttons {
     display: flex;
@@ -137,9 +137,9 @@
   }
 }
 
-@media (max-width: 960px) {
-  .password-section {
-    padding: 1.5rem;
-    margin-top: 2rem;
-  }
+/* Center the remaining section */
+.main-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

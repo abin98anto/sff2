@@ -131,6 +131,22 @@ const ProfileSection = () => {
     }
   };
 
+  // Form submit.
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      const updatedUser = await dispatch(updateUser(formData)).unwrap();
+      if (updatedUser) {
+        showSnackbar("Profile updated successfully", "success");
+      }
+    } catch (error) {
+      showSnackbar("Failed to update profile", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Box className="profile-section">
       <Typography variant="h4" className="profile-header">
@@ -177,7 +193,7 @@ const ProfileSection = () => {
 
       <Grid container spacing={4} className="main-content">
         <Grid item xs={12} md={6} className="left-column">
-          <form>
+          <form onSubmit={handleSubmit}>
             <Box className="basic-info-section">
               <Typography variant="h6" gutterBottom className="section-title">
                 Personal Information
@@ -268,7 +284,7 @@ const ProfileSection = () => {
         </Grid>
 
         {/* Right Column - Password Change */}
-        <Grid item xs={12} md={6} className="right-column">
+        {/* <Grid item xs={12} md={6} className="right-column">
           <Paper className="password-section">
             <Typography variant="h6" gutterBottom className="section-title">
               Change Password
@@ -303,7 +319,7 @@ const ProfileSection = () => {
               </Button>
             </Box>
           </Paper>
-        </Grid>
+        </Grid> */}
       </Grid>
 
       {resume && (
