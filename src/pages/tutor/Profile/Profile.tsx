@@ -23,6 +23,7 @@ import {
 import { updateUser } from "../../../redux/thunks/user/userUpdateServices";
 import { uploadToCloudinary } from "../../../shared/config/cloudinaryConfig";
 import { UploadIcon } from "lucide-react";
+import ResumeModal from "../../../components/common/Modal/ResumeModal/ResumeModal";
 
 const ProfileSection = () => {
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
@@ -115,6 +116,21 @@ const ProfileSection = () => {
     }
   };
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Delete resume.
+  const deleteResume = async () => {
+    try {
+      const updatedUser = await dispatch(updateUser({ resume: "" }));
+      if (updatedUser) {
+        setResume(null);
+        showSnackbar("Resume deleted successfully", "success");
+      }
+    } catch (error) {
+      showSnackbar("Failed to delete resume", "error");
+    }
+  };
+
   return (
     <Box className="profile-section">
       <Typography variant="h4" className="profile-header">
@@ -196,7 +212,7 @@ const ProfileSection = () => {
                   <Box className="current-resume">
                     <Button
                       variant="text"
-                      // onClick={() => setIsModalOpen(true)}
+                      onClick={() => setIsModalOpen(true)}
                       style={{ textTransform: "none" }}
                     >
                       View Resume
@@ -204,7 +220,7 @@ const ProfileSection = () => {
                     <IconButton
                       color="error"
                       size="small"
-                      // onClick={deleteResume}
+                      onClick={deleteResume}
                     >
                       <DeleteIcon />
                     </IconButton>
@@ -289,6 +305,14 @@ const ProfileSection = () => {
           </Paper>
         </Grid>
       </Grid>
+
+      {resume && (
+        <ResumeModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          resumeUrl={resume}
+        />
+      )}
 
       <CustomSnackbar
         open={snackbar.open}
