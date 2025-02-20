@@ -126,6 +126,14 @@ const BasicInformation = ({
       setError(comments.DESCRIPTION_RQ);
       return false;
     }
+    if (!data.level.trim()) {
+      setError(comments.LEVEL_REQ);
+      return false;
+    }
+    if (!data.thumbnail) {
+      setError(comments.THUMBNAIL_REQ);
+      return false;
+    }
     return true;
   };
 
@@ -172,27 +180,55 @@ const BasicInformation = ({
           </div>
         </div>
 
-        <div className="form-group">
-          <select
-            id="category"
-            value={data.category}
-            onChange={(e) => handleChange("category", e.target.value)}
-            disabled={isLoading}
-          >
-            <option value="">Select a category...</option>
-            {categories && categories.length > 0 ? (
-              categories.map((category) => (
-                <option key={category._id} value={category._id}>
-                  {category.name}
+        <div className="form-group double">
+          <div>
+            <select
+              id="category"
+              value={data.category}
+              onChange={(e) => handleChange("category", e.target.value)}
+              disabled={isLoading}
+            >
+              <option value="">Select a category...</option>
+              {categories && categories.length > 0 ? (
+                categories.map((category) => (
+                  <option key={category._id} value={category._id}>
+                    {category.name}
+                  </option>
+                ))
+              ) : (
+                <option value="" disabled>
+                  comments.NO_CAT_RECIVIED
                 </option>
-              ))
-            ) : (
-              <option value="" disabled>
-                {isLoading ? "Loading categories..." : comments.NO_CAT_RECIVIED}
-              </option>
-            )}
-          </select>
-          <label htmlFor="category">Course Category</label>
+              )}
+            </select>
+            <label htmlFor="category">Course Category</label>
+          </div>
+          <div>
+            <select
+              id="level"
+              value={data.level}
+              onChange={(e) => handleChange("level", e.target.value)}
+            >
+              <option value="">Select a level...</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+            <label htmlFor="level">Course Level</label>
+          </div>
+          <div>
+            <select
+              id="language"
+              value={data.language}
+              onChange={(e) => handleChange("language", e.target.value)}
+            >
+              <option value="">Select a language...</option>
+              <option value="english">English</option>
+              <option value="malayalam">Malayalam</option>
+              <option value="hindi">Hindi</option>
+            </select>
+            <label htmlFor="language">Course Language</label>
+          </div>
         </div>
 
         <div className="form-group">
@@ -203,36 +239,18 @@ const BasicInformation = ({
             onChange={(e) => handleChange("topic", e.target.value)}
             placeholder={comments.TOPIC_PLACEHOLDER}
           />
-          <label htmlFor="topic">Course Topic</label>
+          <label htmlFor="topic">Course Topic (seperated by comma)</label>
         </div>
 
         <div className="form-group">
-          <select
-            id="language"
-            value={data.language}
-            onChange={(e) => handleChange("language", e.target.value)}
-          >
-            <option value="">Select a language...</option>
-            <option value="english">English</option>
-            <option value="malayalam">Malayalam</option>
-            <option value="hindi">Hindi</option>
-          </select>
-          <label htmlFor="language">Course Language</label>
-        </div>
-
-        <div className="form-group">
-          <textarea
-            id="description"
-            value={data.description}
-            onChange={(e) => handleChange("description", e.target.value)}
-            placeholder={comments.DESCRIPTION_PLACEHOLDER}
-            rows={6}
+          <input
+            id="prerequisites"
+            type="text"
+            value={data.prerequisites}
+            onChange={(e) => handleChange("prerequisites", e.target.value)}
+            placeholder={comments.PREREQ_PH}
           />
-          <label htmlFor="description">Course Description</label>
-          <div className="character-count">
-            <AlertCircle size={12} />
-            <span>{data.description.length}/500</span>
-          </div>
+          <label htmlFor="topic">Prerequisites (seperated by comma)</label>
         </div>
 
         <div className="button-group">
@@ -289,8 +307,22 @@ const BasicInformation = ({
               id="thumbnailInput"
             />
             <UploadIcon size={16} />
-            {isUploading ? "Uploading..." : "Upload Thumbnail"}
+            Upload Thumbnail
           </label>
+        </div>
+        <div className="form-group">
+          <textarea
+            id="description"
+            value={data.description}
+            onChange={(e) => handleChange("description", e.target.value)}
+            placeholder={comments.DESCRIPTION_PLACEHOLDER}
+            rows={6}
+          />
+          <label htmlFor="description">Course Description</label>
+          <div className="character-count">
+            <AlertCircle size={12} />
+            <span>{data.description.length}/500</span>
+          </div>
         </div>
       </div>
     </div>

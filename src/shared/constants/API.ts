@@ -21,13 +21,16 @@ export const API = {
 
   // Courses
   COURSE_MNGMT: "/admin/course-management",
-  COURSE_ADD: "/courses/add",
+  COURSE_ADD: "/course/add",
   COURSE_DELETE: "/courses/delete",
-  COURSE_UPDATE: "/courses/update",
-  COURSE_GET: "/courses",
+  COURSE_UPDATE: "/course/update",
+  COURSE_GET: "/course",
 
   // Cloudinary
   CLOUDI_UPLOAD: `https://api.cloudinary.com/v1_1/${
     import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
   }/raw/upload`,
+
+  // Admin Side.
+  TUTORS_GET: "/admin/tutor",
 };

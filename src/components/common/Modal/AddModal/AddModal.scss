@@ -1,85 +1,174 @@
-.addmodal-overlay {
+.modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.75);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-out;
+
+  .modal-content {
+    background-color: #1a1a1a;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow: auto;
+    animation: slideIn 0.3s ease-out;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    .modal-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #fff;
+      }
+
+      .close-button {
+        background: none;
+        border: none;
+        color: #666;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        line-height: 1;
+        transition: all 0.2s;
+
+        &:hover {
+          color: #fff;
+          background-color: rgba(255, 255, 255, 0.1);
+        }
+      }
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+
+      .form-group {
+        margin-bottom: 1.25rem;
+
+        label {
+          display: block;
+          margin-bottom: 0.5rem;
+          color: #bbb;
+          font-size: 0.875rem;
+          font-weight: 500;
+        }
+
+        input,
+        select,
+        textarea {
+          width: 100%;
+          padding: 0.75rem;
+          background-color: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 8px;
+          color: #fff;
+          font-size: 0.875rem;
+          transition: all 0.2s;
+
+          &:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+          }
+
+          &:focus {
+            outline: none;
+            border-color: #2979ff;
+            background-color: rgba(41, 121, 255, 0.1);
+            box-shadow: 0 0 0 3px rgba(41, 121, 255, 0.15);
+          }
+        }
+      }
+    }
+
+    .modal-actions {
+      padding: 1.25rem 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+
+      button {
+        padding: 0.625rem 1.25rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &.btn-secondary {
+          background-color: rgba(255, 255, 255, 0.1);
+          color: #fff;
+
+          &:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+          }
+        }
+
+        &.btn-primary {
+          background-color: #2979ff;
+          color: #fff;
+
+          &:hover {
+            background-color: #2962ff;
+            transform: translateY(-1px);
+          }
+        }
+      }
+    }
+  }
 }
 
-.addmodal-content {
-  background-color: #333;
-  padding: 2rem;
-  border-radius: 8px;
-  // max-width: 400px;
-  color: white;
-
-  h2 {
-    margin-bottom: 1.5rem;
-    font-size: 1.25rem;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
   }
-
-  .form-group {
-    margin-bottom: 1rem;
-
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      color: #aaa;
-    }
-
-    input,
-    select {
-      // width: 100%;
-      max-width: 300px;
-      padding: 0.5rem;
-      background-color: #444;
-      border: 1px solid #555;
-      border-radius: 4px;
-      color: white;
-      font-size: 0.875rem;
-
-      &:focus {
-        outline: none;
-        border-color: #2979ff;
-      }
-    }
+  to {
+    opacity: 1;
   }
+}
 
-  .addmodal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    margin-top: 2rem;
-
-    button {
-      padding: 0.5rem 1rem;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.875rem;
-
-      &:first-child {
-        background-color: #555;
-        color: white;
-
-        &:hover {
-          background-color: #666;
-        }
-      }
-
-      &:last-child {
-        background-color: #2979ff;
-        color: white;
-
-        &:hover {
-          background-color: #2962ff;
-        }
-      }
-    }
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
   }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// Add smooth scrollbar for the modal content
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
 }

@@ -98,6 +98,8 @@ export const comments = {
   NO_COURSE_ID: "No course ID provided. Please go back and try again.",
   INVALID_COURSE: "Invalid course data structure",
   COURSE_UPDATE_FAIL: "Failed to update course. Please try again.",
-  VIDEO_REQ:"Vedio is required.",
-  COURSE_DISCARD:"Are you sure you want to discard this course?"
+  VIDEO_REQ: "Vedio is required.",
+  COURSE_DISCARD: "Are you sure you want to discard this course?",
+  PREREQ_PH: "Enter the prerequesities.",
+  LEVEL_REQ:"Need the course level."
 };

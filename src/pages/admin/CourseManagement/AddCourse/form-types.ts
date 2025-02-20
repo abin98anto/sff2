@@ -7,6 +7,8 @@ export interface BasicInfo {
   language: string;
   duration: string;
   thumbnail: string | null;
+  level: string;
+  prerequisites: string;
 }
 
 // export interface AdvanceInfo {

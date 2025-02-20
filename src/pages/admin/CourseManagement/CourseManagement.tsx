@@ -1,4 +1,4 @@
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2, UserRoundPlus } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 
 import "./CourseManagement.scss";
@@ -10,6 +10,7 @@ import ConfirmationModal from "../../../components/common/Modal/ConfirmationModa
 import { axiosInstance } from "../../../shared/config/axiosConfig";
 import { API } from "../../../shared/constants/API";
 import { comments } from "../../../shared/constants/comments";
+import { useNavigate } from "react-router-dom";
 
 interface TableData {
   data: ICourse[];
@@ -20,18 +21,20 @@ const CourseManagement = () => {
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
 
   const [toggleModalOpen, setToggleModalOpen] = useState(false);
-  const [_, setToggleId] = useState<string | null>(null);
-
+  const [toggleId, setToggleId] = useState<string | null>(null);
   const [toggleCourse, setToggleCourse] = useState<ICourse | null>(null);
-  setToggleCourse(null);
-
   const refetchData = useRef<(() => void) | undefined>();
+  const navigate = useNavigate();
 
   const handleEdit = (row: ICourse) => {
     console.log(row);
   };
-  const handleToggle = () => {};
 
+  const addCourse = () => {
+    navigate("/admin/add-course");
+  };
+
+  // Fetching table datas.
   const columns: Column<ICourse>[] = [
     {
       key: "slNo",
@@ -39,8 +42,12 @@ const CourseManagement = () => {
       render: (_, index: number) => index + 1,
     },
     {
-      key: "name",
+      key: "basicInfo.title",
       label: "Name",
+      render: (item: ICourse) => {
+        // console.log("Course item:", item);
+        return item.basicInfo?.title || "No title";
+      },
     },
     {
       key: "isActive",
@@ -91,6 +98,9 @@ const CourseManagement = () => {
       label: "Actions",
       render: (row: ICourse) => (
         <div className="action-buttons">
+          <button className="action-button add">
+            <UserRoundPlus size={16} />
+          </button>
           <button
             onClick={() => handleEdit(row)}
             className="action-button edit"
@@ -100,6 +110,7 @@ const CourseManagement = () => {
           <button
             onClick={() => {
               setToggleId(row._id);
+              setToggleCourse(row);
               setToggleModalOpen(true);
             }}
             className="action-button delete"
@@ -125,8 +136,8 @@ const CourseManagement = () => {
         });
 
         return {
-          data: response.data.data.data.data,
-          total: response.data.data.data.total,
+          data: response.data.data.data || [],
+          total: response.data.data.data.total || 0,
         };
       } catch (err) {
         showSnackbar(comments.COURSE_FETCH_FAIL, "error");
@@ -137,11 +148,41 @@ const CourseManagement = () => {
     []
   );
 
+  // Toggle course
+  const handleToggle = async () => {
+    if (!toggleId || !toggleCourse) return;
+
+    try {
+      const updatedStatus = !toggleCourse.isActive;
+      const response = await axiosInstance.put(API.COURSE_UPDATE, {
+        _id: toggleId,
+        isActive: updatedStatus,
+      });
+      
+      if (response.data.success) {
+        showSnackbar(
+          `Course ${updatedStatus ? "listed" : "unlisted"} successfully`,
+          "success"
+        );
+        if (refetchData.current) {
+          refetchData.current();
+        }
+      }
+    } catch (error) {
+      console.error("Error updating course status:", error);
+      showSnackbar("Failed to update course status", "error");
+    } finally {
+      setToggleModalOpen(false);
+      setToggleId(null);
+      setToggleCourse(null);
+    }
+  };
+
   return (
     <div className="course-management">
       <div className="course-container">
         <h1>Course Management</h1>
-        <button className="add-button">
+        <button className="add-button" onClick={addCourse}>
           <Plus size={16} />
           Add Course
         </button>
@@ -154,6 +195,7 @@ const CourseManagement = () => {
           refetchRef={refetchData}
         />
 
+        {/* List unlist modal */}
         <ConfirmationModal
           isOpen={toggleModalOpen}
           title={toggleCourse?.isActive ? "Unlist Course" : "List Course"}

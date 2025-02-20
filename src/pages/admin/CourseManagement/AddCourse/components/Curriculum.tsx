@@ -25,6 +25,7 @@ import {
 import { comments } from "../../../../../shared/constants/comments";
 import { axiosInstance } from "../../../../../shared/config/axiosConfig";
 import { API } from "../../../../../shared/constants/API";
+import AddModal from "../../../../../components/common/Modal/AddModal/AddModal";
 
 interface CurriculumProps {
   data: Curriculum;
@@ -206,13 +207,24 @@ export function Curriculum({
     return true;
   };
 
+  const prepareCourseDataForBackend = (formData: FormData) => {
+    return {
+      ...formData,
+      curriculum: formData.curriculum.sections.map((section) => ({
+        name: section.name,
+        lessons: section.lectures,
+      })),
+    };
+  };
+
   const handlePublish = async () => {
     if (validateForm()) {
       try {
         setPublishing(true);
+        const formattedData = prepareCourseDataForBackend(courseFormData);
         const response = await axiosInstance.post(
           API.COURSE_ADD,
-          courseFormData
+          formattedData
         );
         console.log(comments.COURSE_PUB_SUCC, response.data);
         setIsSuccessModalOpen(true);
@@ -433,25 +445,23 @@ export function Curriculum({
       </button>
 
       {isEditModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h2 className="modal-title">Edit Section Name</h2>
-            <div className="input-group">
-              <label htmlFor="sectionName">Name</label>
-              <input
-                id="sectionName"
-                type="text"
-                value={editingName}
-                onChange={(e) => setEditingName(e.target.value)}
-                className="input-group"
-              />
-            </div>
-            <div className="modal-button-group">
-              <button onClick={() => setIsEditModalOpen(false)}>Cancel</button>
-              <button onClick={handleSaveEdit}>Save</button>
-            </div>
+        <AddModal
+          isOpen={isEditModalOpen}
+          title="Edit Section Name"
+          onClose={() => setIsEditModalOpen(false)}
+          onSubmit={handleSaveEdit}
+        >
+          <div className="input-group">
+            <label htmlFor="sectionName">Name</label>
+            <input
+              id="sectionName"
+              type="text"
+              value={editingName}
+              onChange={(e) => setEditingName(e.target.value)}
+              className="input-group"
+            />
           </div>
-        </div>
+        </AddModal>
       )}
 
       {isAddLessonModalOpen && (

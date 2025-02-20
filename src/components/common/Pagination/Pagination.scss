@@ -7,14 +7,15 @@
   .pagination-button {
     padding: 0.5rem 1rem;
     border: 1px solid #ddd;
-    background-color: white;
+    border-color: #404040;
+    background-color: #333;
     cursor: pointer;
     border-radius: 4px;
     transition: all 0.2s;
-    color: #333;
+    color: white;
 
     &:hover:not(:disabled) {
-      background-color: #f8f9fa;
+      background-color: #404040;
       border-color: #007bff;
     }
 

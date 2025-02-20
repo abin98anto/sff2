@@ -1,7 +1,10 @@
+"use client";
+
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import "./DataTable.scss";
 import { comments } from "../../../shared/constants/comments";
 import Pagination from "../Pagination/Pagination";
+import Loading from "../Loading/Loading";
 
 export interface Column<T = any> {
   key: string;
@@ -137,7 +140,7 @@ const DataTable = <T extends Record<string, any>>({
       </div>
 
       {loading ? (
-        <div className="loading">Loading...</div>
+        <Loading />
       ) : (
         <>
           <table className="data-table">
@@ -172,6 +175,23 @@ const DataTable = <T extends Record<string, any>>({
                         : column.render
                         ? column.render(row, index)
                         : row[column.key]}
+
+                      {column.key === "status" &&
+                        typeof row[column.key] === "boolean" && (
+                          <span
+                            className={`status ${
+                              row[column.key] ? "active" : "inactive"
+                            }`}
+                          >
+                            {row[column.key] ? "Active" : "Inactive"}
+                          </span>
+                        )}
+                      {column.key === "actions" && (
+                        <div className="actions">
+                          <button className="edit"></button>
+                          <button className="delete"></button>
+                        </div>
+                      )}
                     </td>
                   ))}
                 </tr>

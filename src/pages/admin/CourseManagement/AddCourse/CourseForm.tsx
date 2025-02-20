@@ -26,6 +26,8 @@ const CourseForm = () => {
       duration: "",
       thumbnail: null,
       description: "",
+      prerequisites: "",
+      level: "",
     },
     curriculum: {
       sections: [],
@@ -53,15 +55,19 @@ const CourseForm = () => {
     }
   }, []);
 
+  const prepareCourseDataForBackend = (formData: FormData) => {
+    return {
+      ...formData,
+      curriculum: formData.curriculum.sections.map((section) => ({
+        name: section.name,
+        lessons: section.lectures,
+      })),
+    };
+  };
+
   useEffect(() => {
     const dataToStore = {
       ...formData,
-      basicInfo: {
-        ...formData.basicInfo,
-        thumbnail: formData.basicInfo.thumbnail
-          ? "thumbnail_placeholder"
-          : null,
-      },
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToStore));
   }, [formData]);
