@@ -2,14 +2,13 @@ import { useState, useRef, useCallback } from "react";
 import { Plus, Trash2, Pencil } from "lucide-react";
 import "./CategoryManagement.scss";
 import axiosInstance from "../../../shared/config/axiosConfig";
-import AddModal from "../../../components/common/Modal/AddModal/AddModal";
 import API from "../../../shared/constants/API";
 import comments from "../../../shared/constants/comments";
-import type { ICategory } from "../../../entities/misc/ICategory";
+import ICategory from "../../../entities/misc/ICategory";
 import DataTable, { Column } from "../../../components/common/Table/DataTable";
-import ConfirmationModal from "../../../components/common/Modal/ConfirmationModal/ConfirmationModal";
 import CustomSnackbar from "../../../components/common/CustomSnackbar";
 import useSnackbar from "../../../hooks/useSnackbar";
+import CustomModal from "../../../components/common/Modal/CustomModal/CustomModal";
 
 interface CategoryFormData {
   _id?: string;
@@ -25,7 +24,7 @@ interface TableData {
 const CategoryManagement = () => {
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [formData, setFormData] = useState<CategoryFormData>({
     name: "",
     isActive: true,
@@ -36,6 +35,7 @@ const CategoryManagement = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
+  // Populate Table.
   const columns: Column<ICategory>[] = [
     {
       key: "slNo",
@@ -118,47 +118,38 @@ const CategoryManagement = () => {
     []
   );
 
-  const handleAdd = async () => {
+  // Add/Edit Category handlers
+  const handleSubmit = async () => {
     try {
       if (!formData.name.trim()) {
         showSnackbar(comments.ALL_FIELDS_REQ, "error");
         return;
       }
 
-      await axiosInstance.post(API.CATEGORY_ADD, formData);
-      setIsModalOpen(false);
+      if (isEditing) {
+        await axiosInstance.put(API.CATEGORY_UPDATE, formData);
+        showSnackbar(comments.CAT_UPDATE_SUCC, "success");
+      } else {
+        await axiosInstance.post(API.CATEGORY_ADD, formData);
+        showSnackbar(comments.CAT_ADD_SUCC, "success");
+      }
+
+      setIsAddModalOpen(false);
       resetForm();
       refetchData.current?.();
-      showSnackbar(comments.CAT_ADD_SUCC, "success");
     } catch (err: any) {
       if (err.response?.status === 409) {
         showSnackbar(comments.CAT_NAME_DUP, "error");
       } else {
-        showSnackbar(comments.CAT_ADD_FAIL, "error");
+        showSnackbar(
+          isEditing ? comments.CAT_UPDATE_FAIL : comments.CAT_ADD_FAIL,
+          "error"
+        );
       }
-      console.error(comments.CAT_ADD_FAIL, err);
-    }
-  };
-
-  const handleUpdate = async () => {
-    try {
-      if (!formData.name.trim()) {
-        showSnackbar(comments.ALL_FIELDS_REQ, "error");
-        return;
-      }
-
-      await axiosInstance.put(API.CATEGORY_UPDATE, formData);
-      setIsModalOpen(false);
-      resetForm();
-      refetchData.current?.();
-      showSnackbar(comments.CAT_UPDATE_SUCC, "success");
-    } catch (err: any) {
-      if (err.response?.status === 409) {
-        showSnackbar(comments.CAT_NAME_DUP, "error");
-      } else {
-        showSnackbar(comments.CAT_ADD_FAIL, "error");
-      }
-      console.error(comments.CAT_ADD_FAIL, err);
+      console.error(
+        isEditing ? comments.CAT_UPDATE_FAIL : comments.CAT_ADD_FAIL,
+        err
+      );
     }
   };
 
@@ -170,13 +161,27 @@ const CategoryManagement = () => {
         });
         refetchData.current?.();
         setIsDeleteModalOpen(false);
-        showSnackbar(comments.CAT_DELETE_SUCC, "error");
+        showSnackbar(comments.CAT_DELETE_SUCC, "success");
       } catch (err) {
         showSnackbar(comments.CAT_DELETE_FAIL, "error");
-
         console.error(comments.CAT_DELETE_FAIL, err);
       }
     }
+  };
+
+  const handleEdit = (category: ICategory) => {
+    setFormData({
+      _id: category._id,
+      name: category.name,
+      isActive: category.isActive,
+    });
+    setIsEditing(true);
+    setIsAddModalOpen(true);
+  };
+
+  const handleCloseAddModal = () => {
+    setIsAddModalOpen(false);
+    resetForm();
   };
 
   const resetForm = () => {
@@ -187,24 +192,19 @@ const CategoryManagement = () => {
     setIsEditing(false);
   };
 
-  const handleEdit = (category: ICategory) => {
-    setFormData({
-      _id: category._id,
-      name: category.name,
-      isActive: category.isActive,
-    });
-    setIsEditing(true);
-    setIsModalOpen(true);
-  };
-
   return (
     <div className="category-management">
       <div className="category-container">
-        <h1>Category Management</h1>
-        <button className="add-button" onClick={() => setIsModalOpen(true)}>
-          <Plus size={16} />
-          Add Category
-        </button>
+        <div className="header">
+          <h1>Category Management</h1>
+          <button
+            className="add-button"
+            onClick={() => setIsAddModalOpen(true)}
+          >
+            <Plus size={16} />
+            Add Category
+          </button>
+        </div>
 
         <DataTable
           columns={columns as Column<Record<string, any>>[]}
@@ -214,17 +214,23 @@ const CategoryManagement = () => {
           refetchRef={refetchData}
         />
 
-        <AddModal
-          isOpen={isModalOpen}
-          title={isEditing ? "Edit Category" : "Add Category"}
-          onClose={() => {
-            setIsModalOpen(false);
-            resetForm();
-          }}
-          onSubmit={(e) => {
-            e.preventDefault();
-            isEditing ? handleUpdate() : handleAdd();
-          }}
+        {/* Add/Edit Modal */}
+        <CustomModal
+          isOpen={isAddModalOpen}
+          onClose={handleCloseAddModal}
+          header={isEditing ? "Edit Category" : "Add Category"}
+          buttons={[
+            {
+              text: "Cancel",
+              onClick: handleCloseAddModal,
+              variant: "secondary",
+            },
+            {
+              text: isEditing ? "Update" : "Add",
+              onClick: handleSubmit,
+              variant: "primary",
+            },
+          ]}
         >
           <div className="form-group">
             <label htmlFor="name">Name</label>
@@ -237,7 +243,6 @@ const CategoryManagement = () => {
               }
             />
           </div>
-
           <div className="form-group">
             <label htmlFor="isActive">Status</label>
             <select
@@ -254,16 +259,28 @@ const CategoryManagement = () => {
               <option value="false">Inactive</option>
             </select>
           </div>
-        </AddModal>
+        </CustomModal>
 
-        <ConfirmationModal
+        {/* Delete Confirmation Modal */}
+        <CustomModal
           isOpen={isDeleteModalOpen}
-          title="Delete Category"
-          content="Are you sure you want to delete this category?"
-          onYes={handleDelete}
-          onNo={() => setIsDeleteModalOpen(false)}
           onClose={() => setIsDeleteModalOpen(false)}
-        />
+          header="Delete Category"
+          buttons={[
+            {
+              text: "No",
+              onClick: () => setIsDeleteModalOpen(false),
+              variant: "secondary",
+            },
+            {
+              text: "Yes",
+              onClick: handleDelete,
+              variant: "primary",
+            },
+          ]}
+        >
+          <p>Are you sure you want to delete this category?</p>
+        </CustomModal>
 
         <CustomSnackbar
           open={snackbar.open}

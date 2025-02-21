@@ -7,21 +7,16 @@
   .category-container {
     max-width: 1200px;
     margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
 
     .header {
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: center;
-      margin-bottom: 2rem;
+    }
 
-      h1 {
-        margin: 0;
-        font-size: 1.5rem;
-      }
+    h1 {
+      margin-bottom: 2rem;
+      font-size: 1.5rem;
     }
 
     .add-button {
@@ -35,6 +30,7 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      margin-bottom: 2rem;
 
       &:hover {
         background-color: #f4511e;
@@ -87,33 +83,6 @@
           color: #e74c3c;
         }
       }
-    }
-  }
-}
-
-// Modal styles
-.form-group {
-  margin-bottom: 1rem;
-
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: #888;
-  }
-
-  input,
-  select {
-    width: 100%;
-    padding: 0.5rem;
-    background-color: #444;
-    border: 1px solid #555;
-    border-radius: 4px;
-    color: white;
-    font-size: 0.875rem;
-
-    &:focus {
-      outline: none;
-      border-color: #2979ff;
     }
   }
 }
