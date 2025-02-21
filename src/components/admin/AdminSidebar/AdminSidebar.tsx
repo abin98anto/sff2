@@ -15,6 +15,7 @@ import { useAppDispatch } from "../../../hooks/reduxHooks";
 import { logout } from "../../../redux/thunks/user/userAuthServices";
 import ConfirmationModal from "../../common/Modal/ConfirmationModal/ConfirmationModal";
 
+// Menu items.
 const menuItems = [
   { title: "Dashboard", icon: BarChart2, path: "/admin/dashboard" },
   {

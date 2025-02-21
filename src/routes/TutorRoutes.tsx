@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router-dom";
-import { TutorLayout } from "../components/tutor/TutorLayout/TutorLayout";
+import TutorLayout from "../components/tutor/TutorLayout/TutorLayout";
 import Dashboard from "../pages/tutor/Dashboard/Dashboard";
 import PageNotFound from "../components/common/PageNotFound/PageNotFound";
 import Profile from "../pages/tutor/Profile/Profile";
