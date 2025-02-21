@@ -5,12 +5,12 @@ import { hourglass } from "ldrs";
 import GoogleButton from "./google-btn/GoogleButton";
 import { sendOTP } from "../../../redux/thunks/user/userAuthServices";
 import { signupSchema } from "../../../shared/config/yupConfig";
-import { comments } from "../../../shared/constants/comments";
+import comments from "../../../shared/constants/comments";
 import { IUser } from "../../../entities/IUser";
-import { userRoles } from "../../../entities/misc/userRole";
+import userRoles from "../../../entities/misc/userRole";
 import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
 import { AppRootState } from "../../../redux/store";
-import { useSnackbar } from "../../../hooks/useSnackbar";
+import useSnackbar from "../../../hooks/useSnackbar";
 import CustomSnackbar from "../../common/CustomSnackbar";
 
 interface UserSignupProps {

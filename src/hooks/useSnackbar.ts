@@ -6,7 +6,7 @@ interface SnackbarState {
   severity: "success" | "error";
 }
 
-export const useSnackbar = () => {
+const useSnackbar = () => {
   const [snackbar, setSnackbar] = useState<SnackbarState>({
     open: false,
     message: "",
@@ -34,3 +34,5 @@ export const useSnackbar = () => {
     hideSnackbar,
   };
 };
+
+export default useSnackbar;

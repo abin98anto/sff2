@@ -1,8 +1,8 @@
 import axios from "axios";
-import { comments } from "../constants/comments";
-import { API } from "../constants/API";
+import comments from "../constants/comments";
+import API from "../constants/API";
 
-export const uploadToCloudinary = async (file: File): Promise<string> => {
+const uploadToCloudinary = async (file: File): Promise<string> => {
   try {
     const formData = new FormData();
     formData.append("file", file);
@@ -24,3 +24,5 @@ export const uploadToCloudinary = async (file: File): Promise<string> => {
     throw new Error(comments.FILE_UPLOAD_FAIL);
   }
 };
+
+export default uploadToCloudinary;

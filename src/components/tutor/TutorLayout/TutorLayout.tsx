@@ -1,9 +1,9 @@
 import { Outlet } from "react-router-dom";
 
 import "./TutorLayout.scss";
-import { TutorSidebar } from "../TutorSidebar/TutorSidebar";
+import TutorSidebar from "../TutorSidebar/TutorSidebar";
 
-export const TutorLayout = () => {
+const TutorLayout = () => {
   return (
     <div className="tutor-layout">
       <TutorSidebar />
@@ -13,3 +13,5 @@ export const TutorLayout = () => {
     </div>
   );
 };
+
+export default TutorLayout;

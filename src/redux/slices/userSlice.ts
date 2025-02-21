@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+
 import { IUserState } from "../../entities/misc/IUserState";
 import {
   login,
@@ -6,7 +7,7 @@ import {
   sendOTP,
   verifyOTP,
 } from "../thunks/user/userAuthServices";
-import { comments } from "../../shared/constants/comments";
+import comments from "../../shared/constants/comments";
 import { updateUser } from "../thunks/user/userUpdateServices";
 
 const initialState: IUserState = {

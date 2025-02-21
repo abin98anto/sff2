@@ -1,15 +1,15 @@
 import { useState, useRef, useCallback } from "react";
 import { Plus, Trash2, Pencil } from "lucide-react";
 import "./CategoryManagement.scss";
-import { axiosInstance } from "../../../shared/config/axiosConfig";
+import axiosInstance from "../../../shared/config/axiosConfig";
 import AddModal from "../../../components/common/Modal/AddModal/AddModal";
-import { API } from "../../../shared/constants/API";
-import { comments } from "../../../shared/constants/comments";
+import API from "../../../shared/constants/API";
+import comments from "../../../shared/constants/comments";
 import type { ICategory } from "../../../entities/misc/ICategory";
 import DataTable, { Column } from "../../../components/common/Table/DataTable";
 import ConfirmationModal from "../../../components/common/Modal/ConfirmationModal/ConfirmationModal";
 import CustomSnackbar from "../../../components/common/CustomSnackbar";
-import { useSnackbar } from "../../../hooks/useSnackbar";
+import useSnackbar from "../../../hooks/useSnackbar";
 
 interface CategoryFormData {
   _id?: string;

@@ -3,12 +3,12 @@ import { Eye, EyeOff } from "lucide-react";
 import { hourglass } from "ldrs";
 
 import GoogleButton from "./google-btn/GoogleButton";
-import { comments } from "../../../shared/constants/comments";
-import { useSnackbar } from "../../../hooks/useSnackbar";
+import comments from "../../../shared/constants/comments";
+import useSnackbar from "../../../hooks/useSnackbar";
 import CustomSnackbar from "../../common/CustomSnackbar";
 import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
 import { AppRootState } from "../../../redux/store";
-import { LoginData } from "../../../entities/misc/LoginData";
+import LoginData from "../../../entities/misc/LoginData";
 import { login } from "../../../redux/thunks/user/userAuthServices";
 import { useNavigate } from "react-router-dom";
 

@@ -10,20 +10,20 @@ import {
   // Paper,
 } from "@mui/material";
 import { Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
+import { UploadIcon } from "lucide-react";
+
 import "./Profile.scss";
-import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
 import Loading from "../../../components/common/Loading/Loading";
-import { useSnackbar } from "../../../hooks/useSnackbar";
+import ResumeModal from "../../../components/common/Modal/ResumeModal/ResumeModal";
 import CustomSnackbar from "../../../components/common/CustomSnackbar";
-import { comments } from "../../../shared/constants/comments";
-import {
-  handleFileUpload,
+import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
+import useSnackbar from "../../../hooks/useSnackbar";
+import comments from "../../../shared/constants/comments";
+import uploadToCloudinary from "../../../shared/config/cloudinaryConfig";
+import handleFileUpload, {
   validateImageFile,
 } from "../../../shared/utils/cloudinary/fileUpload";
 import { updateUser } from "../../../redux/thunks/user/userUpdateServices";
-import { uploadToCloudinary } from "../../../shared/config/cloudinaryConfig";
-import { UploadIcon } from "lucide-react";
-import ResumeModal from "../../../components/common/Modal/ResumeModal/ResumeModal";
 
 const ProfileSection = () => {
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();

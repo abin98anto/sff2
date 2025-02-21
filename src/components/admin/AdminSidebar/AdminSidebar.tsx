@@ -1,5 +1,3 @@
-import "./AdminSidebar.scss";
-
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -11,6 +9,8 @@ import {
   //   BookCheck,
   SquareStack,
 } from "lucide-react";
+
+import "./AdminSidebar.scss";
 import { useAppDispatch } from "../../../hooks/reduxHooks";
 import { logout } from "../../../redux/thunks/user/userAuthServices";
 import ConfirmationModal from "../../common/Modal/ConfirmationModal/ConfirmationModal";

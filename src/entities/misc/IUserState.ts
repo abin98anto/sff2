@@ -1,6 +1,6 @@
 import { IUser } from "../IUser";
 
-export interface IUserState {
+export default interface IUserState {
   loading: boolean;
   message: string;
   error: string;

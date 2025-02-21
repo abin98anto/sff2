@@ -1,12 +1,12 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import AuthModal from "../AuthModal/AuthModal";
+import { Avatar, Menu, MenuItem, IconButton } from "@mui/material";
+
 import "./Header.scss";
 import { AppRootState } from "../../../redux/store";
 import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
-
-import { Avatar, Menu, MenuItem, IconButton } from "@mui/material";
+import AuthModal from "../AuthModal/AuthModal";
 import ConfirmationModal from "../../common/Modal/ConfirmationModal/ConfirmationModal";
 import { logout } from "../../../redux/thunks/user/userAuthServices";
 

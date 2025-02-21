@@ -4,13 +4,13 @@ import UserLogin from "./UserLogin";
 import UserSignup from "./UserSignup";
 import OtpVerification from "./OtpVerification";
 import "./AuthModal.scss";
-import { axiosInstance } from "../../../shared/config/axiosConfig";
-import { API } from "../../../shared/constants/API";
+import axiosInstance from "../../../shared/config/axiosConfig";
+import API from "../../../shared/constants/API";
 import { resetUserInfo } from "../../../redux/slices/userSlice";
-import { images } from "../../../shared/constants/images";
+import images from "../../../shared/constants/images";
 import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
 import { AppRootState } from "../../../redux/store";
-import { comments } from "../../../shared/constants/comments";
+import comments from "../../../shared/constants/comments";
 
 type AuthSection = "signup" | "otp" | "login";
 type UserRole = "user" | "tutor";

@@ -1,16 +1,16 @@
 import { Pencil, Plus, Trash2, UserRoundPlus } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import "./CourseManagement.scss";
+import { ICourse } from "../../../entities/ICourse";
+import useSnackbar from "../../../hooks/useSnackbar";
 import DataTable, { Column } from "../../../components/common/Table/DataTable";
 import CustomSnackbar from "../../../components/common/CustomSnackbar";
-import { useSnackbar } from "../../../hooks/useSnackbar";
-import { ICourse } from "../../../entities/ICourse";
 import ConfirmationModal from "../../../components/common/Modal/ConfirmationModal/ConfirmationModal";
-import { axiosInstance } from "../../../shared/config/axiosConfig";
-import { API } from "../../../shared/constants/API";
-import { comments } from "../../../shared/constants/comments";
-import { useNavigate } from "react-router-dom";
+import axiosInstance from "../../../shared/config/axiosConfig";
+import API from "../../../shared/constants/API";
+import comments from "../../../shared/constants/comments";
 
 interface TableData {
   data: ICourse[];
@@ -34,6 +34,7 @@ const CourseManagement = () => {
     navigate("/admin/add-course");
   };
 
+  // Populating the table.
   const columns: Column<ICourse>[] = [
     {
       key: "slNo",
@@ -43,7 +44,7 @@ const CourseManagement = () => {
     {
       key: "title",
       label: "Name",
-      render: (item: ICourse) => item.title || "No title", // Updated from basicInfo.title
+      render: (item: ICourse) => item.title || "No title",
     },
     {
       key: "isActive",
@@ -79,7 +80,6 @@ const CourseManagement = () => {
       label: "Total Enrolled",
       render: (item: ICourse) => item.enrollmentCount,
     },
-    // Removed "createdAt" column since it’s not in ICourse
     {
       key: "actions",
       label: "Actions",
@@ -132,9 +132,10 @@ const CourseManagement = () => {
         return { data: [], total: 0 };
       }
     },
-    [showSnackbar] // Added dependency
+    [showSnackbar]
   );
 
+  // Toggling course status.
   const handleToggle = async () => {
     if (!toggleId || !toggleCourse) return;
 
@@ -177,7 +178,7 @@ const CourseManagement = () => {
           columns={columns as Column<Record<string, any>>[]}
           fetchData={fetchTableData}
           pageSize={10}
-          initialSort={{ field: "title", order: "asc" }} // Updated to "title"
+          initialSort={{ field: "title", order: "asc" }}
           refetchRef={refetchData}
         />
 

@@ -1,8 +1,8 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { IUser } from "../../../entities/IUser";
-import { axiosInstance } from "../../../shared/config/axiosConfig";
-import { API } from "../../../shared/constants/API";
-import { comments } from "../../../shared/constants/comments";
+import axiosInstance from "../../../shared/config/axiosConfig";
+import API from "../../../shared/constants/API";
+import comments from "../../../shared/constants/comments";
 import { AxiosError } from "axios";
 
 export const updateUser = createAsyncThunk(

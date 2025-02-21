@@ -3,16 +3,16 @@ import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { hourglass } from "ldrs";
 
-import { axiosInstance } from "../../../shared/config/axiosConfig";
-import { comments } from "../../../shared/constants/comments";
-import { API } from "../../../shared/constants/API";
+import axiosInstance from "../../../shared/config/axiosConfig";
+import comments from "../../../shared/constants/comments";
+import API from "../../../shared/constants/API";
 import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
 import {
   sendOTP,
   verifyOTP,
 } from "../../../redux/thunks/user/userAuthServices";
 import { IUser } from "../../../entities/IUser";
-import { useSnackbar } from "../../../hooks/useSnackbar";
+import useSnackbar from "../../../hooks/useSnackbar";
 import CustomSnackbar from "../../common/CustomSnackbar";
 
 interface OtpVerificationProps {

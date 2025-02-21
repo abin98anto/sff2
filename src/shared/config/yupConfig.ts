@@ -1,5 +1,5 @@
 import * as Yup from "yup";
-import { comments } from "../constants/comments";
+import comments from "../constants/comments";
 
 const loginFields = {
   email: Yup.string()

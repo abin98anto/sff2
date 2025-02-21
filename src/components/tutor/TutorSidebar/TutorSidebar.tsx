@@ -1,5 +1,3 @@
-import "./TutorSidebar.scss";
-
 import { useState } from "react";
 import {
   BarChart2,
@@ -8,9 +6,11 @@ import {
   CircleUserRound,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+import "./TutorSidebar.scss";
 import { useAppDispatch } from "../../../hooks/reduxHooks";
-import ConfirmationModal from "../../common/Modal/ConfirmationModal/ConfirmationModal";
 import { logout } from "../../../redux/thunks/user/userAuthServices";
+import ConfirmationModal from "../../common/Modal/ConfirmationModal/ConfirmationModal";
 
 const menuItems = [
   {
@@ -35,7 +35,7 @@ const menuItems = [
   },
 ];
 
-export const TutorSidebar = () => {
+const TutorSidebar = () => {
   const dispatch = useAppDispatch();
   const [isCollapsed] = useState(false);
   const navigate = useNavigate();
@@ -104,3 +104,5 @@ export const TutorSidebar = () => {
     </>
   );
 };
+
+export default TutorSidebar;

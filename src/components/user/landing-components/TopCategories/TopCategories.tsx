@@ -1,5 +1,5 @@
 import "./TopCategories.scss";
-import { images } from "../../../../shared/constants/images";
+import images from "../../../../shared/constants/images";
 
 const TopCategories = () => {
   return (

@@ -1,11 +1,12 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { IUser } from "../../../entities/IUser";
-import { axiosInstance } from "../../../shared/config/axiosConfig";
-import { API } from "../../../shared/constants/API";
-import { comments } from "../../../shared/constants/comments";
-import { VerifyOTPData } from "../../../entities/misc/verifyOtpData";
 import { AxiosError } from "axios";
+
+import { IUser } from "../../../entities/IUser";
 import { LoginData } from "../../../entities/misc/LoginData";
+import { VerifyOTPData } from "../../../entities/misc/verifyOtpData";
+import axiosInstance from "../../../shared/config/axiosConfig";
+import API from "../../../shared/constants/API";
+import comments from "../../../shared/constants/comments";
 
 export const sendOTP = createAsyncThunk(
   "user/sendOTP",

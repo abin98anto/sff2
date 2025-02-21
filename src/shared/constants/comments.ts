@@ -1,4 +1,4 @@
-export const comments = {
+const comments = {
   ALL_FIELDS_REQ: "Please fill all the fields.",
   CPASS_REQ: "Confirm password is required",
   CPASS_INVALID: "Passwords must match",
@@ -101,5 +101,7 @@ export const comments = {
   VIDEO_REQ: "Vedio is required.",
   COURSE_DISCARD: "Are you sure you want to discard this course?",
   PREREQ_PH: "Enter the prerequesities.",
-  LEVEL_REQ:"Need the course level."
+  LEVEL_REQ: "Need the course level.",
 };
+
+export default comments;

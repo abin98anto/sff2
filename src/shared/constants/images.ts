@@ -1,4 +1,4 @@
-export const images = {
+const images = {
   COMBINED_STUDY:
     "https://res.cloudinary.com/dqjjysikb/image/upload/v1733894417/group-study_p097zd.svg",
   STUDENTS_LIBARARY:
@@ -26,3 +26,5 @@ export const images = {
   BG_IMG:
     "https://res.cloudinary.com/dqjjysikb/image/upload/v1734331882/AdminLogin-img_cav517.png",
 };
+
+export default images;

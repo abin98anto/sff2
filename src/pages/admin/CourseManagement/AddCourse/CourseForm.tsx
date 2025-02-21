@@ -6,11 +6,11 @@ import { ICourse } from "../../../../entities/ICourse";
 import BasicInformation from "./components/BasicInformation";
 import Curriculum from "./components/Curriculum";
 import ProgressSteps from "./components/ProgressSteps";
-import { useSnackbar } from "../../../../hooks/useSnackbar";
+import useSnackbar from "../../../../hooks/useSnackbar";
 import ConfirmationModal from "../../../../components/common/Modal/ConfirmationModal/ConfirmationModal";
-import { comments } from "../../../../shared/constants/comments";
+import comments from "../../../../shared/constants/comments";
 import CustomSnackbar from "../../../../components/common/CustomSnackbar";
-import { API } from "../../../../shared/constants/API";
+import API from "../../../../shared/constants/API";
 
 const STORAGE_KEY = "courseFormData";
 

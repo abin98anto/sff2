@@ -1,4 +1,4 @@
-export const API = {
+const API = {
   FRONT_END: "http://localhost:5173",
 
   LANDING: "/",
@@ -34,3 +34,5 @@ export const API = {
   // Admin Side.
   TUTORS_GET: "/admin/tutor",
 };
+
+export default API;

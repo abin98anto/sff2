@@ -10,16 +10,16 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import "../CourseForm.scss";
+import AddModal from "../../../../../components/common/Modal/AddModal/AddModal";
 import { ICourse, ISection, ILesson } from "../../../../../entities/ICourse";
-import {
-  handleFileUpload,
+import handleFileUpload, {
   validatePdfFile,
   validateVideoFile,
 } from "../../../../../shared/utils/cloudinary/fileUpload";
-import { comments } from "../../../../../shared/constants/comments";
-import { axiosInstance } from "../../../../../shared/config/axiosConfig";
-import { API } from "../../../../../shared/constants/API";
-import AddModal from "../../../../../components/common/Modal/AddModal/AddModal";
+import comments from "../../../../../shared/constants/comments";
+import axiosInstance from "../../../../../shared/config/axiosConfig";
+import API from "../../../../../shared/constants/API";
+import Loading from "../../../../../components/common/Loading/Loading";
 
 interface CurriculumProps {
   data: ISection[];
@@ -39,6 +39,7 @@ const Curriculum = ({
   courseFormData,
 }: CurriculumProps) => {
   const navigate = useNavigate();
+
   const [sections, setSections] = useState<ISection[]>(data || []);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddLessonModalOpen, setIsAddLessonModalOpen] = useState(false);
@@ -59,7 +60,7 @@ const Curriculum = ({
   const [newLessonName, setNewLessonName] = useState("");
   const [newLessonVideo, setNewLessonVideo] = useState<File | null>(null);
   const [newLessonPdfs, setNewLessonPdfs] = useState<File[]>([]);
-  const [newLessonDuration, setNewLessonDuration] = useState<number>(0); // New field for duration
+  const [newLessonDuration, setNewLessonDuration] = useState<number>(0);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [uploadingPdfs, setUploadingPdfs] = useState(false);
   const [publishing, setPublishing] = useState(false);
@@ -114,8 +115,7 @@ const Curriculum = ({
     const file = e.target.files?.[0];
     if (file && validateVideoFile(file)) {
       setNewLessonVideo(file);
-      // Optionally, estimate duration from file metadata if available
-      setNewLessonDuration(0); // Placeholder; update if duration is provided
+      setNewLessonDuration(0);
     } else {
       setError(comments.INVALID_VIDEO);
     }
@@ -172,7 +172,7 @@ const Curriculum = ({
       name: newLessonName,
       videoUrl: videoUploadResult.url as string,
       pdfUrls,
-      duration: newLessonDuration, // Use user-provided duration
+      duration: newLessonDuration,
     };
 
     const updatedSections = sections.map((section, index) =>
@@ -773,7 +773,7 @@ const Curriculum = ({
           className="primary"
           disabled={publishing}
         >
-          {publishing ? comments.PUBLISHING : comments.COURSE_PUB}
+          {publishing ? <Loading /> : comments.COURSE_PUB}
         </button>
       </div>
     </div>

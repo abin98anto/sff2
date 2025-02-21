@@ -15,7 +15,7 @@ export interface ISection {
   duration: number;
 }
 
-export interface ICourse {
+export default interface ICourse {
   _id?: string;
   title: string;
   subtitle: string;
