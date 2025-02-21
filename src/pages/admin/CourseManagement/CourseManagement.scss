@@ -12,16 +12,9 @@
     justify-content: space-between;
     align-items: center;
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-
-      h1 {
-        margin: 0;
-        font-size: 1.5rem;
-      }
+    h1 {
+      margin: 0 0 2rem 0;
+      font-size: 1.5rem;
     }
 
     .add-button {
@@ -35,6 +28,7 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      margin-bottom: 1rem;
 
       &:hover {
         background-color: #f4511e;
@@ -74,6 +68,13 @@
       justify-content: center;
       transition: background-color 0.2s;
 
+      &.add {
+        &:hover {
+          background-color: rgba(46, 204, 113, 0.2);
+          color: #2ecc71;
+        }
+      }
+
       &.edit {
         &:hover {
           background-color: rgba(52, 152, 219, 0.2);
@@ -89,41 +90,14 @@
       }
     }
   }
-}
 
-// Modal styles
-.form-group {
-  margin-bottom: 1rem;
+  .tutors-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
 
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: #888;
-  }
-
-  input,
-  select {
-    width: 100%;
-    padding: 0.5rem;
-    background-color: #444;
-    border: 1px solid #555;
-    border-radius: 4px;
-    color: white;
-    font-size: 0.875rem;
-
-    &:focus {
-      outline: none;
-      border-color: #2979ff;
+    span {
+      white-space: nowrap;
     }
-  }
-}
-
-.tutors-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-
-  span {
-    white-space: nowrap;
   }
 }

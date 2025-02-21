@@ -1,6 +1,6 @@
 import type React from "react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import AuthModal from "../AuthModal/AuthModal";
 import "./Header.scss";
 import { AppRootState } from "../../../redux/store";
@@ -27,6 +27,7 @@ const Header: React.FC = () => {
   };
 
   // Profile menu functions.
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { isAuthenticated, userInfo } = useAppSelector(
     (state: AppRootState) => state.user
@@ -39,6 +40,14 @@ const Header: React.FC = () => {
     setAnchorEl(null);
   };
 
+  useEffect(() => {
+    if (userInfo?.role === "admin") {
+      navigate("/admin/dashboard");
+    } else if (userInfo?.role === "tutor") {
+      navigate("/tutor");
+    }
+  }, [userInfo]);
+
   // logout function.
   const dispatch = useAppDispatch();
   const openLogoutModal = () => {
@@ -47,6 +56,7 @@ const Header: React.FC = () => {
   const closeLogoutModal = () => {
     setIsModalOpen(false);
   };
+
   const handleLogoutConfirm = async () => {
     try {
       await dispatch(logout()).unwrap();

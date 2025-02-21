@@ -7,12 +7,12 @@ import {
   UploadIcon,
 } from "lucide-react";
 
-import type { BasicInfo } from "../form-types";
 import "../CourseForm.scss";
 import { axiosInstance } from "../../../../../shared/config/axiosConfig";
 import { API } from "../../../../../shared/constants/API";
 import { comments } from "../../../../../shared/constants/comments";
 import { ICategory } from "../../../../../entities/misc/ICategory";
+import { ICourse } from "../../../../../entities/ICourse";
 import Loading from "../../../../../components/common/Loading/Loading";
 import {
   handleFileUpload,
@@ -20,8 +20,8 @@ import {
 } from "../../../../../shared/utils/cloudinary/fileUpload";
 
 interface BasicInformationProps {
-  data: BasicInfo;
-  onUpdate: (data: Partial<BasicInfo>) => void;
+  data: ICourse;
+  onUpdate: (data: Partial<ICourse>) => void;
   onNext: () => void;
   onCancel: () => void;
   setError: (error: string) => void;
@@ -50,16 +50,18 @@ const BasicInformation = ({
         setCategories(response.data.data.data.data);
       } else {
         setError(comments.NO_CAT_RECIVIED);
+        setCategories([]); // Fallback to empty array
       }
     } catch (err) {
       console.error(comments.CAT_FETCH_FAIL, err);
       setError(comments.CAT_FETCH_FAIL);
+      setCategories([]); // Fallback to empty array
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleChange = (field: keyof BasicInfo, value: string) => {
+  const handleChange = (field: keyof ICourse, value: string) => {
     onUpdate({ [field]: value });
   };
 
@@ -78,9 +80,7 @@ const BasicInformation = ({
       });
 
       if (result.success && result.url) {
-        onUpdate({
-          thumbnail: result.url,
-        });
+        onUpdate({ thumbnail: result.url });
       } else {
         console.log(comments.IMG_UPLOAD_FAIL, result.error);
         setError(comments.IMG_UPLOAD_FAIL);
@@ -92,9 +92,7 @@ const BasicInformation = ({
   };
 
   const handleDeleteThumbnail = () => {
-    onUpdate({
-      thumbnail: "",
-    });
+    onUpdate({ thumbnail: "" });
   };
 
   const handleEditThumbnail = () => {
@@ -197,7 +195,7 @@ const BasicInformation = ({
                 ))
               ) : (
                 <option value="" disabled>
-                  comments.NO_CAT_RECIVIED
+                  {comments.NO_CAT_RECIVIED}
                 </option>
               )}
             </select>
@@ -239,7 +237,7 @@ const BasicInformation = ({
             onChange={(e) => handleChange("topic", e.target.value)}
             placeholder={comments.TOPIC_PLACEHOLDER}
           />
-          <label htmlFor="topic">Course Topic (seperated by comma)</label>
+          <label htmlFor="topic">Course Topic (separated by comma)</label>
         </div>
 
         <div className="form-group">
@@ -250,7 +248,9 @@ const BasicInformation = ({
             onChange={(e) => handleChange("prerequisites", e.target.value)}
             placeholder={comments.PREREQ_PH}
           />
-          <label htmlFor="topic">Prerequisites (seperated by comma)</label>
+          <label htmlFor="prerequisites">
+            Prerequisites (separated by comma)
+          </label>
         </div>
 
         <div className="button-group">
@@ -317,6 +317,7 @@ const BasicInformation = ({
             onChange={(e) => handleChange("description", e.target.value)}
             placeholder={comments.DESCRIPTION_PLACEHOLDER}
             rows={6}
+            maxLength={500}
           />
           <label htmlFor="description">Course Description</label>
           <div className="character-count">

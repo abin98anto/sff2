@@ -1,7 +1,6 @@
-import type React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+
 import { IUser } from "../../../../entities/IUser";
-// import type { UserDetails } from "../../../../entities/user/UserDetails";
 
 interface AddTutorsModalProps {
   isOpen: boolean;

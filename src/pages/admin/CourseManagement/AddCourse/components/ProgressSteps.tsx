@@ -4,22 +4,21 @@ import "../CourseForm.scss";
 interface Step {
   id: number;
   name: string;
-  progress: string;
 }
 
 interface ProgressStepsProps {
   currentStep: number;
 }
 
-export function ProgressSteps({ currentStep }: ProgressStepsProps) {
+const ProgressSteps = ({ currentStep }: ProgressStepsProps) => {
   const steps: Step[] = [
-    { id: 1, name: "Basic Information", progress: "" },
-    { id: 2, name: "Curriculum", progress: "" },
+    { id: 1, name: "Basic Information" },
+    { id: 2, name: "Curriculum" },
   ];
 
   return (
     <div className="progress-steps-container">
-      {steps.map((step: Step) => (
+      {steps.map((step) => (
         <div
           key={step.id}
           className={`step-box ${currentStep > step.id ? "completed" : ""} ${
@@ -38,9 +37,10 @@ export function ProgressSteps({ currentStep }: ProgressStepsProps) {
           >
             {step.name}
           </span>
-          <span className="step-progress">{step.progress}</span>
         </div>
       ))}
     </div>
   );
-}
+};
+
+export default ProgressSteps;

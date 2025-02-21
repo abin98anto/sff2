@@ -1,6 +1,5 @@
-"use client";
-
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+
 import "./DataTable.scss";
 import { comments } from "../../../shared/constants/comments";
 import Pagination from "../Pagination/Pagination";

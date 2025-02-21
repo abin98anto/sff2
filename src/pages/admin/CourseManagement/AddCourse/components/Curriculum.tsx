@@ -1,4 +1,3 @@
-import type React from "react";
 import { useState, useEffect } from "react";
 import {
   EditIcon,
@@ -11,12 +10,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import "../CourseForm.scss";
-import type {
-  Curriculum,
-  CurriculumSection,
-  Lecture,
-  FormData,
-} from "../form-types";
+import { ICourse, ISection, ILesson } from "../../../../../entities/ICourse";
 import {
   handleFileUpload,
   validatePdfFile,
@@ -28,34 +22,36 @@ import { API } from "../../../../../shared/constants/API";
 import AddModal from "../../../../../components/common/Modal/AddModal/AddModal";
 
 interface CurriculumProps {
-  data: Curriculum;
-  onUpdate: (data: Partial<Curriculum>) => void;
+  data: ISection[];
+  onUpdate: (data: ISection[]) => void;
   onPrevious: () => void;
   onCancel: () => void;
   setError: (error: string) => void;
-  courseFormData: FormData;
+  courseFormData: ICourse;
 }
 
-export function Curriculum({
+const Curriculum = ({
   data,
   onUpdate,
   onPrevious,
   onCancel,
   setError,
   courseFormData,
-}: CurriculumProps) {
+}: CurriculumProps) => {
   const navigate = useNavigate();
-  const [sections, setSections] = useState<CurriculumSection[]>(
-    data.sections || []
-  );
+  const [sections, setSections] = useState<ISection[]>(data || []);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddLessonModalOpen, setIsAddLessonModalOpen] = useState(false);
   const [isEditLessonModalOpen, setIsEditLessonModalOpen] = useState(false);
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-  const [editingSectionId, setEditingSectionId] = useState<number | null>(null);
-  const [editingLessonId, setEditingLessonId] = useState<number | null>(null);
+  const [editingSectionIndex, setEditingSectionIndex] = useState<number | null>(
+    null
+  );
+  const [editingLessonId, setEditingLessonId] = useState<
+    string | number | null
+  >(null);
   const [deletingItemType, setDeletingItemType] = useState<
     "section" | "lesson" | null
   >(null);
@@ -63,48 +59,54 @@ export function Curriculum({
   const [newLessonName, setNewLessonName] = useState("");
   const [newLessonVideo, setNewLessonVideo] = useState<File | null>(null);
   const [newLessonPdfs, setNewLessonPdfs] = useState<File[]>([]);
+  const [newLessonDuration, setNewLessonDuration] = useState<number>(0); // New field for duration
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [uploadingPdfs, setUploadingPdfs] = useState(false);
   const [publishing, setPublishing] = useState(false);
 
   useEffect(() => {
-    setSections(data.sections || []);
-  }, [data.sections]);
+    setSections(data || []);
+  }, [data]);
 
-  const addSection = () => {
-    const newSection: CurriculumSection = {
-      id: sections.length + 1,
-      name: "New Section",
-      lectures: [],
-    };
-    setSections([...sections, newSection]);
-    onUpdate({ sections: [...sections, newSection] });
+  const calculateSectionDuration = (lessons: ILesson[]): number => {
+    return lessons.reduce((sum, lesson) => sum + lesson.duration, 0);
   };
 
-  const handleEditClick = (section: CurriculumSection) => {
-    setEditingSectionId(section.id);
+  const addSection = () => {
+    const newSection: ISection = {
+      name: "New Section",
+      lessons: [],
+      duration: 0,
+    };
+    const updatedSections = [...sections, newSection];
+    setSections(updatedSections);
+    onUpdate(updatedSections);
+  };
+
+  const handleEditClick = (section: ISection, sectionIndex: number) => {
+    setEditingSectionIndex(sectionIndex);
     setEditingName(section.name);
     setIsEditModalOpen(true);
   };
 
   const handleSaveEdit = () => {
-    if (editingSectionId === null) return;
+    if (editingSectionIndex === null) return;
 
-    const updatedSections = sections.map((section) =>
-      section.id === editingSectionId
+    const updatedSections = sections.map((section, index) =>
+      index === editingSectionIndex
         ? { ...section, name: editingName }
         : section
     );
 
     setSections(updatedSections);
-    onUpdate({ sections: updatedSections });
+    onUpdate(updatedSections);
     setIsEditModalOpen(false);
-    setEditingSectionId(null);
+    setEditingSectionIndex(null);
     setEditingName("");
   };
 
-  const handleAddLessonClick = (sectionId: number) => {
-    setEditingSectionId(sectionId);
+  const handleAddLessonClick = (sectionIndex: number) => {
+    setEditingSectionIndex(sectionIndex);
     setIsAddLessonModalOpen(true);
   };
 
@@ -112,6 +114,8 @@ export function Curriculum({
     const file = e.target.files?.[0];
     if (file && validateVideoFile(file)) {
       setNewLessonVideo(file);
+      // Optionally, estimate duration from file metadata if available
+      setNewLessonDuration(0); // Placeholder; update if duration is provided
     } else {
       setError(comments.INVALID_VIDEO);
     }
@@ -155,9 +159,7 @@ export function Curriculum({
 
     setUploadingPdfs(true);
     const pdfUploadPromises = newLessonPdfs.map((pdf) =>
-      handleFileUpload(pdf, {
-        validateFile: validatePdfFile,
-      })
+      handleFileUpload(pdf, { validateFile: validatePdfFile })
     );
     const pdfUploadResults = await Promise.all(pdfUploadPromises);
     setUploadingPdfs(false);
@@ -166,21 +168,25 @@ export function Curriculum({
       .filter((result) => result.success)
       .map((result) => result.url as string);
 
-    const newLesson: Lecture = {
-      id: Date.now(),
+    const newLesson: ILesson = {
       name: newLessonName,
       videoUrl: videoUploadResult.url as string,
       pdfUrls,
+      duration: newLessonDuration, // Use user-provided duration
     };
 
-    const updatedSections = sections.map((section) =>
-      section.id === editingSectionId
-        ? { ...section, lectures: [...section.lectures, newLesson] }
+    const updatedSections = sections.map((section, index) =>
+      index === editingSectionIndex
+        ? {
+            ...section,
+            lessons: [...section.lessons, newLesson],
+            duration: calculateSectionDuration([...section.lessons, newLesson]),
+          }
         : section
     );
 
     setSections(updatedSections);
-    onUpdate({ sections: updatedSections });
+    onUpdate(updatedSections);
     setIsAddLessonModalOpen(false);
     resetLessonForm();
   };
@@ -189,7 +195,8 @@ export function Curriculum({
     setNewLessonName("");
     setNewLessonVideo(null);
     setNewLessonPdfs([]);
-    setEditingSectionId(null);
+    setNewLessonDuration(0);
+    setEditingSectionIndex(null);
     setEditingLessonId(null);
   };
 
@@ -199,7 +206,7 @@ export function Curriculum({
       return false;
     }
     for (const section of sections) {
-      if (section.lectures.length === 0) {
+      if (section.lessons.length === 0) {
         setError(comments.LESSON_REQ2);
         return false;
       }
@@ -207,13 +214,18 @@ export function Curriculum({
     return true;
   };
 
-  const prepareCourseDataForBackend = (formData: FormData) => {
+  const prepareCourseDataForBackend = (formData: ICourse) => {
     return {
       ...formData,
-      curriculum: formData.curriculum.sections.map((section) => ({
-        name: section.name,
-        lessons: section.lectures,
-      })),
+      curriculum: formData.curriculum,
+      totalLessons: formData.curriculum.reduce(
+        (total, section) => total + section.lessons.length,
+        0
+      ),
+      totalDuration: formData.curriculum.reduce(
+        (total, section) => total + section.duration,
+        0
+      ),
     };
   };
 
@@ -240,14 +252,18 @@ export function Curriculum({
     }
   };
 
-  const handleEditLessonClick = (sectionId: number, lessonId: number) => {
-    setEditingSectionId(sectionId);
+  const handleEditLessonClick = (
+    sectionIndex: number,
+    lessonId: string | number
+  ) => {
+    setEditingSectionIndex(sectionIndex);
     setEditingLessonId(lessonId);
-    const section = sections.find((s) => s.id === sectionId);
-    const lesson = section?.lectures.find((l) => l.id === lessonId);
+    const section = sections[sectionIndex];
+    const lesson = section?.lessons.find((l) => l._id === lessonId);
     if (lesson) {
       setNewLessonName(lesson.name);
       setNewLessonPdfs([]);
+      setNewLessonDuration(lesson.duration);
       setIsEditLessonModalOpen(true);
     }
   };
@@ -258,7 +274,9 @@ export function Curriculum({
       return;
     }
 
-    let videoUrl = "";
+    let videoUrl = sections[editingSectionIndex!]?.lessons.find(
+      (l) => l._id === editingLessonId
+    )?.videoUrl;
     if (newLessonVideo) {
       setUploadingVideo(true);
       const videoUploadResult = await handleFileUpload(newLessonVideo, {
@@ -277,9 +295,7 @@ export function Curriculum({
 
     setUploadingPdfs(true);
     const pdfUploadPromises = newLessonPdfs.map((pdf) =>
-      handleFileUpload(pdf, {
-        validateFile: validatePdfFile,
-      })
+      handleFileUpload(pdf, { validateFile: validatePdfFile })
     );
     const pdfUploadResults = await Promise.all(pdfUploadPromises);
     setUploadingPdfs(false);
@@ -288,61 +304,70 @@ export function Curriculum({
       .filter((result) => result.success)
       .map((result) => result.url as string);
 
-    const updatedSections = sections.map((section) => {
-      if (section.id === editingSectionId) {
-        const updatedLectures = section.lectures.map((lecture) => {
-          if (lecture.id === editingLessonId) {
+    const updatedSections = sections.map((section, index) => {
+      if (index === editingSectionIndex) {
+        const updatedLessons = section.lessons.map((lesson) => {
+          if (lesson._id === editingLessonId) {
             return {
-              ...lecture,
+              ...lesson,
               name: newLessonName,
-              videoUrl: videoUrl || lecture.videoUrl,
-              pdfUrls: [...lecture.pdfUrls, ...newPdfUrls],
+              videoUrl: videoUrl || lesson.videoUrl,
+              pdfUrls: [...lesson.pdfUrls, ...newPdfUrls],
+              duration: newLessonDuration,
             };
           }
-          return lecture;
+          return lesson;
         });
-        return { ...section, lectures: updatedLectures };
+        return {
+          ...section,
+          lessons: updatedLessons,
+          duration: calculateSectionDuration(updatedLessons),
+        };
       }
       return section;
     });
 
     setSections(updatedSections);
-    onUpdate({ sections: updatedSections });
+    onUpdate(updatedSections);
     setIsEditLessonModalOpen(false);
     resetLessonForm();
   };
 
   const handleRemoveExistingPdf = (
-    sectionId: number,
-    lessonId: number,
+    sectionIndex: number,
+    lessonId: string | number,
     pdfUrl: string
   ) => {
-    const updatedSections = sections.map((section) => {
-      if (section.id === sectionId) {
-        const updatedLectures = section.lectures.map((lecture) => {
-          if (lecture.id === lessonId) {
+    const updatedSections = sections.map((section, index) => {
+      if (index === sectionIndex) {
+        const updatedLessons = section.lessons.map((lesson) => {
+          if (lesson._id === lessonId) {
             return {
-              ...lecture,
-              pdfUrls: lecture.pdfUrls.filter((url) => url !== pdfUrl),
+              ...lesson,
+              pdfUrls: lesson.pdfUrls.filter((url) => url !== pdfUrl),
             };
           }
-          return lecture;
+          return lesson;
         });
-        return { ...section, lectures: updatedLectures };
+        return {
+          ...section,
+          lessons: updatedLessons,
+          duration: calculateSectionDuration(updatedLessons),
+        };
       }
       return section;
     });
 
     setSections(updatedSections);
-    onUpdate({ sections: updatedSections });
+    onUpdate(updatedSections);
   };
 
   const handleDeleteClick = (
     type: "section" | "lesson",
-    sectionId: number,
-    lessonId?: number
+    sectionIndex: number,
+    lessonId?: string | number
   ) => {
-    setEditingSectionId(sectionId);
+    setEditingSectionIndex(sectionIndex);
     setEditingLessonId(lessonId || null);
     setDeletingItemType(type);
     setIsDeleteConfirmationOpen(true);
@@ -351,32 +376,34 @@ export function Curriculum({
   const handleConfirmDelete = () => {
     if (deletingItemType === "section") {
       const updatedSections = sections.filter(
-        (section) => section.id !== editingSectionId
+        (_, index) => index !== editingSectionIndex
       );
       setSections(updatedSections);
-      onUpdate({ sections: updatedSections });
+      onUpdate(updatedSections);
     } else if (
       deletingItemType === "lesson" &&
-      editingSectionId &&
+      editingSectionIndex !== null &&
       editingLessonId
     ) {
-      const updatedSections = sections.map((section) => {
-        if (section.id === editingSectionId) {
+      const updatedSections = sections.map((section, index) => {
+        if (index === editingSectionIndex) {
+          const updatedLessons = section.lessons.filter(
+            (lesson) => lesson._id !== editingLessonId
+          );
           return {
             ...section,
-            lectures: section.lectures.filter(
-              (lecture) => lecture.id !== editingLessonId
-            ),
+            lessons: updatedLessons,
+            duration: calculateSectionDuration(updatedLessons),
           };
         }
         return section;
       });
       setSections(updatedSections);
-      onUpdate({ sections: updatedSections });
+      onUpdate(updatedSections);
     }
     setIsDeleteConfirmationOpen(false);
     setDeletingItemType(null);
-    setEditingSectionId(null);
+    setEditingSectionIndex(null);
     setEditingLessonId(null);
   };
 
@@ -385,28 +412,29 @@ export function Curriculum({
       <h2>Course Curriculum</h2>
 
       <div className="curriculum-section">
-        {sections.map((section: CurriculumSection) => (
-          <div key={section.id} className="section-item">
+        {sections.map((section: ISection, sectionIndex) => (
+          <div key={section._id || sectionIndex} className="section-item">
             <div className="section-header">
               <h3>
-                Section {String(section.id).padStart(2, "0")}: {section.name}
+                Section {String(sectionIndex + 1).padStart(2, "0")}:{" "}
+                {section.name}
               </h3>
               <div style={{ display: "flex", gap: "0.5rem" }}>
-                <button onClick={() => handleAddLessonClick(section.id)}>
+                <button onClick={() => handleAddLessonClick(sectionIndex)}>
                   <PlusIcon size={16} />
                 </button>
-                <button onClick={() => handleEditClick(section)}>
+                <button onClick={() => handleEditClick(section, sectionIndex)}>
                   <EditIcon size={16} />
                 </button>
                 <button
-                  onClick={() => handleDeleteClick("section", section.id)}
+                  onClick={() => handleDeleteClick("section", sectionIndex)}
                 >
                   <TrashIcon size={16} />
                 </button>
               </div>
             </div>
-            {section.lectures.map((lecture, index) => (
-              <div key={lecture.id} className="lecture-item">
+            {section.lessons.map((lesson, index) => (
+              <div key={lesson._id || index} className="lecture-item">
                 <div
                   style={{
                     display: "flex",
@@ -415,20 +443,25 @@ export function Curriculum({
                   }}
                 >
                   <span>
-                    Lecture {String(index + 1).padStart(2, "0")}: {lecture.name}
+                    Lecture {String(index + 1).padStart(2, "0")}: {lesson.name}{" "}
+                    ({lesson.duration}s)
                   </span>
                 </div>
                 <div style={{ display: "flex", gap: "0.5rem" }}>
                   <button
                     onClick={() =>
-                      handleEditLessonClick(section.id, lecture.id)
+                      handleEditLessonClick(sectionIndex, lesson._id || index)
                     }
                   >
                     <EditIcon size={16} />
                   </button>
                   <button
                     onClick={() =>
-                      handleDeleteClick("lesson", section.id, lecture.id)
+                      handleDeleteClick(
+                        "lesson",
+                        sectionIndex,
+                        lesson._id || index
+                      )
                     }
                   >
                     <TrashIcon size={16} />
@@ -475,6 +508,18 @@ export function Curriculum({
                 type="text"
                 value={newLessonName}
                 onChange={(e) => setNewLessonName(e.target.value)}
+                className="input-group"
+              />
+            </div>
+            <div className="input-group">
+              <label htmlFor="lessonDuration">Duration (seconds)</label>
+              <input
+                id="lessonDuration"
+                type="number"
+                value={newLessonDuration}
+                onChange={(e) =>
+                  setNewLessonDuration(parseInt(e.target.value) || 0)
+                }
                 className="input-group"
               />
             </div>
@@ -554,6 +599,18 @@ export function Curriculum({
               />
             </div>
             <div className="input-group">
+              <label htmlFor="editLessonDuration">Duration (seconds)</label>
+              <input
+                id="editLessonDuration"
+                type="number"
+                value={newLessonDuration}
+                onChange={(e) =>
+                  setNewLessonDuration(parseInt(e.target.value) || 0)
+                }
+                className="input-group"
+              />
+            </div>
+            <div className="input-group">
               <label htmlFor="editLessonVideo">Change Video</label>
               <div className="upload-button">
                 <input
@@ -589,16 +646,15 @@ export function Curriculum({
                 </label>
               </div>
               <div className="file-list">
-                {sections
-                  .find((s) => s.id === editingSectionId)
-                  ?.lectures.find((l) => l.id === editingLessonId)
+                {sections[editingSectionIndex!]?.lessons
+                  .find((l) => l._id === editingLessonId)
                   ?.pdfUrls.map((pdfUrl, index) => (
                     <div key={index} className="file-item">
                       <span>{pdfUrl.split("/").pop()}</span>
                       <button
                         onClick={() =>
                           handleRemoveExistingPdf(
-                            editingSectionId!,
+                            editingSectionIndex!,
                             editingLessonId!,
                             pdfUrl
                           )
@@ -722,4 +778,6 @@ export function Curriculum({
       </div>
     </div>
   );
-}
+};
+
+export default Curriculum;

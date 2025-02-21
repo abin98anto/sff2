@@ -19,7 +19,6 @@ interface TableData {
 
 const CourseManagement = () => {
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
-
   const [toggleModalOpen, setToggleModalOpen] = useState(false);
   const [toggleId, setToggleId] = useState<string | null>(null);
   const [toggleCourse, setToggleCourse] = useState<ICourse | null>(null);
@@ -28,13 +27,13 @@ const CourseManagement = () => {
 
   const handleEdit = (row: ICourse) => {
     console.log(row);
+    // Add navigation logic for editing if needed, e.g., navigate(`/admin/edit-course/${row._id}`);
   };
 
   const addCourse = () => {
     navigate("/admin/add-course");
   };
 
-  // Fetching table datas.
   const columns: Column<ICourse>[] = [
     {
       key: "slNo",
@@ -42,12 +41,9 @@ const CourseManagement = () => {
       render: (_, index: number) => index + 1,
     },
     {
-      key: "basicInfo.title",
+      key: "title",
       label: "Name",
-      render: (item: ICourse) => {
-        // console.log("Course item:", item);
-        return item.basicInfo?.title || "No title";
-      },
+      render: (item: ICourse) => item.title || "No title", // Updated from basicInfo.title
     },
     {
       key: "isActive",
@@ -65,7 +61,7 @@ const CourseManagement = () => {
       label: "Tutors Assigned",
       render: (item: ICourse) => (
         <div className="tutors-list">
-          {item?.tutors && item.tutors.length > 0 ? (
+          {item.tutors && item.tutors.length > 0 ? (
             item.tutors.map((tutor, index) => (
               <span key={tutor._id}>
                 {tutor.name}
@@ -83,16 +79,7 @@ const CourseManagement = () => {
       label: "Total Enrolled",
       render: (item: ICourse) => item.enrollmentCount,
     },
-    {
-      key: "createdAt",
-      label: "Created At",
-      render: (item: ICourse) =>
-        new Intl.DateTimeFormat("en-GB", {
-          day: "2-digit",
-          month: "long",
-          year: "numeric",
-        }).format(new Date(item.createdAt)),
-    },
+    // Removed "createdAt" column since it’s not in ICourse
     {
       key: "actions",
       label: "Actions",
@@ -109,7 +96,7 @@ const CourseManagement = () => {
           </button>
           <button
             onClick={() => {
-              setToggleId(row._id);
+              setToggleId(row._id || "");
               setToggleCourse(row);
               setToggleModalOpen(true);
             }}
@@ -145,10 +132,9 @@ const CourseManagement = () => {
         return { data: [], total: 0 };
       }
     },
-    []
+    [showSnackbar] // Added dependency
   );
 
-  // Toggle course
   const handleToggle = async () => {
     if (!toggleId || !toggleCourse) return;
 
@@ -158,7 +144,7 @@ const CourseManagement = () => {
         _id: toggleId,
         isActive: updatedStatus,
       });
-      
+
       if (response.data.success) {
         showSnackbar(
           `Course ${updatedStatus ? "listed" : "unlisted"} successfully`,
@@ -191,11 +177,10 @@ const CourseManagement = () => {
           columns={columns as Column<Record<string, any>>[]}
           fetchData={fetchTableData}
           pageSize={10}
-          initialSort={{ field: "createdAt", order: "desc" }}
+          initialSort={{ field: "title", order: "asc" }} // Updated to "title"
           refetchRef={refetchData}
         />
 
-        {/* List unlist modal */}
         <ConfirmationModal
           isOpen={toggleModalOpen}
           title={toggleCourse?.isActive ? "Unlist Course" : "List Course"}

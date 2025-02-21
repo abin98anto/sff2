@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import type { FormData } from "./form-types";
-import BasicInformation from "./components/BasicInformation";
-import { Curriculum } from "./components/Curriculum";
-import { ProgressSteps } from "./components/ProgressSteps";
+
 import "./CourseForm.scss";
+import { ICourse } from "../../../../entities/ICourse";
+import BasicInformation from "./components/BasicInformation";
+import Curriculum from "./components/Curriculum";
+import ProgressSteps from "./components/ProgressSteps";
 import { useSnackbar } from "../../../../hooks/useSnackbar";
 import ConfirmationModal from "../../../../components/common/Modal/ConfirmationModal/ConfirmationModal";
 import { comments } from "../../../../shared/constants/comments";
@@ -14,40 +15,36 @@ import { API } from "../../../../shared/constants/API";
 const STORAGE_KEY = "courseFormData";
 
 const CourseForm = () => {
+  const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
-  const initialCourseData: FormData = {
-    basicInfo: {
-      title: "",
-      subtitle: "",
-      category: "",
-      topic: "",
-      language: "",
-      duration: "",
-      thumbnail: null,
-      description: "",
-      prerequisites: "",
-      level: "",
-    },
-    curriculum: {
-      sections: [],
-    },
-  };
-
-  const [formData, setFormData] = useState<FormData>(initialCourseData);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
+
+  const initialCourseData: ICourse = {
+    title: "",
+    subtitle: "",
+    category: "",
+    topic: "",
+    language: "",
+    level: "",
+    prerequisites: "",
+    thumbnail: "",
+    description: "",
+    curriculum: [],
+    tutors: [],
+    totalDuration: 0,
+    totalLessons: 0,
+    enrollmentCount: 0,
+    isActive: false,
+  };
+  const [formData, setFormData] = useState<ICourse>(initialCourseData);
 
   useEffect(() => {
     const storedData = localStorage.getItem(STORAGE_KEY);
     if (storedData) {
-      const parsedData = JSON.parse(storedData);
+      const parsedData = JSON.parse(storedData) as ICourse;
       setFormData(parsedData);
-      if (
-        parsedData.curriculum &&
-        parsedData.curriculum.sections &&
-        parsedData.curriculum.sections.length > 0
-      ) {
+      if (parsedData.curriculum && parsedData.curriculum.length > 0) {
         setCurrentStep(2);
       } else {
         setCurrentStep(1);
@@ -55,21 +52,8 @@ const CourseForm = () => {
     }
   }, []);
 
-  const prepareCourseDataForBackend = (formData: FormData) => {
-    return {
-      ...formData,
-      curriculum: formData.curriculum.sections.map((section) => ({
-        name: section.name,
-        lessons: section.lectures,
-      })),
-    };
-  };
-
   useEffect(() => {
-    const dataToStore = {
-      ...formData,
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToStore));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
   }, [formData]);
 
   const handleNext = () => {
@@ -92,13 +76,10 @@ const CourseForm = () => {
     navigate(API.COURSE_MNGMT);
   };
 
-  const updateFormData = (
-    section: keyof FormData,
-    data: Partial<FormData[keyof FormData]>
-  ) => {
+  const updateFormData = (data: Partial<ICourse>) => {
     setFormData((prev) => ({
       ...prev,
-      [section]: { ...prev[section], ...data },
+      ...data,
     }));
   };
 
@@ -116,8 +97,8 @@ const CourseForm = () => {
 
       {currentStep === 1 && (
         <BasicInformation
-          data={formData.basicInfo}
-          onUpdate={(data) => updateFormData("basicInfo", data)}
+          data={formData}
+          onUpdate={updateFormData}
           onNext={handleNext}
           onCancel={handleCancel}
           setError={handleError}
@@ -126,7 +107,9 @@ const CourseForm = () => {
       {currentStep === 2 && (
         <Curriculum
           data={formData.curriculum}
-          onUpdate={(data) => updateFormData("curriculum", data)}
+          onUpdate={(curriculumData) =>
+            updateFormData({ curriculum: curriculumData })
+          }
           onPrevious={handlePrevious}
           onCancel={handleCancel}
           setError={handleError}
