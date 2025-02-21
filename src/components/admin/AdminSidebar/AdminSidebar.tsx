@@ -13,7 +13,7 @@ import {
 import "./AdminSidebar.scss";
 import { useAppDispatch } from "../../../hooks/reduxHooks";
 import { logout } from "../../../redux/thunks/user/userAuthServices";
-import ConfirmationModal from "../../common/Modal/ConfirmationModal/ConfirmationModal";
+import CustomModal from "../../common/Modal/CustomModal/CustomModal";
 
 // Menu items.
 const menuItems = [
@@ -101,14 +101,25 @@ const AdminSidebar = () => {
         </button>
       </div>
 
-      <ConfirmationModal
+      <CustomModal
         isOpen={isModalOpen}
         onClose={closeLogoutModal}
-        onYes={handleLogoutConfirm}
-        onNo={handleLogoutCancel}
-        title="Confirm Logout"
-        content="Are you sure you want to log out?"
-      />
+        header="Confirm Logout"
+        buttons={[
+          {
+            text: "Yes",
+            onClick: handleLogoutConfirm,
+            variant: "secondary",
+          },
+          {
+            text: "No",
+            onClick: handleLogoutCancel,
+            variant: "primary",
+          },
+        ]}
+      >
+        <p>Are you sure you want to log out?</p>
+      </CustomModal>
     </div>
   );
 };

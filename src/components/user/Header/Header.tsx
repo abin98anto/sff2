@@ -7,8 +7,8 @@ import "./Header.scss";
 import { AppRootState } from "../../../redux/store";
 import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
 import AuthModal from "../AuthModal/AuthModal";
-import ConfirmationModal from "../../common/Modal/ConfirmationModal/ConfirmationModal";
 import { logout } from "../../../redux/thunks/user/userAuthServices";
+import CustomModal from "../../common/Modal/CustomModal/CustomModal";
 
 type AuthModalType = "login" | "signup";
 
@@ -52,6 +52,7 @@ const Header: React.FC = () => {
   const dispatch = useAppDispatch();
   const openLogoutModal = () => {
     setIsModalOpen(true);
+    handleProfileMenuClose();
   };
   const closeLogoutModal = () => {
     setIsModalOpen(false);
@@ -145,14 +146,25 @@ const Header: React.FC = () => {
         onClose={closeAuthModal}
         initialSection={authModalType}
       />
-      <ConfirmationModal
+      <CustomModal
         isOpen={isModalOpen}
         onClose={closeLogoutModal}
-        onYes={handleLogoutConfirm}
-        onNo={handleLogoutCancel}
-        title="Confirm Logout"
-        content="Are you sure you want to log out?"
-      />
+        header="Confirm Logout"
+        buttons={[
+          {
+            text: "Yes",
+            onClick: handleLogoutConfirm,
+            variant: "secondary",
+          },
+          {
+            text: "No",
+            onClick: handleLogoutCancel,
+            variant: "primary",
+          },
+        ]}
+      >
+        <p>Are you sure you want to log out?</p>
+      </CustomModal>
     </header>
   );
 };

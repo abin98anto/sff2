@@ -27,9 +27,6 @@ const CustomModal: React.FC<ModalProps> = ({
       <div className="CusMod-modal" onClick={(e) => e.stopPropagation()}>
         <div className="CusMod-header">
           <h2>{header}</h2>
-          <button className="CusMod-close-btn" onClick={onClose}>
-            ×
-          </button>
         </div>
         <div className="CusMod-content">{children}</div>
         {buttons && buttons.length > 0 && (

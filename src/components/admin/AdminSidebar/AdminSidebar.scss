@@ -89,8 +89,10 @@
 .admin-sidebar-footer {
   padding: 1rem 1.5rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0px;
 
   .admin-sign-out-button {
+    height: 50px;
     width: 100%;
     display: flex;
     align-items: center;
@@ -100,6 +102,8 @@
     color: #6b7280;
     cursor: pointer;
     transition: all 0.2s ease;
+    justify-content: center;
+    align-items: center;
 
     &:hover {
       color: #ffffff;
@@ -115,18 +119,6 @@
     .admin-nav-text {
       font-size: 0.9rem;
       font-weight: 500;
-    }
-  }
-}
-
-@media (max-width: 768px) {
-  .admin-sidebar {
-    width: 100%;
-    height: auto;
-    position: relative;
-
-    &.admin-collapsed {
-      width: 70px;
     }
   }
 }

@@ -9,10 +9,10 @@ import {
 
 import "../CourseForm.scss";
 import Loading from "../../../../../components/common/Loading/Loading";
-import { ICategory } from "../../../../../entities/misc/ICategory";
-import { ICourse } from "../../../../../entities/ICourse";
+import ICategory from "../../../../../entities/misc/ICategory";
+import ICourse from "../../../../../entities/ICourse";
 import comments from "../../../../../shared/constants/comments";
-import { axiosInstance } from "../../../../../shared/config/axiosConfig";
+import axiosInstance from "../../../../../shared/config/axiosConfig";
 import API from "../../../../../shared/constants/API";
 import handleFileUpload, {
   validateImageFile,
