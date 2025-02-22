@@ -10,7 +10,6 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import "../CourseForm.scss";
-import "../../../../../components/common/Modal/CustomModal/CustomModalSuccess.scss"
 import AddModal from "../../../../../components/common/Modal/AddModal/AddModal";
 import ICourse, { ISection, ILesson } from "../../../../../entities/ICourse";
 import handleFileUpload, {
@@ -281,14 +280,22 @@ const Curriculum = ({
   };
 
   const prepareCourseDataForBackend = (formData: ICourse) => {
+    const cleanedCurriculum = formData.curriculum.map((section) => ({
+      ...section,
+      lessons: section.lessons.map((lesson) => {
+        const { _id, ...rest } = lesson;
+        return rest;
+      }),
+    }));
+
     return {
       ...formData,
-      curriculum: formData.curriculum,
-      totalLessons: formData.curriculum.reduce(
+      curriculum: cleanedCurriculum,
+      totalLessons: cleanedCurriculum.reduce(
         (total, section) => total + section.lessons.length,
         0
       ),
-      totalDuration: formData.curriculum.reduce(
+      totalDuration: cleanedCurriculum.reduce(
         (total, section) => total + section.duration,
         0
       ),
