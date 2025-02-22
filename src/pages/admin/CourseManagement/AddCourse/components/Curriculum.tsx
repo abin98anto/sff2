@@ -10,6 +10,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import "../CourseForm.scss";
+import "../../../../../components/common/Modal/CustomModal/CustomModalSuccess.scss"
 import AddModal from "../../../../../components/common/Modal/AddModal/AddModal";
 import ICourse, { ISection, ILesson } from "../../../../../entities/ICourse";
 import handleFileUpload, {
@@ -20,7 +21,7 @@ import comments from "../../../../../shared/constants/comments";
 import axiosInstance from "../../../../../shared/config/axiosConfig";
 import API from "../../../../../shared/constants/API";
 import Loading from "../../../../../components/common/Loading/Loading";
-import CustomModal from "../../../../../components/common/Modal/CustomModal/CustomModal"; // Import CustomModal
+import CustomModal from "../../../../../components/common/Modal/CustomModal/CustomModal";
 
 interface CurriculumProps {
   data: ISection[];
@@ -60,9 +61,8 @@ const Curriculum = ({
   const [newLessonVideo, setNewLessonVideo] = useState<File | null>(null);
   const [newLessonPdfs, setNewLessonPdfs] = useState<File[]>([]);
   const [newLessonDuration, setNewLessonDuration] = useState<number>(0);
-  const [uploadingVideo, setUploadingVideo] = useState(false);
-  const [uploadingPdfs, setUploadingPdfs] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     setSections(data || []);
@@ -143,25 +143,26 @@ const Curriculum = ({
       return;
     }
 
-    setUploadingVideo(true);
+    setIsLoading(true);
     const videoUploadResult = await handleFileUpload(newLessonVideo, {
-      onUploadStart: () => setUploadingVideo(true),
-      onUploadEnd: () => setUploadingVideo(false),
+      onUploadStart: () => setIsLoading(true),
+      onUploadEnd: () => setIsLoading(false),
       validateFile: validateVideoFile,
     });
 
     if (!videoUploadResult.success) {
       console.log(comments.VIDEO_UPLOAD_FAIL, videoUploadResult.error);
       setError(comments.VIDEO_UPLOAD_FAIL);
+      setIsLoading(false);
       return;
     }
 
-    setUploadingPdfs(true);
+    setIsLoading(true);
     const pdfUploadPromises = newLessonPdfs.map((pdf) =>
       handleFileUpload(pdf, { validateFile: validatePdfFile })
     );
     const pdfUploadResults = await Promise.all(pdfUploadPromises);
-    setUploadingPdfs(false);
+    setIsLoading(false);
 
     const pdfUrls = pdfUploadResults
       .filter((result) => result.success)
@@ -190,6 +191,7 @@ const Curriculum = ({
     setSections(updatedSections);
     onUpdate(updatedSections);
     setIsAddLessonModalOpen(false);
+    setIsLoading(false);
     resetLessonForm();
   };
 
@@ -203,10 +205,10 @@ const Curriculum = ({
       (l) => l._id === editingLessonId
     )?.videoUrl;
     if (newLessonVideo) {
-      setUploadingVideo(true);
+      setIsLoading(true);
       const videoUploadResult = await handleFileUpload(newLessonVideo, {
-        onUploadStart: () => setUploadingVideo(true),
-        onUploadEnd: () => setUploadingVideo(false),
+        onUploadStart: () => setIsLoading(true),
+        onUploadEnd: () => setIsLoading(false),
         validateFile: validateVideoFile,
       });
 
@@ -218,12 +220,12 @@ const Curriculum = ({
       videoUrl = videoUploadResult.url as string;
     }
 
-    setUploadingPdfs(true);
+    setIsLoading(true);
     const pdfUploadPromises = newLessonPdfs.map((pdf) =>
       handleFileUpload(pdf, { validateFile: validatePdfFile })
     );
     const pdfUploadResults = await Promise.all(pdfUploadPromises);
-    setUploadingPdfs(false);
+    setIsLoading(false);
 
     const newPdfUrls = pdfUploadResults
       .filter((result) => result.success)
@@ -237,7 +239,7 @@ const Curriculum = ({
               ...lesson,
               _id:
                 lesson._id ||
-                Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                Date.now().toString() + Math.random().toString(36).substr(2, 9), // Ensure _id exists and is unique
               name: newLessonName,
               videoUrl: videoUrl || lesson.videoUrl,
               pdfUrls: [...lesson.pdfUrls, ...newPdfUrls],
@@ -275,12 +277,6 @@ const Curriculum = ({
       setError(comments.SECTION_REQ);
       return false;
     }
-    for (const section of sections) {
-      if (section.lessons.length === 0) {
-        setError(comments.LESSON_REQ2);
-        return false;
-      }
-    }
     return true;
   };
 
@@ -310,6 +306,7 @@ const Curriculum = ({
         );
         console.log(comments.COURSE_PUB_SUCC, response.data);
         setIsSuccessModalOpen(true);
+
         localStorage.removeItem("courseFormData");
 
         setTimeout(() => {
@@ -404,6 +401,7 @@ const Curriculum = ({
           const updatedLessons = section.lessons.filter(
             (lesson) => lesson._id !== editingLessonId
           );
+          console.log("Updated lessons for section:", updatedLessons);
           return {
             ...section,
             lessons: updatedLessons,
@@ -412,6 +410,7 @@ const Curriculum = ({
         }
         return section;
       });
+      console.log("Updated sections after lesson deletion:", updatedSections);
       setSections(updatedSections);
       onUpdate(updatedSections);
     }
@@ -422,383 +421,373 @@ const Curriculum = ({
   };
 
   return (
-    <div className="form-section">
-      <h2>Course Curriculum</h2>
+    <>
+      {isLoading && (
+        <div className="loading-overlay">
+          <Loading />
+        </div>
+      )}
+      <div className="form-section">
+        <h2>Course Curriculum</h2>
 
-      <div className="curriculum-section">
-        {sections.map((section: ISection, sectionIndex) => (
-          <div key={section._id || sectionIndex} className="section-item">
-            <div className="section-header">
-              <h3>
-                Section {String(sectionIndex + 1).padStart(2, "0")}:{" "}
-                {section.name}
-              </h3>
-              <div style={{ display: "flex", gap: "0.5rem" }}>
-                <button onClick={() => handleAddLessonClick(sectionIndex)}>
-                  <PlusIcon size={16} />
-                </button>
-                <button onClick={() => handleEditClick(section, sectionIndex)}>
-                  <EditIcon size={16} />
-                </button>
-                <button
-                  onClick={() => handleDeleteClick("section", sectionIndex)}
-                >
-                  <TrashIcon size={16} />
-                </button>
-              </div>
-            </div>
-            {section.lessons.map((lesson, index) => (
-              <div
-                key={lesson._id || `lesson-${index}`}
-                className="lecture-item"
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                  }}
-                >
-                  <span>
-                    Lecture {String(index + 1).padStart(2, "0")}: {lesson.name}{" "}
-                    ({lesson.duration}s)
-                  </span>
-                </div>
+        <div className="curriculum-section">
+          {sections.map((section: ISection, sectionIndex) => (
+            <div key={section._id || sectionIndex} className="section-item">
+              <div className="section-header">
+                <h3>
+                  Section {String(sectionIndex + 1).padStart(2, "0")}:{" "}
+                  {section.name}
+                </h3>
                 <div style={{ display: "flex", gap: "0.5rem" }}>
+                  <button onClick={() => handleAddLessonClick(sectionIndex)}>
+                    <PlusIcon size={16} />
+                  </button>
                   <button
-                    onClick={() =>
-                      handleEditLessonClick(
-                        sectionIndex,
-                        lesson._id || `lesson-${index}`
-                      )
-                    }
+                    onClick={() => handleEditClick(section, sectionIndex)}
                   >
                     <EditIcon size={16} />
                   </button>
                   <button
-                    onClick={() =>
-                      handleDeleteClick(
-                        "lesson",
-                        sectionIndex,
-                        lesson._id || `lesson-${index}`
-                      )
-                    }
+                    onClick={() => handleDeleteClick("section", sectionIndex)}
                   >
                     <TrashIcon size={16} />
                   </button>
                 </div>
               </div>
-            ))}
-          </div>
-        ))}
-      </div>
-
-      <button className="add-section-button" onClick={addSection}>
-        Add Section
-      </button>
-
-      {isEditModalOpen && (
-        <AddModal
-          isOpen={isEditModalOpen}
-          title="Edit Section Name"
-          onClose={() => setIsEditModalOpen(false)}
-          onSubmit={handleSaveEdit}
-        >
-          <div className="input-group">
-            <label htmlFor="sectionName">Name</label>
-            <input
-              id="sectionName"
-              type="text"
-              value={editingName}
-              onChange={(e) => setEditingName(e.target.value)}
-              className="input-group"
-            />
-          </div>
-        </AddModal>
-      )}
-
-      {isAddLessonModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h2 className="modal-title">Add New Lesson</h2>
-            <div className="input-group">
-              <label htmlFor="lessonName">Lesson Name</label>
-              <input
-                id="lessonName"
-                type="text"
-                value={newLessonName}
-                onChange={(e) => setNewLessonName(e.target.value)}
-                className="input-group"
-              />
-            </div>
-            <div className="input-group">
-              <label htmlFor="lessonDuration">Duration (seconds)</label>
-              <input
-                id="lessonDuration"
-                type="number"
-                value={newLessonDuration}
-                onChange={(e) =>
-                  setNewLessonDuration(parseInt(e.target.value) || 0)
-                }
-                className="input-group"
-              />
-            </div>
-            <div className="input-group">
-              <label htmlFor="lessonVideo">Upload Video</label>
-              <div className="upload-button">
-                <input
-                  id="lessonVideo"
-                  type="file"
-                  accept="video/mp4,video/webm,video/ogg"
-                  onChange={handleVideoUpload}
-                  style={{ display: "none" }}
-                />
-                <label htmlFor="lessonVideo">
-                  <UploadIcon size={16} />
-                  {newLessonVideo ? "Change Video" : "Upload Video"}
-                </label>
-                {newLessonVideo && <p>{newLessonVideo.name}</p>}
-              </div>
-            </div>
-            <div className="input-group">
-              <label htmlFor="lessonPdfs">Upload PDFs</label>
-              <div className="upload-button">
-                <input
-                  id="lessonPdfs"
-                  type="file"
-                  accept=".pdf"
-                  multiple
-                  onChange={handlePdfUpload}
-                  style={{ display: "none" }}
-                />
-                <label htmlFor="lessonPdfs">
-                  <UploadIcon size={16} />
-                  Upload PDFs
-                </label>
-              </div>
-              <div className="file-list">
-                {newLessonPdfs.map((pdf, index) => (
-                  <div key={index} className="file-item">
-                    <span>{pdf.name}</span>
-                    <button onClick={() => handleRemovePdf(index)}>
-                      <XIcon size={16} />
+              {section.lessons.map((lesson, index) => (
+                <div
+                  key={lesson._id || `lesson-${index}`}
+                  className="lecture-item"
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                    }}
+                  >
+                    <span>
+                      Lecture {String(index + 1).padStart(2, "0")}:{" "}
+                      {lesson.name} ({lesson.duration}s)
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <button
+                      onClick={() =>
+                        handleEditLessonClick(
+                          sectionIndex,
+                          lesson._id || `lesson-${index}`
+                        )
+                      }
+                    >
+                      <EditIcon size={16} />
+                    </button>
+                    <button
+                      onClick={() =>
+                        handleDeleteClick(
+                          "lesson",
+                          sectionIndex,
+                          lesson._id || `lesson-${index}`
+                        )
+                      }
+                    >
+                      <TrashIcon size={16} />
                     </button>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-            <div className="modal-button-group">
-              <button onClick={() => setIsAddLessonModalOpen(false)}>
-                Cancel
-              </button>
-              <button
-                onClick={handleCreateLesson}
-                disabled={uploadingVideo || uploadingPdfs}
-              >
-                {uploadingVideo || uploadingPdfs
-                  ? comments.UPLOADING
-                  : comments.ADD_LESSSON}
-              </button>
-            </div>
-          </div>
+          ))}
         </div>
-      )}
 
-      {isEditLessonModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h2 className="modal-title">Edit Lesson</h2>
+        <button className="add-section-button" onClick={addSection}>
+          Add Section
+        </button>
+
+        {/* Edit Section Modal. */}
+        {isEditModalOpen && (
+          <AddModal
+            isOpen={isEditModalOpen}
+            title="Edit Section Name"
+            onClose={() => setIsEditModalOpen(false)}
+            onSubmit={handleSaveEdit}
+          >
             <div className="input-group">
-              <label htmlFor="editLessonName">Lesson Name</label>
+              <label htmlFor="sectionName">Name</label>
               <input
-                id="editLessonName"
+                id="sectionName"
                 type="text"
-                value={newLessonName}
-                onChange={(e) => setNewLessonName(e.target.value)}
+                value={editingName}
+                onChange={(e) => setEditingName(e.target.value)}
                 className="input-group"
               />
             </div>
-            <div className="input-group">
-              <label htmlFor="editLessonDuration">Duration (seconds)</label>
-              <input
-                id="editLessonDuration"
-                type="number"
-                value={newLessonDuration}
-                onChange={(e) =>
-                  setNewLessonDuration(parseInt(e.target.value) || 0)
-                }
-                className="input-group"
-              />
-            </div>
-            <div className="input-group">
-              <label htmlFor="editLessonVideo">Change Video</label>
-              <div className="upload-button">
+          </AddModal>
+        )}
+
+        {/* Add Lesson Modal */}
+        {isAddLessonModalOpen && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h2 className="modal-title">Add New Lesson</h2>
+              <div className="input-group">
+                <label htmlFor="lessonName">Lesson Name</label>
                 <input
-                  id="editLessonVideo"
-                  type="file"
-                  accept="video/mp4,video/webm,video/ogg"
-                  onChange={handleVideoUpload}
-                  style={{ display: "none" }}
+                  id="lessonName"
+                  type="text"
+                  value={newLessonName}
+                  onChange={(e) => setNewLessonName(e.target.value)}
+                  className="input-group"
                 />
-                <label htmlFor="editLessonVideo">
-                  <UploadIcon size={16} />
-                  {newLessonVideo
-                    ? comments.VIDEO_CHANGE
-                    : comments.VIDEO_UPLOAD}
-                </label>
-                {newLessonVideo && <p>{newLessonVideo.name}</p>}
               </div>
-            </div>
-            <div className="input-group">
-              <label htmlFor="editLessonPdfs">Add PDFs</label>
-              <div className="upload-button">
+              <div className="input-group">
+                <label htmlFor="lessonDuration">Duration (seconds)</label>
                 <input
-                  id="editLessonPdfs"
-                  type="file"
-                  accept=".pdf"
-                  multiple
-                  onChange={handlePdfUpload}
-                  style={{ display: "none" }}
+                  id="lessonDuration"
+                  type="number"
+                  value={newLessonDuration}
+                  onChange={(e) =>
+                    setNewLessonDuration(parseInt(e.target.value) || 0)
+                  }
+                  className="input-group"
                 />
-                <label htmlFor="editLessonPdfs">
-                  <UploadIcon size={16} />
-                  Add PDFs
-                </label>
               </div>
-              <div className="file-list">
-                {sections[editingSectionIndex!]?.lessons
-                  .find((l) => l._id === editingLessonId)
-                  ?.pdfUrls.map((pdfUrl, index) => (
+              <div className="input-group">
+                <label htmlFor="lessonVideo">Upload Video</label>
+                <div className="upload-button">
+                  <input
+                    id="lessonVideo"
+                    type="file"
+                    accept="video/mp4,video/webm,video/ogg"
+                    onChange={handleVideoUpload}
+                    style={{ display: "none" }}
+                  />
+                  <label htmlFor="lessonVideo">
+                    <UploadIcon size={16} />
+                    {newLessonVideo ? "Change Video" : "Upload Video"}
+                  </label>
+                  {newLessonVideo && <p>{newLessonVideo.name}</p>}
+                </div>
+              </div>
+              <div className="input-group">
+                <label htmlFor="lessonPdfs">Upload PDFs</label>
+                <div className="upload-button">
+                  <input
+                    id="lessonPdfs"
+                    type="file"
+                    accept=".pdf"
+                    multiple
+                    onChange={handlePdfUpload}
+                    style={{ display: "none" }}
+                  />
+                  <label htmlFor="lessonPdfs">
+                    <UploadIcon size={16} />
+                    Upload PDFs
+                  </label>
+                </div>
+                <div className="file-list">
+                  {newLessonPdfs.map((pdf, index) => (
                     <div key={index} className="file-item">
-                      <span>{pdfUrl.split("/").pop()}</span>
-                      <button
-                        onClick={() =>
-                          handleRemoveExistingPdf(
-                            editingSectionIndex!,
-                            editingLessonId!,
-                            pdfUrl
-                          )
-                        }
-                      >
+                      <span>{pdf.name}</span>
+                      <button onClick={() => handleRemovePdf(index)}>
                         <XIcon size={16} />
                       </button>
                     </div>
                   ))}
-                {newLessonPdfs.map((pdf, index) => (
-                  <div key={`new-${index}`} className="file-item">
-                    <span>{pdf.name}</span>
-                    <button onClick={() => handleRemovePdf(index)}>
-                      <XIcon size={16} />
-                    </button>
-                  </div>
-                ))}
+                </div>
+              </div>
+              <div className="modal-button-group">
+                <button onClick={() => setIsAddLessonModalOpen(false)}>
+                  Cancel
+                </button>
+                <button onClick={handleCreateLesson}>
+                  {comments.ADD_LESSSON}
+                </button>
               </div>
             </div>
-            <div className="modal-button-group">
-              <button onClick={() => setIsEditLessonModalOpen(false)}>
-                Cancel
-              </button>
-              <button
-                onClick={handleUpdateLesson}
-                disabled={uploadingVideo || uploadingPdfs}
-              >
-                {uploadingVideo || uploadingPdfs
-                  ? comments.UPLOADING
-                  : comments.LESSON_UPDATE}
-              </button>
+          </div>
+        )}
+
+        {/* Edit Lesson Modal */}
+        {isEditLessonModalOpen && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h2 className="modal-title">Edit Lesson</h2>
+              <div className="input-group">
+                <label htmlFor="editLessonName">Lesson Name</label>
+                <input
+                  id="editLessonName"
+                  type="text"
+                  value={newLessonName}
+                  onChange={(e) => setNewLessonName(e.target.value)}
+                  className="input-group"
+                />
+              </div>
+              <div className="input-group">
+                <label htmlFor="editLessonDuration">Duration (seconds)</label>
+                <input
+                  id="editLessonDuration"
+                  type="number"
+                  value={newLessonDuration}
+                  onChange={(e) =>
+                    setNewLessonDuration(parseInt(e.target.value) || 0)
+                  }
+                  className="input-group"
+                />
+              </div>
+              <div className="input-group">
+                <label htmlFor="editLessonVideo">Change Video</label>
+                <div className="upload-button">
+                  <input
+                    id="editLessonVideo"
+                    type="file"
+                    accept="video/mp4,video/webm,video/ogg"
+                    onChange={handleVideoUpload}
+                    style={{ display: "none" }}
+                  />
+                  <label htmlFor="editLessonVideo">
+                    <UploadIcon size={16} />
+                    {newLessonVideo
+                      ? comments.VIDEO_CHANGE
+                      : comments.VIDEO_UPLOAD}
+                  </label>
+                  {newLessonVideo && <p>{newLessonVideo.name}</p>}
+                </div>
+              </div>
+              <div className="input-group">
+                <label htmlFor="editLessonPdfs">Add PDFs</label>
+                <div className="upload-button">
+                  <input
+                    id="editLessonPdfs"
+                    type="file"
+                    accept=".pdf"
+                    multiple
+                    onChange={handlePdfUpload}
+                    style={{ display: "none" }}
+                  />
+                  <label htmlFor="editLessonPdfs">
+                    <UploadIcon size={16} />
+                    Add PDFs
+                  </label>
+                </div>
+                <div className="file-list">
+                  {sections[editingSectionIndex!]?.lessons
+                    .find((l) => l._id === editingLessonId)
+                    ?.pdfUrls.map((pdfUrl, index) => (
+                      <div key={index} className="file-item">
+                        <span>{pdfUrl.split("/").pop()}</span>
+                        <button
+                          onClick={() =>
+                            handleRemoveExistingPdf(
+                              editingSectionIndex!,
+                              editingLessonId!,
+                              pdfUrl
+                            )
+                          }
+                        >
+                          <XIcon size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  {newLessonPdfs.map((pdf, index) => (
+                    <div key={`new-${index}`} className="file-item">
+                      <span>{pdf.name}</span>
+                      <button onClick={() => handleRemovePdf(index)}>
+                        <XIcon size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="modal-button-group">
+                <button onClick={() => setIsEditLessonModalOpen(false)}>
+                  Cancel
+                </button>
+                <button onClick={handleUpdateLesson}>
+                  {comments.LESSON_UPDATE}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {isDeleteConfirmationOpen && (
-        <CustomModal
-          isOpen={isDeleteConfirmationOpen}
-          onClose={() => setIsDeleteConfirmationOpen(false)}
-          header={`Confirm Deletion`}
-          buttons={[
-            {
-              text: "Cancel",
-              onClick: () => setIsDeleteConfirmationOpen(false),
-              variant: "secondary",
-            },
-            {
-              text: "Delete",
-              onClick: handleConfirmDelete,
-              variant: "primary",
-            },
-          ]}
-        >
-          <p>Are you sure you want to delete this {deletingItemType}?</p>
-          <p>This action cannot be undone.</p>
-        </CustomModal>
-      )}
-
-      {isSuccessModalOpen && (
-        <div className="modal-overlay">
-          <div
-            className="modal-content"
-            style={{
-              background: "linear-gradient(135deg, #4CAF50, #45a049)",
-              borderRadius: "16px",
-              padding: "2rem",
-              boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)",
-              color: "white",
-              textAlign: "center",
-            }}
+        {/* Delete Lesson/ Section Modal */}
+        {isDeleteConfirmationOpen && (
+          <CustomModal
+            isOpen={isDeleteConfirmationOpen}
+            onClose={() => setIsDeleteConfirmationOpen(false)}
+            header={`Confirm Deletion`}
+            buttons={[
+              {
+                text: "Cancel",
+                onClick: () => setIsDeleteConfirmationOpen(false),
+                variant: "secondary",
+              },
+              {
+                text: "Delete",
+                onClick: handleConfirmDelete,
+                variant: "primary",
+              },
+            ]}
           >
-            <CheckCircle size={64} style={{ marginBottom: "1rem" }} />
-            <h2 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>
-              Course Created Successfully!
-            </h2>
-            <p style={{ fontSize: "1rem", marginBottom: "1rem" }}>
-              Your course has been published. Redirecting to course
-              management...
-            </p>
-            <div
-              style={{
-                width: "100%",
-                height: "4px",
-                background: "rgba(255, 255, 255, 0.3)",
-                borderRadius: "2px",
-                overflow: "hidden",
-              }}
+            <p>Are you sure you want to delete this {deletingItemType}?</p>
+            <p>This action cannot be undone.</p>
+          </CustomModal>
+        )}
+
+        {/*  Success Modal  */}
+        {isSuccessModalOpen && (
+          <CustomModal
+            isOpen={isSuccessModalOpen}
+            onClose={() => setIsSuccessModalOpen(false)}
+            header="Success"
+            buttons={[
+              {
+                text: "OK",
+                onClick: () => {
+                  setIsSuccessModalOpen(false);
+                  navigate(API.COURSE_MNGMT);
+                },
+                variant: "primary",
+              },
+            ]}
+          >
+            <div className="success-modal-content">
+              <CheckCircle size={64} style={{ marginBottom: "1rem" }} />
+              <h2 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>
+                Course Created Successfully!
+              </h2>
+              <p style={{ fontSize: "1rem", marginBottom: "1rem" }}>
+                Your course has been published. Redirecting to course
+                management...
+              </p>
+            </div>
+          </CustomModal>
+        )}
+
+        <div className="button-group">
+          <div>
+            <button
+              onClick={onCancel}
+              className="secondary"
+              style={{ marginRight: "1rem" }}
             >
-              <div
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  background: "white",
-                  animation: "progress 4s linear",
-                }}
-              />
-            </div>
+              Cancel
+            </button>
+            <button onClick={onPrevious} className="secondary">
+              Back
+            </button>
           </div>
-        </div>
-      )}
-
-      <div className="button-group">
-        <div>
           <button
-            onClick={onCancel}
-            className="secondary"
-            style={{ marginRight: "1rem" }}
+            onClick={handlePublish}
+            className="primary"
+            disabled={publishing}
           >
-            Cancel
-          </button>
-          <button onClick={onPrevious} className="secondary">
-            Back
+            {publishing ? <Loading /> : comments.COURSE_PUB}
           </button>
         </div>
-        <button
-          onClick={handlePublish}
-          className="primary"
-          disabled={publishing}
-        >
-          {publishing ? <Loading /> : comments.COURSE_PUB}
-        </button>
       </div>
-    </div>
+    </>
   );
 };
 

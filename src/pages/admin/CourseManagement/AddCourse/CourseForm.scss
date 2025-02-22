@@ -699,3 +699,22 @@ $transition-speed: 0.3s;
     }
   }
 }
+
+.success-modal-content {
+  text-align: center;
+  color: white;
+
+  svg {
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+}

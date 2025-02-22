@@ -1,0 +1,28 @@
+.CusMod-modal.success {
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+
+  .CusMod-header {
+    h2 {
+      color: white;
+    }
+  }
+
+  .CusMod-content {
+    padding: 2rem;
+  }
+
+  .CusMod-footer {
+    .CusMod-button.CusMod-primary {
+      background-color: white;
+      color: #acf7af;
+      border: 1px solid white;
+
+      &:hover {
+        background-color: #e0e0e0;
+        color: #76c77a;
+      }
+    }
+  }
+}

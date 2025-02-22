@@ -102,6 +102,7 @@ const comments = {
   COURSE_DISCARD: "Are you sure you want to discard this course?",
   PREREQ_PH: "Enter the prerequesities.",
   LEVEL_REQ: "Need the course level.",
+  TUTORS_REQ: "Select atleast one tutor",
 };
 
 export default comments;

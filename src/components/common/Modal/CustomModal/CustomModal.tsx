@@ -13,6 +13,7 @@ interface ModalProps {
   }[];
 }
 
+// In CustomModal.tsx (if needed)
 const CustomModal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
@@ -24,7 +25,10 @@ const CustomModal: React.FC<ModalProps> = ({
 
   return (
     <div className="CusMod-overlay" onClick={onClose}>
-      <div className="CusMod-modal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className={`CusMod-modal ${header === "Success" ? "success" : ""}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="CusMod-header">
           <h2>{header}</h2>
         </div>
