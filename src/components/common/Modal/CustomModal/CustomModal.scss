@@ -25,14 +25,12 @@
   }
 
   &-header {
-    padding: 1rem;
+    padding: .1rem;
     border-bottom: 1px solid #444;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: center;
 
     h2 {
-      margin: 0;
       font-size: 1.25rem;
       color: #fff;
     }
@@ -43,7 +41,6 @@
     overflow-y: auto;
     color: #fff;
 
-    // Form-specific styles
     .form-group {
       margin-bottom: 1.5rem;
 
@@ -86,8 +83,8 @@
         font-size: 0.875rem;
         transition: border-color 0.3s ease, box-shadow 0.3s ease;
         box-sizing: border-box;
-        appearance: none; // Remove default browser styling
-        background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2ZmZiI+PHBhdGggZD0iTTcgMTBsNSA1IDUtNVoiLz48L3N2Zz4="); // Custom dropdown arrow
+        appearance: none;
+        background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2ZmZiI+PHBhdGggZD0iTTcgMTBsNSA1IDUtNVoiLz48L3N2Zz4=");
         background-repeat: no-repeat;
         background-position: right 0.75rem center;
         background-size: 1rem;
@@ -109,24 +106,8 @@
     padding: 1rem;
     border-top: 1px solid #444;
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 0.5rem;
-  }
-
-  &-close-btn {
-    border: none;
-    background: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 0;
-    width: 24px;
-    height: 24px;
-    line-height: 24px;
-    color: #fff;
-
-    &:hover {
-      color: #ff4444;
-    }
   }
 
   &-button {

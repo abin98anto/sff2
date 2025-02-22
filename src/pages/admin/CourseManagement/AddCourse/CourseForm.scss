@@ -252,6 +252,7 @@ $transition-speed: 0.3s;
     background-color: $input-bg;
     border-radius: 1rem;
     text-align: center;
+    position: relative;
 
     .thumbnail-display {
       position: relative;
@@ -259,7 +260,6 @@ $transition-speed: 0.3s;
       aspect-ratio: 16/9;
       overflow: hidden;
       border-radius: 0.75rem;
-      margin-bottom: 1rem;
 
       img {
         width: 100%;
@@ -270,6 +270,7 @@ $transition-speed: 0.3s;
       .thumbnail-buttons {
         position: absolute;
         right: 0.5rem;
+        top: 0.5rem;
         display: flex;
         gap: 0.5rem;
 
@@ -306,23 +307,23 @@ $transition-speed: 0.3s;
         color: rgba(255, 255, 255, 0.6);
         font-size: 0.875rem;
       }
-    }
 
-    .upload-button {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.75rem 1.5rem;
-      background-color: $primary-color;
-      color: $text-color;
-      border: none;
-      border-radius: 0.5rem;
-      cursor: pointer;
-      transition: all $transition-speed ease;
+      .upload-button {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background-color: $primary-color;
+        color: $text-color;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all $transition-speed ease;
 
-      &:hover {
-        background-color: $button-hover;
-        transform: translateY(-2px);
+        &:hover {
+          background-color: $button-hover;
+          transform: translateY(-2px);
+        }
       }
     }
   }
@@ -618,5 +619,83 @@ $transition-speed: 0.3s;
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+.tutors-section {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .tutor-label {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: $text-color; // Use your theme's text color
+  }
+
+  .tutor-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+
+    input {
+      flex: 1;
+      padding: 8px;
+      border: 2px solid $input-border; // Match your theme's input border
+      border-radius: 0.75rem; // Match your theme's border radius
+      background-color: $input-bg; // Match your theme's input background
+      color: $text-color; // Match your theme's text color
+      font-size: 1rem;
+      transition: all $transition-speed ease;
+
+      &:focus {
+        outline: none;
+        border-color: $input-focus-border; // Match your theme's focus border
+        box-shadow: 0 0 0 4px $ring-color; // Match your theme's ring color
+      }
+
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.4); // Match your theme's placeholder color
+      }
+    }
+  }
+
+  .tutor-list-box {
+    width: 50%;
+    height: 100px; // Adjust height as needed
+    border: 2px solid $input-border; // Match your theme's input border
+    border-radius: 0.75rem; // Match your theme's border radius
+    padding: 10px;
+    background-color: $input-bg; // Match your theme's input background
+    overflow-y: auto; // Enable vertical scrolling
+    scrollbar-width: none; // Hide scrollbar for Firefox
+    -ms-overflow-style: none; // Hide scrollbar for IE/Edge
+
+    &::-webkit-scrollbar {
+      display: none; // Hide scrollbar for WebKit browsers (Chrome, Safari)
+    }
+
+    .tutor-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+
+      input[type="checkbox"] {
+        margin: 0;
+      }
+
+      .tutor-name {
+        margin: 0;
+        cursor: pointer;
+        color: $text-color; // Match your theme's text color
+        font-size: 1rem; // Match your theme's font size
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 90%; // Ensure names fit within the box
+      }
+    }
   }
 }

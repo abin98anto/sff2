@@ -32,7 +32,7 @@ const API = {
   }/raw/upload`,
 
   // Admin Side.
-  TUTORS_GET: "/admin/tutor",
+  TUTORS_GET: "/admin/users/tutor",
 };
 
 export default API;

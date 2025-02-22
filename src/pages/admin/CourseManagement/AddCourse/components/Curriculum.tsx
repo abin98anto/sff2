@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 
 import "../CourseForm.scss";
 import AddModal from "../../../../../components/common/Modal/AddModal/AddModal";
-import { ICourse, ISection, ILesson } from "../../../../../entities/ICourse";
+import ICourse, { ISection, ILesson } from "../../../../../entities/ICourse";
 import handleFileUpload, {
   validatePdfFile,
   validateVideoFile,
@@ -20,6 +20,7 @@ import comments from "../../../../../shared/constants/comments";
 import axiosInstance from "../../../../../shared/config/axiosConfig";
 import API from "../../../../../shared/constants/API";
 import Loading from "../../../../../components/common/Loading/Loading";
+import CustomModal from "../../../../../components/common/Modal/CustomModal/CustomModal"; // Import CustomModal
 
 interface CurriculumProps {
   data: ISection[];
@@ -50,9 +51,7 @@ const Curriculum = ({
   const [editingSectionIndex, setEditingSectionIndex] = useState<number | null>(
     null
   );
-  const [editingLessonId, setEditingLessonId] = useState<
-    string | number | null
-  >(null);
+  const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
   const [deletingItemType, setDeletingItemType] = useState<
     "section" | "lesson" | null
   >(null);
@@ -168,7 +167,10 @@ const Curriculum = ({
       .filter((result) => result.success)
       .map((result) => result.url as string);
 
+    const newLessonId =
+      Date.now().toString() + Math.random().toString(36).substr(2, 9);
     const newLesson: ILesson = {
+      _id: newLessonId,
       name: newLessonName,
       videoUrl: videoUploadResult.url as string,
       pdfUrls,
@@ -188,6 +190,74 @@ const Curriculum = ({
     setSections(updatedSections);
     onUpdate(updatedSections);
     setIsAddLessonModalOpen(false);
+    resetLessonForm();
+  };
+
+  const handleUpdateLesson = async () => {
+    if (!newLessonName.trim()) {
+      setError(comments.LESSON_REQ);
+      return;
+    }
+
+    let videoUrl = sections[editingSectionIndex!]?.lessons.find(
+      (l) => l._id === editingLessonId
+    )?.videoUrl;
+    if (newLessonVideo) {
+      setUploadingVideo(true);
+      const videoUploadResult = await handleFileUpload(newLessonVideo, {
+        onUploadStart: () => setUploadingVideo(true),
+        onUploadEnd: () => setUploadingVideo(false),
+        validateFile: validateVideoFile,
+      });
+
+      if (!videoUploadResult.success) {
+        console.log(comments.VIDEO_UPLOAD_FAIL, videoUploadResult.error);
+        setError(comments.VIDEO_UPLOAD_FAIL);
+        return;
+      }
+      videoUrl = videoUploadResult.url as string;
+    }
+
+    setUploadingPdfs(true);
+    const pdfUploadPromises = newLessonPdfs.map((pdf) =>
+      handleFileUpload(pdf, { validateFile: validatePdfFile })
+    );
+    const pdfUploadResults = await Promise.all(pdfUploadPromises);
+    setUploadingPdfs(false);
+
+    const newPdfUrls = pdfUploadResults
+      .filter((result) => result.success)
+      .map((result) => result.url as string);
+
+    const updatedSections = sections.map((section, index) => {
+      if (index === editingSectionIndex) {
+        const updatedLessons = section.lessons.map((lesson) => {
+          if (lesson._id === editingLessonId) {
+            return {
+              ...lesson,
+              _id:
+                lesson._id ||
+                Date.now().toString() + Math.random().toString(36).substr(2, 9),
+              name: newLessonName,
+              videoUrl: videoUrl || lesson.videoUrl,
+              pdfUrls: [...lesson.pdfUrls, ...newPdfUrls],
+              duration: newLessonDuration,
+            };
+          }
+          return lesson;
+        });
+        return {
+          ...section,
+          lessons: updatedLessons,
+          duration: calculateSectionDuration(updatedLessons),
+        };
+      }
+      return section;
+    });
+
+    setSections(updatedSections);
+    onUpdate(updatedSections);
+    setIsEditLessonModalOpen(false);
     resetLessonForm();
   };
 
@@ -240,6 +310,8 @@ const Curriculum = ({
         );
         console.log(comments.COURSE_PUB_SUCC, response.data);
         setIsSuccessModalOpen(true);
+        localStorage.removeItem("courseFormData");
+
         setTimeout(() => {
           navigate(API.COURSE_MNGMT);
         }, 4000);
@@ -257,80 +329,15 @@ const Curriculum = ({
     lessonId: string | number
   ) => {
     setEditingSectionIndex(sectionIndex);
-    setEditingLessonId(lessonId);
+    setEditingLessonId(lessonId.toString());
     const section = sections[sectionIndex];
-    const lesson = section?.lessons.find((l) => l._id === lessonId);
+    const lesson = section?.lessons.find((l) => l._id === lessonId.toString());
     if (lesson) {
       setNewLessonName(lesson.name);
       setNewLessonPdfs([]);
       setNewLessonDuration(lesson.duration);
       setIsEditLessonModalOpen(true);
     }
-  };
-
-  const handleUpdateLesson = async () => {
-    if (!newLessonName.trim()) {
-      setError(comments.LESSON_REQ);
-      return;
-    }
-
-    let videoUrl = sections[editingSectionIndex!]?.lessons.find(
-      (l) => l._id === editingLessonId
-    )?.videoUrl;
-    if (newLessonVideo) {
-      setUploadingVideo(true);
-      const videoUploadResult = await handleFileUpload(newLessonVideo, {
-        onUploadStart: () => setUploadingVideo(true),
-        onUploadEnd: () => setUploadingVideo(false),
-        validateFile: validateVideoFile,
-      });
-
-      if (!videoUploadResult.success) {
-        console.log(comments.VIDEO_UPLOAD_FAIL, videoUploadResult.error);
-        setError(comments.VIDEO_UPLOAD_FAIL);
-        return;
-      }
-      videoUrl = videoUploadResult.url as string;
-    }
-
-    setUploadingPdfs(true);
-    const pdfUploadPromises = newLessonPdfs.map((pdf) =>
-      handleFileUpload(pdf, { validateFile: validatePdfFile })
-    );
-    const pdfUploadResults = await Promise.all(pdfUploadPromises);
-    setUploadingPdfs(false);
-
-    const newPdfUrls = pdfUploadResults
-      .filter((result) => result.success)
-      .map((result) => result.url as string);
-
-    const updatedSections = sections.map((section, index) => {
-      if (index === editingSectionIndex) {
-        const updatedLessons = section.lessons.map((lesson) => {
-          if (lesson._id === editingLessonId) {
-            return {
-              ...lesson,
-              name: newLessonName,
-              videoUrl: videoUrl || lesson.videoUrl,
-              pdfUrls: [...lesson.pdfUrls, ...newPdfUrls],
-              duration: newLessonDuration,
-            };
-          }
-          return lesson;
-        });
-        return {
-          ...section,
-          lessons: updatedLessons,
-          duration: calculateSectionDuration(updatedLessons),
-        };
-      }
-      return section;
-    });
-
-    setSections(updatedSections);
-    onUpdate(updatedSections);
-    setIsEditLessonModalOpen(false);
-    resetLessonForm();
   };
 
   const handleRemoveExistingPdf = (
@@ -341,7 +348,7 @@ const Curriculum = ({
     const updatedSections = sections.map((section, index) => {
       if (index === sectionIndex) {
         const updatedLessons = section.lessons.map((lesson) => {
-          if (lesson._id === lessonId) {
+          if (lesson._id === lessonId.toString()) {
             return {
               ...lesson,
               pdfUrls: lesson.pdfUrls.filter((url) => url !== pdfUrl),
@@ -367,13 +374,19 @@ const Curriculum = ({
     sectionIndex: number,
     lessonId?: string | number
   ) => {
+    console.log("Deleting:", { type, sectionIndex, lessonId });
     setEditingSectionIndex(sectionIndex);
-    setEditingLessonId(lessonId || null);
+    setEditingLessonId(lessonId?.toString() || null);
     setDeletingItemType(type);
     setIsDeleteConfirmationOpen(true);
   };
 
   const handleConfirmDelete = () => {
+    console.log("Confirming delete:", {
+      deletingItemType,
+      editingSectionIndex,
+      editingLessonId,
+    });
     if (deletingItemType === "section") {
       const updatedSections = sections.filter(
         (_, index) => index !== editingSectionIndex
@@ -383,6 +396,7 @@ const Curriculum = ({
     } else if (
       deletingItemType === "lesson" &&
       editingSectionIndex !== null &&
+      typeof editingLessonId === "string" &&
       editingLessonId
     ) {
       const updatedSections = sections.map((section, index) => {
@@ -434,7 +448,10 @@ const Curriculum = ({
               </div>
             </div>
             {section.lessons.map((lesson, index) => (
-              <div key={lesson._id || index} className="lecture-item">
+              <div
+                key={lesson._id || `lesson-${index}`}
+                className="lecture-item"
+              >
                 <div
                   style={{
                     display: "flex",
@@ -450,7 +467,10 @@ const Curriculum = ({
                 <div style={{ display: "flex", gap: "0.5rem" }}>
                   <button
                     onClick={() =>
-                      handleEditLessonClick(sectionIndex, lesson._id || index)
+                      handleEditLessonClick(
+                        sectionIndex,
+                        lesson._id || `lesson-${index}`
+                      )
                     }
                   >
                     <EditIcon size={16} />
@@ -460,7 +480,7 @@ const Curriculum = ({
                       handleDeleteClick(
                         "lesson",
                         sectionIndex,
-                        lesson._id || index
+                        lesson._id || `lesson-${index}`
                       )
                     }
                   >
@@ -692,24 +712,26 @@ const Curriculum = ({
       )}
 
       {isDeleteConfirmationOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h2 className="modal-title">Confirm Deletion</h2>
-            <p>Are you sure you want to delete this {deletingItemType}?</p>
-            <p>This action cannot be undone.</p>
-            <div className="modal-button-group">
-              <button onClick={() => setIsDeleteConfirmationOpen(false)}>
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmDelete}
-                style={{ backgroundColor: "red", color: "white" }}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
+        <CustomModal
+          isOpen={isDeleteConfirmationOpen}
+          onClose={() => setIsDeleteConfirmationOpen(false)}
+          header={`Confirm Deletion`}
+          buttons={[
+            {
+              text: "Cancel",
+              onClick: () => setIsDeleteConfirmationOpen(false),
+              variant: "secondary",
+            },
+            {
+              text: "Delete",
+              onClick: handleConfirmDelete,
+              variant: "primary",
+            },
+          ]}
+        >
+          <p>Are you sure you want to delete this {deletingItemType}?</p>
+          <p>This action cannot be undone.</p>
+        </CustomModal>
       )}
 
       {isSuccessModalOpen && (

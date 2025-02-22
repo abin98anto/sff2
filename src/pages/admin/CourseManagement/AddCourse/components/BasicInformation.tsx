@@ -4,6 +4,7 @@ import {
   DeleteIcon,
   EditIcon,
   ImageIcon,
+  SearchIcon,
   UploadIcon,
 } from "lucide-react";
 
@@ -17,6 +18,7 @@ import API from "../../../../../shared/constants/API";
 import handleFileUpload, {
   validateImageFile,
 } from "../../../../../shared/utils/cloudinary/fileUpload";
+import { IUser } from "../../../../../entities/IUser";
 
 interface BasicInformationProps {
   data: ICourse;
@@ -36,9 +38,13 @@ const BasicInformation = ({
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [tutors, setTutors] = useState<IUser[]>([]);
+  const [filteredTutors, setFilteredTutors] = useState<IUser[]>([]);
+  const [tutorSearch, setTutorSearch] = useState("");
 
   useEffect(() => {
     fetchCategories();
+    fetchTutors();
   }, []);
 
   // Fetching categories.
@@ -61,12 +67,12 @@ const BasicInformation = ({
     }
   };
 
-  // handlUploading fields value changes.
+  // Handle field value changes.
   const handleChange = (field: keyof ICourse, value: string) => {
     onUpdate({ [field]: value });
   };
 
-  // upload thumbnail.
+  // Upload thumbnail.
   const handleThumbnailUpload = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -93,7 +99,7 @@ const BasicInformation = ({
     }
   };
 
-  // delete thumbnail.
+  // Delete thumbnail.
   const handleDeleteThumbnail = () => {
     onUpdate({ thumbnail: "" });
   };
@@ -102,7 +108,50 @@ const BasicInformation = ({
     document.getElementById("thumbnailInput")?.click();
   };
 
-  // Form valicdation.
+  // Fetching tutors
+  const fetchTutors = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axiosInstance.get(API.TUTORS_GET);
+      console.log("the response", response.data.data);
+      if (response.data && response.data.data) {
+        setTutors(response.data.data);
+        setFilteredTutors(response.data.data);
+      } else {
+        setError("No tutors received from the server.");
+        setTutors([]);
+        setFilteredTutors([]);
+      }
+    } catch (err) {
+      console.error("Failed to fetch tutors:", err);
+      setError("Failed to fetch tutors.");
+      setTutors([]);
+      setFilteredTutors([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle tutor search
+  const handleTutorSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const searchTerm = e.target.value.toLowerCase();
+    setTutorSearch(searchTerm);
+    const filtered = tutors.filter((tutor) =>
+      tutor.name.toLowerCase().includes(searchTerm)
+    );
+    setFilteredTutors(filtered);
+  };
+
+  // Handle tutor selection
+  const handleTutorChange = (tutorId: string) => {
+    const currentTutors = data.tutors || [];
+    const updatedTutors = currentTutors.some((tutor) => tutor._id === tutorId)
+      ? currentTutors.filter((tutor) => tutor._id !== tutorId)
+      : [...currentTutors, tutors.find((t) => t._id === tutorId)!];
+    onUpdate({ tutors: updatedTutors });
+  };
+
+  // Form validation.
   const validateForm = () => {
     if (!data.title.trim()) {
       setError(comments.TITLE_REQ);
@@ -139,7 +188,7 @@ const BasicInformation = ({
     return true;
   };
 
-  // handle next button click.
+  // Handle next button click.
   const handleNext = () => {
     if (validateForm()) {
       onNext();
@@ -150,8 +199,6 @@ const BasicInformation = ({
     <>
       <div className="form-container">
         <div className="form-left">
-          <h2>Basic Information</h2>
-
           <div className="form-group">
             <input
               id="title"
@@ -258,6 +305,21 @@ const BasicInformation = ({
               Prerequisites (separated by comma)
             </label>
           </div>
+          <div className="form-group">
+            <textarea
+              id="description"
+              value={data.description}
+              onChange={(e) => handleChange("description", e.target.value)}
+              placeholder={comments.DESCRIPTION_PLACEHOLDER}
+              rows={6}
+              maxLength={500}
+            />
+            <label htmlFor="description">Course Description</label>
+            <div className="character-count">
+              <AlertCircle size={12} />
+              <span>{data.description.length}/500</span>
+            </div>
+          </div>
         </div>
 
         <div className="form-right">
@@ -289,33 +351,53 @@ const BasicInformation = ({
                 <div className="upload-text">
                   {isUploading ? <Loading /> : comments.THUMBNAIL_DEFAULT}
                 </div>
+                <label className="upload-button">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleThumbnailUpload}
+                    style={{ display: "none" }}
+                    id="thumbnailInput"
+                  />
+                  <UploadIcon size={16} />
+                  Upload Thumbnail
+                </label>
               </div>
             )}
-            <label className="upload-button">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleThumbnailUpload}
-                style={{ display: "none" }}
-                id="thumbnailInput"
-              />
-              <UploadIcon size={16} />
-              Upload Thumbnail
-            </label>
           </div>
-          <div className="form-group">
-            <textarea
-              id="description"
-              value={data.description}
-              onChange={(e) => handleChange("description", e.target.value)}
-              placeholder={comments.DESCRIPTION_PLACEHOLDER}
-              rows={6}
-              maxLength={500}
-            />
-            <label htmlFor="description">Course Description</label>
-            <div className="character-count">
-              <AlertCircle size={12} />
-              <span>{data.description.length}/500</span>
+
+          {/* Tutors Section */}
+          <div className="form-group tutors-section">
+            <div className="tutor-label">Tutors</div>
+            <div className="tutor-search">
+              <SearchIcon size={16} />
+              <input
+                type="text"
+                value={tutorSearch}
+                onChange={handleTutorSearch}
+                placeholder="Search tutors..."
+              />
+            </div>
+            <div className="tutor-list-box">
+              {isLoading ? (
+                <Loading />
+              ) : filteredTutors.length > 0 ? (
+                filteredTutors.map((tutor) => (
+                  <div key={tutor._id} className="tutor-item">
+                    <input
+                      type="checkbox"
+                      id={`tutor-${tutor._id}`}
+                      checked={data.tutors?.some((t) => t._id === tutor._id)}
+                      onChange={() => handleTutorChange(tutor._id!)}
+                    />
+                    <span className="tutor-name">
+                      {tutor.name || "No Name"}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p>No tutors found.</p>
+              )}
             </div>
           </div>
         </div>

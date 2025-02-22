@@ -1,9 +1,9 @@
-import { Pencil, Plus, Trash2, UserRoundPlus } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import "./CourseManagement.scss";
-import { ICourse } from "../../../entities/ICourse";
+import ICourse from "../../../entities/ICourse";
 import useSnackbar from "../../../hooks/useSnackbar";
 import DataTable, { Column } from "../../../components/common/Table/DataTable";
 import CustomSnackbar from "../../../components/common/CustomSnackbar";
@@ -11,6 +11,7 @@ import ConfirmationModal from "../../../components/common/Modal/ConfirmationModa
 import axiosInstance from "../../../shared/config/axiosConfig";
 import API from "../../../shared/constants/API";
 import comments from "../../../shared/constants/comments";
+import { IUser } from "../../../entities/IUser";
 
 interface TableData {
   data: ICourse[];
@@ -27,7 +28,6 @@ const CourseManagement = () => {
 
   const handleEdit = (row: ICourse) => {
     console.log(row);
-    // Add navigation logic for editing if needed, e.g., navigate(`/admin/edit-course/${row._id}`);
   };
 
   const addCourse = () => {
@@ -63,7 +63,7 @@ const CourseManagement = () => {
       render: (item: ICourse) => (
         <div className="tutors-list">
           {item.tutors && item.tutors.length > 0 ? (
-            item.tutors.map((tutor, index) => (
+            item.tutors.map((tutor: IUser, index: number) => (
               <span key={tutor._id}>
                 {tutor.name}
                 {index < item.tutors!.length - 1 && ", "}
@@ -85,9 +85,6 @@ const CourseManagement = () => {
       label: "Actions",
       render: (row: ICourse) => (
         <div className="action-buttons">
-          <button className="action-button add">
-            <UserRoundPlus size={16} />
-          </button>
           <button
             onClick={() => handleEdit(row)}
             className="action-button edit"
