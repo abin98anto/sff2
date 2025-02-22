@@ -27,7 +27,7 @@ const CourseManagement = () => {
   const navigate = useNavigate();
 
   const handleEdit = (row: ICourse) => {
-    console.log(row);
+    navigate(`/admin/edit-course/${row._id}`, { state: { course: row } });
   };
 
   const addCourse = () => {

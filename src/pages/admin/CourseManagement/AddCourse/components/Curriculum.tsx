@@ -29,6 +29,8 @@ interface CurriculumProps {
   onCancel: () => void;
   setError: (error: string) => void;
   courseFormData: ICourse;
+  isEditMode?: boolean;
+  showSnackbar?: (message: string, severity: "success" | "error") => void;
 }
 
 const Curriculum = ({
@@ -38,6 +40,7 @@ const Curriculum = ({
   onCancel,
   setError,
   courseFormData,
+  isEditMode = false,
 }: CurriculumProps) => {
   const navigate = useNavigate();
 
@@ -302,26 +305,68 @@ const Curriculum = ({
     };
   };
 
+  // const handlePublish = async () => {
+  //   if (validateForm()) {
+  //     try {
+  //       setPublishing(true);
+  //       const formattedData = prepareCourseDataForBackend(courseFormData);
+  //       const response = await axiosInstance.post(
+  //         API.COURSE_ADD,
+  //         formattedData
+  //       );
+  //       console.log(comments.COURSE_PUB_SUCC, response.data);
+  //       setIsSuccessModalOpen(true);
+
+  //       localStorage.removeItem("courseFormData");
+
+  //       setTimeout(() => {
+  //         navigate(API.COURSE_MNGMT);
+  //       }, 4000);
+  //     } catch (error) {
+  //       console.error(comments.COURSE_PUB_FAIL, error);
+  //       setError(comments.COURSE_PUB_FAIL);
+  //     } finally {
+  //       setPublishing(false);
+  //     }
+  //   }
+  // };
+
   const handlePublish = async () => {
     if (validateForm()) {
       try {
         setPublishing(true);
         const formattedData = prepareCourseDataForBackend(courseFormData);
-        const response = await axiosInstance.post(
-          API.COURSE_ADD,
-          formattedData
-        );
-        console.log(comments.COURSE_PUB_SUCC, response.data);
-        setIsSuccessModalOpen(true);
+        let response;
 
-        localStorage.removeItem("courseFormData");
+        if (isEditMode) {
+          // Update existing course
+          response = await axiosInstance.put(API.COURSE_UPDATE, {
+            _id: courseFormData._id,
+            ...formattedData,
+          });
+          console.log(comments.COURSE_UPDATE_SUCC, response.data);
+          setError("Course updated successfully!");
+        } else {
+          // Create new course
+          response = await axiosInstance.post(API.COURSE_ADD, formattedData);
+          console.log(comments.COURSE_PUB_SUCC, response.data);
+          setError("Course created successfully!");
+          localStorage.removeItem("courseFormData");
+        }
+
+        setIsSuccessModalOpen(true);
 
         setTimeout(() => {
           navigate(API.COURSE_MNGMT);
         }, 4000);
       } catch (error) {
-        console.error(comments.COURSE_PUB_FAIL, error);
-        setError(comments.COURSE_PUB_FAIL);
+        console.error(
+          isEditMode ? comments.COURSE_UPDATE_FAIL : comments.COURSE_PUB_FAIL,
+          error
+        );
+        setError(
+          isEditMode ? comments.COURSE_UPDATE_FAIL : comments.COURSE_PUB_FAIL
+        );
       } finally {
         setPublishing(false);
       }
@@ -767,6 +812,38 @@ const Curriculum = ({
               <p style={{ fontSize: "1rem", marginBottom: "1rem" }}>
                 Your course has been published. Redirecting to course
                 management...
+              </p>
+            </div>
+          </CustomModal>
+        )}
+
+        {/* Update Success Modal message */}
+        {isSuccessModalOpen && (
+          <CustomModal
+            isOpen={isSuccessModalOpen}
+            onClose={() => setIsSuccessModalOpen(false)}
+            header="Success"
+            buttons={[
+              {
+                text: "OK",
+                onClick: () => {
+                  setIsSuccessModalOpen(false);
+                  navigate(API.COURSE_MNGMT);
+                },
+                variant: "primary",
+              },
+            ]}
+          >
+            <div className="success-modal-content">
+              <CheckCircle size={64} style={{ marginBottom: "1rem" }} />
+              <h2 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>
+                {isEditMode
+                  ? "Course Updated Successfully!"
+                  : "Course Created Successfully!"}
+              </h2>
+              <p style={{ fontSize: "1rem", marginBottom: "1rem" }}>
+                Your course has been {isEditMode ? "updated" : "published"}.
+                Redirecting to course management...
               </p>
             </div>
           </CustomModal>

@@ -16,6 +16,7 @@ const AdminRoutes = () => {
         <Route path="/category-management" element={<Categories />} />
         <Route path="/course-management" element={<CourseManagement />} />
         <Route path="/add-course" element={<CourseForm />} />
+        <Route path="/edit-course/:id" element={<CourseForm />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

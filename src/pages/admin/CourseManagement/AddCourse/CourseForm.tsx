@@ -1,8 +1,8 @@
+// CourseForm.tsx
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import "./CourseForm.scss";
-import { ICourse } from "../../../../entities/ICourse";
+import ICourse from "../../../../entities/ICourse";
 import BasicInformation from "./components/BasicInformation";
 import Curriculum from "./components/Curriculum";
 import ProgressSteps from "./components/ProgressSteps";
@@ -17,8 +17,11 @@ const STORAGE_KEY = "courseFormData";
 const CourseForm = () => {
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const [currentStep, setCurrentStep] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditMode, _] = useState(!!id);
 
   const initialCourseData: ICourse = {
     title: "",
@@ -40,21 +43,24 @@ const CourseForm = () => {
   const [formData, setFormData] = useState<ICourse>(initialCourseData);
 
   useEffect(() => {
-    const storedData = localStorage.getItem(STORAGE_KEY);
-    if (storedData) {
-      const parsedData = JSON.parse(storedData) as ICourse;
-      setFormData(parsedData);
-      if (parsedData.curriculum && parsedData.curriculum.length > 0) {
-        setCurrentStep(2);
-      } else {
-        setCurrentStep(1);
+    if (isEditMode && location.state?.course) {
+      setFormData(location.state.course);
+      setCurrentStep(location.state.course.curriculum.length > 0 ? 2 : 1);
+    } else {
+      const storedData = localStorage.getItem(STORAGE_KEY);
+      if (storedData) {
+        const parsedData = JSON.parse(storedData) as ICourse;
+        setFormData(parsedData);
+        setCurrentStep(parsedData.curriculum.length > 0 ? 2 : 1);
       }
     }
-  }, []);
+  }, [isEditMode, location.state]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
-  }, [formData]);
+    if (!isEditMode) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+    }
+  }, [formData, isEditMode]);
 
   const handleNext = () => {
     setCurrentStep((prev) => Math.min(prev + 1, 2));
@@ -71,7 +77,9 @@ const CourseForm = () => {
   const confirmCancel = () => {
     setFormData(initialCourseData);
     setCurrentStep(1);
-    localStorage.removeItem(STORAGE_KEY);
+    if (!isEditMode) {
+      localStorage.removeItem(STORAGE_KEY);
+    }
     setIsModalOpen(false);
     navigate(API.COURSE_MNGMT);
   };
@@ -90,7 +98,7 @@ const CourseForm = () => {
   return (
     <div className="course-form">
       <div className="header">
-        <h1>Add a Course</h1>
+        <h1>{isEditMode ? "Edit Course" : "Add a Course"}</h1>
       </div>
 
       <ProgressSteps currentStep={currentStep} />
@@ -114,6 +122,8 @@ const CourseForm = () => {
           onCancel={handleCancel}
           setError={handleError}
           courseFormData={formData}
+          isEditMode={isEditMode}
+          showSnackbar={showSnackbar}
         />
       )}
 
@@ -122,8 +132,10 @@ const CourseForm = () => {
         onClose={() => setIsModalOpen(false)}
         onYes={confirmCancel}
         onNo={() => setIsModalOpen(false)}
-        title="Discard Course"
-        content={comments.COURSE_DISCARD}
+        title={isEditMode ? "Discard Changes" : "Discard Course"}
+        content={
+          isEditMode ? comments.COURSE_EDIT_DISCARD : comments.COURSE_DISCARD
+        }
       />
 
       <CustomSnackbar
