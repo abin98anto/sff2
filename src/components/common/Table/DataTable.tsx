@@ -1,5 +1,5 @@
+// DataTable.tsx
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-
 import "./DataTable.scss";
 import comments from "../../../shared/constants/comments";
 import Pagination from "../Pagination/Pagination";
@@ -53,7 +53,7 @@ const DataTable = <T extends Record<string, any>>({
   const [sortConfig, setSortConfig] = useState<SortConfig | null>(initialSort);
   const [filters] = useState<Record<string, string>>(initialFilters);
   const [data, setData] = useState<T[]>([]);
-  const [totalPages, setTotalPages] = useState<number>(0);
+  const [totalItems, setTotalItems] = useState<number>(0); // Total items from backend
   const [loading, setLoading] = useState<boolean>(false);
 
   const loadData = useCallback(
@@ -71,7 +71,7 @@ const DataTable = <T extends Record<string, any>>({
 
         const response = await fetchData(queryParams);
         setData(response.data);
-        setTotalPages(Math.ceil(response.total / pageSize));
+        setTotalItems(response.total); // Set total items from backend
       } catch (error) {
         console.error(comments.DATA_FETCH_ERR, error);
       } finally {
@@ -79,6 +79,12 @@ const DataTable = <T extends Record<string, any>>({
       }
     },
     [currentPage, pageSize, searchTerm, sortConfig, filters, fetchData]
+  );
+
+  // Calculate total pages based on totalItems and pageSize
+  const totalPages = useMemo(
+    () => Math.ceil(totalItems / pageSize),
+    [totalItems, pageSize]
   );
 
   useEffect(() => {
@@ -140,6 +146,8 @@ const DataTable = <T extends Record<string, any>>({
 
       {loading ? (
         <Loading />
+      ) : data.length === 0 ? (
+        <p>No data available</p>
       ) : (
         <>
           <table className="data-table">
@@ -166,31 +174,15 @@ const DataTable = <T extends Record<string, any>>({
             </thead>
             <tbody>
               {data.map((row, index) => (
-                <tr key={index}>
+                <tr key={row._id || index}>
                   {columns.map((column) => (
                     <td key={column.key}>
-                      {column.key === "slNo"
-                        ? index + 1
-                        : column.render
-                        ? column.render(row, index)
+                      {column.render
+                        ? column.render(
+                            row,
+                            (currentPage - 1) * pageSize + index
+                          )
                         : row[column.key]}
-
-                      {column.key === "status" &&
-                        typeof row[column.key] === "boolean" && (
-                          <span
-                            className={`status ${
-                              row[column.key] ? "active" : "inactive"
-                            }`}
-                          >
-                            {row[column.key] ? "Active" : "Inactive"}
-                          </span>
-                        )}
-                      {column.key === "actions" && (
-                        <div className="actions">
-                          <button className="edit"></button>
-                          <button className="delete"></button>
-                        </div>
-                      )}
                     </td>
                   ))}
                 </tr>

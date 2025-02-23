@@ -20,6 +20,7 @@ interface TableData {
 
 const CourseManagement = () => {
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
+
   const [toggleModalOpen, setToggleModalOpen] = useState(false);
   const [toggleId, setToggleId] = useState<string | null>(null);
   const [toggleCourse, setToggleCourse] = useState<ICourse | null>(null);
@@ -119,9 +120,14 @@ const CourseManagement = () => {
           },
         });
 
+        const courses =
+          response.data.data.courses || response.data.data.data || [];
+        const total =
+          response.data.data.total || response.data.data.data.total || 0;
+
         return {
-          data: response.data.data.data || [],
-          total: response.data.data.data.total || 0,
+          data: courses,
+          total: total,
         };
       } catch (err) {
         showSnackbar(comments.COURSE_FETCH_FAIL, "error");
