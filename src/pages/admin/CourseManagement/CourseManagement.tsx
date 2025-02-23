@@ -140,10 +140,10 @@ const CourseManagement = () => {
 
   // Toggling course status.
   const handleToggle = async () => {
-    if (!toggleId || !toggleCourse) return;
-
     try {
+      if (!toggleId || !toggleCourse) return;
       const updatedStatus = !toggleCourse.isActive;
+
       const response = await axiosInstance.put(API.COURSE_UPDATE, {
         _id: toggleId,
         isActive: updatedStatus,

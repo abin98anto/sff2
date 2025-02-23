@@ -62,7 +62,6 @@ const comments = {
   RESUME_DELETE_SUCC: "Resume deleted successfully!",
   USR_UPDATED_SUCC: "User updated successfully!",
   USR_UPDATED_FAIL: "Error updating user",
-
   THUMBNAIL_REQ: "Thumbnail is required",
   DESCRIPTION_RQ: "Description is required",
   TITLE_REQ: "Title is required",
@@ -87,7 +86,6 @@ const comments = {
   IMG_UPLOAD_SUCCESS: "Image uploaded successfully",
   UPLOADING: "Uploading...",
   UPLOAD: "Upload",
-
   DESCRIPTION_PLACEHOLDER: "Provide a detailed description.",
   ADD_LESSSON: "Create Lesson",
   VIDEO_UPLOAD: "Upload New Video",
