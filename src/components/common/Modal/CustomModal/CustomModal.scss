@@ -22,10 +22,15 @@
     flex-direction: column;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     color: #fff;
+
+    &.wide {
+      min-width: 500px; // Increase modal min-width
+      max-width: 700px; // Optional: Increase max-width if needed
+    }
   }
 
   &-header {
-    padding: .1rem;
+    padding: 0.1rem;
     border-bottom: 1px solid #444;
     display: flex;
     justify-content: center;
@@ -40,6 +45,11 @@
     padding: 1rem;
     overflow-y: auto;
     color: #fff;
+
+    .wide & {
+      // Apply when parent modal has .wide class
+      min-width: 500px;
+    }
 
     .form-group {
       margin-bottom: 1.5rem;
@@ -137,3 +147,4 @@
     }
   }
 }
+

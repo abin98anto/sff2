@@ -3,9 +3,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {
   BarChart2,
   BookOpen,
+  Layers,
   //   Users,
   //   UserCog,
-  //   Layers,
   //   BookCheck,
   SquareStack,
 } from "lucide-react";
@@ -28,13 +28,13 @@ const menuItems = [
     icon: BookOpen,
     path: "/admin/course-management",
   },
+  {
+    title: "Subscription Management",
+    icon: Layers,
+    path: "/admin/subscription-management",
+  },
   //   { title: "Tutor Management", icon: UserCog, path: "/admin/tutor-management" },
   //   { title: "User Management", icon: Users, path: "/admin/user-management" },
-  //   {
-  //     title: "Subscription Management",
-  //     icon: Layers,
-  //     path: "/admin/batch-management",
-  //   },
   //   { title: "Ledger", icon: BookCheck, path: "/admin/ledger" },
 ];
 

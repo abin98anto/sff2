@@ -1,0 +1,160 @@
+.subscription-management {
+  background-color: #2b2b2b;
+  min-height: 100vh;
+  padding: 2rem;
+  color: white;
+
+  .subscription-container {
+    max-width: 1200px;
+    margin: 0 auto;
+
+    .header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      margin-bottom: 2rem;
+      font-size: 1.5rem;
+    }
+
+    .add-button {
+      background-color: #ff5722;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+
+      &:hover {
+        background-color: #f4511e;
+      }
+    }
+  }
+
+  .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
+
+    &.active {
+      background-color: rgba(46, 204, 113, 0.2);
+      color: #2ecc71;
+    }
+
+    &.inactive {
+      background-color: rgba(231, 76, 60, 0.2);
+      color: #e74c3c;
+    }
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+
+    .action-button {
+      background: none;
+      border: none;
+      padding: 0.25rem;
+      cursor: pointer;
+      color: white;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+
+      &.edit {
+        &:hover {
+          background-color: rgba(52, 152, 219, 0.2);
+          color: #3498db;
+        }
+      }
+
+      &.delete {
+        &:hover {
+          background-color: rgba(231, 76, 60, 0.2);
+          color: #e74c3c;
+        }
+      }
+    }
+  }
+
+  .subscription-form {
+    .form-group {
+      margin-bottom: 1.5rem;
+
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #ccc;
+      }
+
+      input[type="text"],
+      input[type="number"],
+      input[type="date"] {
+        width: 100%;
+        padding: 0.75rem;
+        background-color: #444;
+        border: 2px solid #555;
+        border-radius: 4px;
+        color: #fff;
+        font-size: 0.875rem;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        box-sizing: border-box;
+
+        &:focus {
+          outline: none;
+          border-color: #007bff;
+          box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        &:hover {
+          border-color: #666;
+        }
+      }
+
+      .checkbox-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+
+        label {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-bottom: 0;
+          font-weight: normal;
+          color: #fff;
+
+          input[type="checkbox"] {
+            width: 1rem;
+            height: 1rem;
+            margin: 0;
+            accent-color: #007bff;
+          }
+        }
+      }
+    }
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    text-align: left;
+
+    li {
+      margin-bottom: 0.25rem;
+      font-size: 0.875rem;
+      padding-left: 0;
+    }
+  }
+}

@@ -261,7 +261,7 @@ const CategoryManagement = () => {
           </div>
         </CustomModal>
 
-        {/* Delete Confirmation Modal */}
+        {/* Unlist Confirmation Modal */}
         <CustomModal
           isOpen={isDeleteModalOpen}
           onClose={() => setIsDeleteModalOpen(false)}

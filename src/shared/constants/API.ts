@@ -33,6 +33,12 @@ const API = {
 
   // Admin Side.
   TUTORS_GET: "/admin/users/tutor",
+
+  // Subscription Side.
+  SUBSCRIPTION_GET: "/subsciption",
+  SUBSCRIPTION_ADD: "/subsciption/add",
+  SUBSCRIPTION_UPDATE: "/subsciption/update",
+  SUBSCRIPTION_NEW_USER: "/subsciption/new-subscriber",
 };
 
 export default API;
