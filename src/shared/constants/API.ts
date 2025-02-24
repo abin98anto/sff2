@@ -39,6 +39,10 @@ const API = {
   SUBSCRIPTION_ADD: "/subsciption/add",
   SUBSCRIPTION_UPDATE: "/subsciption/update",
   SUBSCRIPTION_NEW_USER: "/subsciption/new-subscriber",
+
+  // Users
+  USERS_LIST: "/admin/users",
+  USER_BLOCK: "/admin/block",
 };
 
 export default API;

@@ -1,4 +1,5 @@
 export interface IUser {
+  createdAt: string | number | Date;
   name: string;
   email: string;
   role: string;

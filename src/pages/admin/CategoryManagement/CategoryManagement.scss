@@ -28,7 +28,7 @@
       font-size: 0.875rem;
       cursor: pointer;
       display: flex;
-      align-items: center;
+      justify-content: center;
       gap: 0.5rem;
       margin-bottom: 2rem;
 
@@ -56,6 +56,7 @@
 
   .action-buttons {
     display: flex;
+    justify-content: center;
     gap: 0.5rem;
 
     .action-button {

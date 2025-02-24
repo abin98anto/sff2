@@ -7,6 +7,7 @@ import Categories from "../pages/admin/CategoryManagement/CategoryManagement";
 import CourseManagement from "../pages/admin/CourseManagement/CourseManagement";
 import CourseForm from "../pages/admin/CourseManagement/AddCourse/CourseForm";
 import SubscriptionManagement from "../pages/admin/SubscriptionManagement/SubscriptionManagement";
+import UserManagement from "../pages/admin/UserManagement/UserManagement";
 
 const AdminRoutes = () => {
   return (
@@ -22,6 +23,7 @@ const AdminRoutes = () => {
           path="/subscription-management"
           element={<SubscriptionManagement />}
         />
+        <Route path="/user-management" element={<UserManagement />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

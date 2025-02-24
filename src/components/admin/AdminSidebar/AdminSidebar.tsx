@@ -4,7 +4,7 @@ import {
   BarChart2,
   BookOpen,
   Layers,
-  //   Users,
+  Users,
   //   UserCog,
   //   BookCheck,
   SquareStack,
@@ -33,8 +33,8 @@ const menuItems = [
     icon: Layers,
     path: "/admin/subscription-management",
   },
+  { title: "User Management", icon: Users, path: "/admin/user-management" },
   //   { title: "Tutor Management", icon: UserCog, path: "/admin/tutor-management" },
-  //   { title: "User Management", icon: Users, path: "/admin/user-management" },
   //   { title: "Ledger", icon: BookCheck, path: "/admin/ledger" },
 ];
 
