@@ -28,6 +28,7 @@ const TutorManagement = () => {
   const [confirmApprovalOpen, setConfirmApprovalOpen] = useState(false);
   const [confirmDenialOpen, setConfirmDenialOpen] = useState(false);
   const [selectedTutor, setSelectedTutor] = useState<IUser | null>(null);
+  const [denialReason, setDenialReason] = useState<string>("");
 
   const columns: Column<IUser>[] = [
     {
@@ -83,7 +84,6 @@ const TutorManagement = () => {
     },
   ];
 
-  // fetch verified tutors.
   const fetchVerifiedTutors = useCallback(
     async (queryParams: any): Promise<TableData> => {
       try {
@@ -109,7 +109,6 @@ const TutorManagement = () => {
     []
   );
 
-  // Fetch unverified tutors.
   const fetchUnverifiedTutors = useCallback(
     async (
       queryParams: any = { page: 1, limit: 100, search: "" }
@@ -132,7 +131,6 @@ const TutorManagement = () => {
     []
   );
 
-  // Block/Unblock tutors.
   const handleBlockUser = (user: IUser) => {
     setUserToBlock(user);
     setIsConfirmModalOpen(true);
@@ -158,7 +156,6 @@ const TutorManagement = () => {
     }
   };
 
-  // Approve tutors modal.
   const handleOpenApproveModal = () => {
     fetchUnverifiedTutors();
     setIsApproveModalOpen(true);
@@ -185,13 +182,14 @@ const TutorManagement = () => {
 
   const handleDenyClick = (tutor: IUser) => {
     setSelectedTutor(tutor);
+    setDenialReason("");
     setConfirmDenialOpen(true);
   };
 
   const handleConfirmApproval = async () => {
     if (selectedTutor?._id) {
       try {
-        await axiosInstance.patch(`${API.USERS_LIST}/${selectedTutor._id}`, {
+        await axiosInstance.put(`${API.TUTOR_APPROVE}/${selectedTutor._id}`, {
           isVerified: true,
         });
         showSnackbar("Tutor approved successfully", "success");
@@ -210,9 +208,14 @@ const TutorManagement = () => {
 
   const handleConfirmDenial = async () => {
     if (selectedTutor?._id) {
+      if (!denialReason.trim()) {
+        showSnackbar("Please provide a reason for denial", "error");
+        return;
+      }
       try {
-        await axiosInstance.patch(`${API.USERS_LIST}/${selectedTutor._id}`, {
+        await axiosInstance.put(`${API.TUTOR_DENY}/${selectedTutor._id}`, {
           isVerified: false,
+          reason: denialReason,
         });
         showSnackbar("Tutor denied successfully", "success");
         fetchUnverifiedTutors();
@@ -226,6 +229,7 @@ const TutorManagement = () => {
     }
     setConfirmDenialOpen(false);
     setSelectedTutor(null);
+    setDenialReason("");
   };
 
   return (
@@ -381,6 +385,17 @@ const TutorManagement = () => {
           Are you sure you want to deny {selectedTutor?.name}'s request to
           become a tutor?
         </p>
+        <div style={{ marginTop: "10px" }}>
+          <label htmlFor="denialReason">Reason for denial:</label>
+          <textarea
+            id="denialReason"
+            value={denialReason}
+            onChange={(e) => setDenialReason(e.target.value)}
+            placeholder="Enter the reason for denying this tutor"
+            rows={4}
+            style={{ width: "100%", marginTop: "5px" }}
+          />
+        </div>
       </CustomModal>
 
       <CustomSnackbar

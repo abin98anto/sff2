@@ -43,6 +43,8 @@ const API = {
   // Users
   USERS_LIST: "/admin/users",
   USER_BLOCK: "/admin/block",
+  TUTOR_APPROVE:"/admin/approve",
+  TUTOR_DENY:"/admin/deny",
 };
 
 export default API;
