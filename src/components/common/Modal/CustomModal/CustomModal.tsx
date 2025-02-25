@@ -32,7 +32,7 @@ const CustomModal: React.FC<ModalProps> = ({
         } ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="CusMod-header">
+        <div className={`CusMod-header ${className}`}>
           <h2>{header}</h2>
         </div>
         <div className="CusMod-content">{children}</div>

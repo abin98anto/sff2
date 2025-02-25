@@ -1,4 +1,3 @@
-// DataTable.tsx
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import "./DataTable.scss";
 import comments from "../../../shared/constants/comments";
@@ -53,7 +52,7 @@ const DataTable = <T extends Record<string, any>>({
   const [sortConfig, setSortConfig] = useState<SortConfig | null>(initialSort);
   const [filters] = useState<Record<string, string>>(initialFilters);
   const [data, setData] = useState<T[]>([]);
-  const [totalItems, setTotalItems] = useState<number>(0); // Total items from backend
+  const [totalItems, setTotalItems] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
 
   const loadData = useCallback(
@@ -71,7 +70,7 @@ const DataTable = <T extends Record<string, any>>({
 
         const response = await fetchData(queryParams);
         setData(response.data);
-        setTotalItems(response.total); // Set total items from backend
+        setTotalItems(response.total);
       } catch (error) {
         console.error(comments.DATA_FETCH_ERR, error);
       } finally {
@@ -81,7 +80,6 @@ const DataTable = <T extends Record<string, any>>({
     [currentPage, pageSize, searchTerm, sortConfig, filters, fetchData]
   );
 
-  // Calculate total pages based on totalItems and pageSize
   const totalPages = useMemo(
     () => Math.ceil(totalItems / pageSize),
     [totalItems, pageSize]

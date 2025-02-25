@@ -5,7 +5,7 @@ import {
   BookOpen,
   Layers,
   Users,
-  //   UserCog,
+  UserCog,
   //   BookCheck,
   SquareStack,
 } from "lucide-react";
@@ -34,7 +34,7 @@ const menuItems = [
     path: "/admin/subscription-management",
   },
   { title: "User Management", icon: Users, path: "/admin/user-management" },
-  //   { title: "Tutor Management", icon: UserCog, path: "/admin/tutor-management" },
+  { title: "Tutor Management", icon: UserCog, path: "/admin/tutor-management" },
   //   { title: "Ledger", icon: BookCheck, path: "/admin/ledger" },
 ];
 

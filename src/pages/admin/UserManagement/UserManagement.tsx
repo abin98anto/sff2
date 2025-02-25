@@ -18,7 +18,6 @@ const UserManagement = () => {
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
   const refetchData = useRef<(() => void) | undefined>();
 
-  // State for confirmation modal
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [userToBlock, setUserToBlock] = useState<IUser | null>(null);
 
@@ -79,10 +78,9 @@ const UserManagement = () => {
             search: queryParams.search,
           },
         });
-        console.log("Full response:", response.data);
         return {
-          data: response.data.data.data || [],
-          total: response.data.data.total || 0, // Corrected total path
+          data: response.data || [],
+          total: response.data.total || 0,
         };
       } catch (err) {
         showSnackbar("Error fetching student details", "error");
@@ -93,30 +91,29 @@ const UserManagement = () => {
     []
   );
 
-  // Handle opening the confirmation modal
   const handleBlockUser = (user: IUser) => {
     setUserToBlock(user);
     setIsConfirmModalOpen(true);
   };
 
-  // Handle confirming the block action
   const handleConfirmBlock = async () => {
     try {
       if (!userToBlock || !userToBlock._id) {
-        showSnackbar("No user selected to block", "error");
+        showSnackbar("No user selected to block/unblock", "error");
         return;
       }
 
       await axiosInstance.put(`${API.USER_BLOCK}/${userToBlock._id}`);
-      showSnackbar("User blocked successfully", "success");
+      const action = userToBlock.isActive ? "blocked" : "unblocked";
+      showSnackbar(`User ${action} successfully`, "success");
       setIsConfirmModalOpen(false);
       setUserToBlock(null);
       if (refetchData.current) {
         refetchData.current();
       }
     } catch (err) {
-      showSnackbar("Error blocking user", "error");
-      console.error("Error blocking user", err);
+      showSnackbar("Error updating user status", "error");
+      console.error("Error updating user status", err);
     }
   };
 
@@ -135,15 +132,20 @@ const UserManagement = () => {
         />
       </div>
 
-      {/* Confirmation Modal for Blocking User */}
+      {/* Confirmation Modal for Blocking/Unblocking User */}
       <CustomModal
         isOpen={isConfirmModalOpen}
         onClose={() => {
           setIsConfirmModalOpen(false);
           setUserToBlock(null);
         }}
-        header="Confirm Block"
+        header="Confirm Action"
         buttons={[
+          {
+            text: userToBlock?.isActive ? "Block" : "Unblock",
+            onClick: handleConfirmBlock,
+            variant: "primary",
+          },
           {
             text: "Cancel",
             onClick: () => {
@@ -152,14 +154,12 @@ const UserManagement = () => {
             },
             variant: "secondary",
           },
-          {
-            text: "Block",
-            onClick: handleConfirmBlock,
-            variant: "primary",
-          },
         ]}
       >
-        <p>Are you sure you want to block the user "{userToBlock?.name}"?</p>
+        <p>
+          Are you sure you want to {userToBlock?.isActive ? "block" : "unblock"}{" "}
+          the user "{userToBlock?.name}"?
+        </p>
       </CustomModal>
 
       <CustomSnackbar
