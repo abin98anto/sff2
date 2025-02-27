@@ -21,6 +21,7 @@ const SubscriptionPage = () => {
 
   const [plans, setPlans] = useState<ISubscription[]>([]);
   const [loading, setLoading] = useState(true);
+  let hasActivePlan = false;
 
   const { userInfo, isAuthenticated } = useAppSelector(
     (state: AppRootState) => state.user
@@ -57,9 +58,9 @@ const SubscriptionPage = () => {
   }
 
   // Checking for current plan.
-  // Checking for current plan.
   const isCurrentPlan = (plan: ISubscription) => {
     if (!isAuthenticated || !userInfo?.email) return false;
+    hasActivePlan = true;
     return plan.users.some((user) => user.userEmail === userInfo.email);
   };
 
@@ -79,6 +80,15 @@ const SubscriptionPage = () => {
       // Checking if user is logged in.
       if (!userInfo) {
         showSnackbar("Please log in to subscribe to a plan", "error");
+        return;
+      }
+
+      // Check if user already has an active subscription for this plan
+      if (hasActivePlan) {
+        showSnackbar(
+          "You already have an active subscription.",
+          "error"
+        );
         return;
       }
 
