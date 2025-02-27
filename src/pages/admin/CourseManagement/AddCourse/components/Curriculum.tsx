@@ -305,32 +305,6 @@ const Curriculum = ({
     };
   };
 
-  // const handlePublish = async () => {
-  //   if (validateForm()) {
-  //     try {
-  //       setPublishing(true);
-  //       const formattedData = prepareCourseDataForBackend(courseFormData);
-  //       const response = await axiosInstance.post(
-  //         API.COURSE_ADD,
-  //         formattedData
-  //       );
-  //       console.log(comments.COURSE_PUB_SUCC, response.data);
-  //       setIsSuccessModalOpen(true);
-
-  //       localStorage.removeItem("courseFormData");
-
-  //       setTimeout(() => {
-  //         navigate(API.COURSE_MNGMT);
-  //       }, 4000);
-  //     } catch (error) {
-  //       console.error(comments.COURSE_PUB_FAIL, error);
-  //       setError(comments.COURSE_PUB_FAIL);
-  //     } finally {
-  //       setPublishing(false);
-  //     }
-  //   }
-  // };
-
   const handlePublish = async () => {
     if (validateForm()) {
       try {
@@ -592,7 +566,7 @@ const Curriculum = ({
                   className="input-group"
                 />
               </div>
-              <div className="input-group">
+              {/* <div className="input-group">
                 <label htmlFor="lessonDuration">Duration (seconds)</label>
                 <input
                   id="lessonDuration"
@@ -603,7 +577,7 @@ const Curriculum = ({
                   }
                   className="input-group"
                 />
-              </div>
+              </div> */}
               <div className="input-group">
                 <label htmlFor="lessonVideo">Upload Video</label>
                 <div className="upload-button">
@@ -675,7 +649,7 @@ const Curriculum = ({
                   className="input-group"
                 />
               </div>
-              <div className="input-group">
+              {/* <div className="input-group">
                 <label htmlFor="editLessonDuration">Duration (seconds)</label>
                 <input
                   id="editLessonDuration"
@@ -686,7 +660,7 @@ const Curriculum = ({
                   }
                   className="input-group"
                 />
-              </div>
+              </div> */}
               <div className="input-group">
                 <label htmlFor="editLessonVideo">Change Video</label>
                 <div className="upload-button">

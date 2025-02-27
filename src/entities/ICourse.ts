@@ -1,3 +1,4 @@
+import { ICategory } from "./ICategory";
 import { IUser } from "./IUser";
 
 export interface ILesson {
@@ -19,7 +20,7 @@ export default interface ICourse {
   _id?: string;
   title: string;
   subtitle: string;
-  category: string;
+  category: string | ICategory;
   topic: string;
   language: string;
   level: string;

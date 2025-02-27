@@ -113,10 +113,10 @@ const BasicInformation = ({
     try {
       setIsLoading(true);
       const response = await axiosInstance.get(API.TUTORS_GET);
-      console.log("the response", response.data.data);
-      if (response.data && response.data.data) {
-        setTutors(response.data.data);
-        setFilteredTutors(response.data.data);
+      console.log("the response", response.data);
+      if (response.data && response.data) {
+        setTutors(response.data);
+        setFilteredTutors(response.data);
       } else {
         setError("No tutors received from the server.");
         setTutors([]);
