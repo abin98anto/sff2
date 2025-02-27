@@ -12,6 +12,7 @@ import CustomModal from "../../../components/common/Modal/CustomModal/CustomModa
 interface SubscriptionFormData {
   _id?: string;
   name: string;
+  description: string;
   features: {
     hasVideoCall: boolean;
     hasChat: boolean;
@@ -33,6 +34,7 @@ interface TableData {
 
 const initialState: SubscriptionFormData = {
   name: "",
+  description: "",
   features: { hasVideoCall: false, hasChat: false, hasCertificate: false },
   userCount: 0,
   price: 0,
@@ -348,6 +350,17 @@ const SubscriptionManagement = () => {
               value={formData.name}
               onChange={handleInputChange}
               placeholder="Enter subscription name"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Description</label>
+            <input
+              type="text"
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              placeholder="Enter the description"
             />
           </div>
 

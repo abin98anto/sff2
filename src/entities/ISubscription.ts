@@ -1,5 +1,6 @@
 interface ISubscription {
   name: string;
+  description: string;
   features: {
     hasVideoCall: boolean;
     hasChat: boolean;
@@ -10,7 +11,7 @@ interface ISubscription {
   discountStartDate?: Date;
   discountValidity?: Date;
   users: Array<{
-    userId: string;
+    userEmail: string;
     startDate: Date;
     endDate?: Date;
   }>;

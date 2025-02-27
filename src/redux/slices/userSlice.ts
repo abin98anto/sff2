@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-import { IUserState } from "../../entities/misc/IUserState";
+import IUserState from "../../entities/misc/IUserState";
 import {
   login,
   logout,
@@ -88,6 +88,7 @@ const userSlice = createSlice({
         state.userInfo = null;
         state.message = "";
         state.error = "";
+        state.isAuthenticated = false;
       })
       .addCase(logout.rejected, (state) => {
         state.loading = false;

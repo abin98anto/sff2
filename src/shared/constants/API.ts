@@ -43,8 +43,13 @@ const API = {
   // Users
   USERS_LIST: "/admin/users",
   USER_BLOCK: "/admin/block",
-  TUTOR_APPROVE:"/admin/approve",
-  TUTOR_DENY:"/admin/deny",
+  TUTOR_APPROVE: "/admin/approve",
+  TUTOR_DENY: "/admin/deny",
+
+  // Razor pay
+  RAZORPAY_CHECKOUT: "https://checkout.razorpay.com/v1/checkout.js",
+  RAZORPAY_ADD: "/order/razorpay/create",
+  ORDER_ADD: "/order/add",
 };
 
 export default API;
