@@ -4,6 +4,7 @@ import UserLayout from "../components/user/UserLayout/UserLayout";
 import PageNotFound from "../components/common/PageNotFound/PageNotFound";
 import SubscriptionPage from "../pages/user/SubscriptionsPage/SubscriptionsPage";
 import CourseListPage from "../pages/user/CourseListPage/CourseListPage";
+import CourseDetailsPage from "../pages/user/CourseDetailsPage/CourseDetailsPage";
 
 const UserRoutes = () => {
   return (
@@ -12,6 +13,7 @@ const UserRoutes = () => {
         <Route path="/" element={<LandingPage />} />
         <Route path="/subscriptions" element={<SubscriptionPage />} />
         <Route path="/courses" element={<CourseListPage />} />
+        <Route path="/course/:courseId" element={<CourseDetailsPage />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
