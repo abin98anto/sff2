@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { ChevronDown, ChevronUp, Play, FileText } from "lucide-react";
 
 import "./CourseDetailsPage.scss";
@@ -8,6 +8,9 @@ import axiosInstance from "../../../shared/config/axiosConfig";
 import useSnackbar from "../../../hooks/useSnackbar";
 import CustomSnackbar from "../../../components/common/CustomSnackbar";
 import Loading from "../../../components/common/Loading/Loading";
+import { useAppSelector } from "../../../hooks/reduxHooks";
+import IEnrollment from "../../../entities/IEnrollment";
+import { EnrollStatus } from "../../../entities/misc/enrollStatus";
 
 const CourseDetailsPage: React.FC = () => {
   const [course, setCourse] = useState<ICourse | null>(null);
@@ -15,36 +18,35 @@ const CourseDetailsPage: React.FC = () => {
   const [expandedSections, setExpandedSections] = useState<{
     [key: string]: boolean;
   }>({});
-  // const [enrollingCourse, setEnrollingCourse] = useState(false);
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
+  // const [enrollingCourse, setEnrollingCourse] = useState(false);
 
+  // Fetching course details.
   const { courseId } = useParams<{ courseId: string }>();
-
+  const fetchCourse = async () => {
+    try {
+      setLoading(true);
+      const response = await axiosInstance.get(`/course/${courseId}`);
+      setCourse(response.data.data);
+      setLoading(false);
+    } catch (err) {
+      const errorMessage = "Error fetching course details";
+      showSnackbar(errorMessage, "error");
+      setLoading(false);
+      console.error(errorMessage, err);
+    }
+  };
   useEffect(() => {
-    const fetchCourse = async () => {
-      try {
-        setLoading(true);
-        const response = await axiosInstance.get(`/course/${courseId}`);
-        setCourse(response.data.data);
-        setLoading(false);
-      } catch (err) {
-        const errorMessage = "Error fetching course details";
-        showSnackbar(errorMessage, "error");
-        setLoading(false);
-        console.error(errorMessage, err);
-      }
-    };
-
     fetchCourse();
   }, [courseId]);
 
+  // Curriculum section expansion.
   const toggleSection = (sectionId: string) => {
     setExpandedSections((prev) => ({
       ...prev,
       [sectionId]: !prev[sectionId],
     }));
   };
-
   const expandAllSections = () => {
     if (!course?.curriculum) return;
 
@@ -57,11 +59,11 @@ const CourseDetailsPage: React.FC = () => {
 
     setExpandedSections(allSectionIds);
   };
-
   const collapseAllSections = () => {
     setExpandedSections({});
   };
 
+  // Duration calculation.
   const getTotalStats = () => {
     if (!course?.curriculum) {
       return { sections: 0, lessons: 0, totalDuration: "0" };
@@ -77,10 +79,34 @@ const CourseDetailsPage: React.FC = () => {
       totalDuration: totalDuration.toString(),
     };
   };
+  const { sections, lessons, totalDuration } = getTotalStats();
+
+  // Enrolling process.
+  const { userInfo } = useAppSelector((state) => state.user);
+  const navigate = useNavigate();
+  const handleCourseEnroll = async () => {
+    try {
+      if (!userInfo) {
+        showSnackbar("Please login to continue", "error");
+        return;
+      }
+
+      setLoading(true);
+      const data: Partial<IEnrollment> = {
+        courseId: course?._id,
+        enrolledAt: new Date(),
+        status: EnrollStatus.PENDING,
+        completedLessons: [],
+      };
+      await axiosInstance.post("/enrollment/add", data);
+      navigate("/study/" + data.courseId);
+      setLoading(false);
+    } catch (error) {
+      console.log("error enrolling course in the front end", error);
+    }
+  };
 
   if (loading) return <Loading />;
-
-  const { sections, lessons, totalDuration } = getTotalStats();
 
   return (
     <div className="page-container">
@@ -105,7 +131,7 @@ const CourseDetailsPage: React.FC = () => {
           <p>Duration: {totalDuration} hrs</p>
           <button
             className="start-course-button"
-            // onClick={handleStartCourse}
+            onClick={handleCourseEnroll}
             // disabled={enrollingCourse}
           >
             Start Course
@@ -141,7 +167,7 @@ const CourseDetailsPage: React.FC = () => {
         {course?.curriculum.map((section) => (
           <div className="section" key={section._id}>
             <div
-              className="section-header"
+              className="cdp-section-header"
               onClick={() => toggleSection(section._id || "")}
             >
               <div className="section-info">
