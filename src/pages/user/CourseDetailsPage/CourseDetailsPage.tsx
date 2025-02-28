@@ -25,7 +25,6 @@ const CourseDetailsPage: React.FC = () => {
       try {
         setLoading(true);
         const response = await axiosInstance.get(`/course/${courseId}`);
-        // console.log("ther respnes", response);
         setCourse(response.data.data);
         setLoading(false);
       } catch (err) {
@@ -109,7 +108,7 @@ const CourseDetailsPage: React.FC = () => {
             // onClick={handleStartCourse}
             // disabled={enrollingCourse}
           >
-            "Start Course"
+            Start Course
           </button>
         </div>
       </div>

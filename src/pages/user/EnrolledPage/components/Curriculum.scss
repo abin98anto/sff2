@@ -1,0 +1,121 @@
+.curriculum {
+  background-color: #1c1d1f;
+  color: #fff;
+  height: 100%;
+}
+
+.curriculum-title {
+  font-size: 24px;
+  padding: 20px;
+  margin: 0;
+  border-bottom: 1px solid #3e4143;
+}
+
+.sections {
+  padding: 10px 0;
+}
+
+.section {
+  margin-bottom: 10px;
+}
+
+.section-header {
+  background-color: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  width: 100%;
+  text-align: left;
+
+  &:hover {
+    background-color: #3e4143;
+  }
+}
+
+.section-title {
+  display: flex;
+  flex-direction: column;
+
+  span:first-child {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .section-info {
+    font-size: 14px;
+    color: #a1a7b3;
+  }
+}
+
+.lectures {
+  display: flex;
+  flex-direction: column;
+}
+
+.lecture {
+  background-color: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 10px 20px 10px 40px;
+  text-align: left;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &:hover {
+    background-color: #3e4143;
+  }
+
+  &.current-lesson {
+    background-color: #2d2f31;
+    font-weight: bold;
+  }
+}
+
+.lecture-checkbox {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #a1a7b3;
+  border-radius: 2px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+
+  &.completed {
+    background-color: #a1a7b3;
+    color: #1c1d1f;
+  }
+}
+
+.lecture-name {
+  font-size: 14px;
+  flex-grow: 1;
+}
+.lecture-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ccc;
+  border-radius: 50%;
+  cursor: pointer;
+
+  &.completed {
+    background-color: #4caf50;
+    border-color: #4caf50;
+    color: white;
+
+    svg {
+      fill: white;
+    }
+  }
+}
