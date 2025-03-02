@@ -32,7 +32,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   const user = useSelector((state: AppRootState) => state.user);
   const location = useLocation().search.split("=")[1];
-  // console.log(location);
 
   useEffect(() => {
     const video = videoRef.current;

@@ -4,11 +4,13 @@ import { useParams } from "react-router-dom";
 import ICourse from "../../../entities/ICourse";
 import axiosInstance from "../../../shared/config/axiosConfig";
 import Loading from "../../../components/common/Loading/Loading";
+import useSnackbar from "../../../hooks/useSnackbar";
+import CustomSnackbar from "../../../components/common/CustomSnackbar";
 
 const EnrolledPage = () => {
   const [courseData, setCourseData] = useState<ICourse>();
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
 
   const { courseId } = useParams<{ courseId: string }>();
 
@@ -22,7 +24,7 @@ const EnrolledPage = () => {
         err instanceof Error
           ? err.message
           : "error getting the course details.";
-      setError(errorMessage);
+      showSnackbar(errorMessage, "error");
       setIsLoading(false);
     }
   };
@@ -32,10 +34,19 @@ const EnrolledPage = () => {
   }, []);
 
   if (isLoading) return <Loading />;
-  if (error) return <div>Error: {error}</div>;
   if (!courseData) return <div>No course data available</div>;
 
-  return <CourseViewer course={courseData} />;
+  return (
+    <>
+      <CourseViewer course={courseData} />
+      <CustomSnackbar
+        open={snackbar.open}
+        message={snackbar.message}
+        severity={snackbar.severity}
+        onClose={hideSnackbar}
+      />
+    </>
+  );
 };
 
 export default EnrolledPage;

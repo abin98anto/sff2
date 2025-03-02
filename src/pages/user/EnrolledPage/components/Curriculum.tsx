@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
-import "./Curriculum.scss";
 import { ChevronDown, ChevronUp, CheckIcon } from "lucide-react";
-import Modal from "./Modal";
-import { useSelector } from "react-redux";
-import { AppRootState } from "../../../../redux/store";
 import { useLocation } from "react-router-dom";
+
+import "./Curriculum.scss";
+import Modal from "./Modal";
 import { ILesson, ISection } from "../../../../entities/ICourse";
 import axiosInstance from "../../../../shared/config/axiosConfig";
+import IEnrollment from "../../../../entities/IEnrollment";
 
 interface CurriculumProps {
   sections: ISection[] | undefined;
@@ -29,26 +29,25 @@ const Curriculum: React.FC<CurriculumProps> = ({
   const [currentLecture, setCurrentLecture] = useState<ILesson | null>(null);
   const [completedLectures, setCompletedLectures] = useState<string[]>([]);
 
-  const user = useSelector((state: AppRootState) => state.user);
-  const location = useLocation().search.split("=")[1];
-  const userId = user.userInfo?._id;
+  const courseId = useLocation().pathname.split("/")[2];
+  const [enrollmentDetails, setEnrollmentDetails] =
+    useState<IEnrollment | null>(null);
 
   const fetchCompletedLessons = useCallback(async () => {
-    if (!userId || !location) {
-      console.error("User ID or Course ID is missing");
-      return;
-    }
-
     try {
-      const response = await axiosInstance.post(`/completed-lessons`, {
-        userId,
-        courseId: location,
+      if (!courseId) {
+        console.error("Course ID is missing");
+        return;
+      }
+      const response = await axiosInstance.post(`/enrollment/without-id`, {
+        courseId,
       });
-      setCompletedLectures(response.data.user);
+      setEnrollmentDetails(response.data.data);
+      setCompletedLectures(response.data.data.completedLessons);
     } catch (error) {
       console.error("Error fetching completed lessons:", error);
     }
-  }, [userId, location]);
+  }, [location]);
 
   useEffect(() => {
     fetchCompletedLessons();
@@ -70,16 +69,33 @@ const Curriculum: React.FC<CurriculumProps> = ({
     setIsModalOpen(true);
   };
 
+  // API call to update lesson completion in back end.
+  const lessonUpdate = async (updatedCompletedLessons: string[]) => {
+    try {
+      const updates: Partial<IEnrollment> = {
+        _id: enrollmentDetails?._id,
+        completedLessons: updatedCompletedLessons,
+      };
+      await axiosInstance.put("/enrollment/update", {
+        updates,
+      });
+    } catch (error) {
+      console.log("error updating completed lesson", error);
+    }
+  };
+
   const handleConfirmComplete = async () => {
     if (currentLecture && currentLecture._id) {
-      const lessonId = currentLecture._id;
-
       try {
-        await axiosInstance.post("/lesson", {
-          userId,
-          courseId: location,
-          lesson: lessonId,
-        });
+        const lessonId = currentLecture._id;
+        let updatedCompletedLessons = [];
+        !enrollmentDetails?.completedLessons
+          ? updatedCompletedLessons.push(lessonId)
+          : (updatedCompletedLessons = [
+              ...enrollmentDetails?.completedLessons!,
+              lessonId,
+            ]);
+        lessonUpdate(updatedCompletedLessons);
         setCompletedLectures((prev) => [...prev, lessonId]);
         onLectureComplete(lessonId);
       } catch (error) {
@@ -91,14 +107,12 @@ const Curriculum: React.FC<CurriculumProps> = ({
 
   const handleConfirmUncomplete = async () => {
     if (currentLecture && currentLecture._id) {
-      const lessonId = currentLecture._id;
-
       try {
-        await axiosInstance.post("/uncomplete-lesson", {
-          userId,
-          courseId: location,
-          lesson: lessonId,
-        });
+        const lessonId = currentLecture._id;
+        const updatedCompletedLessons = completedLectures.filter(
+          (id) => id !== lessonId
+        );
+        lessonUpdate(updatedCompletedLessons);
         setCompletedLectures((prev) => prev.filter((id) => id !== lessonId));
         onLectureUncomplete(lessonId);
       } catch (error) {
