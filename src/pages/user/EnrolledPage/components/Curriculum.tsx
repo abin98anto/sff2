@@ -29,10 +29,10 @@ const Curriculum: React.FC<CurriculumProps> = ({
   const [currentLecture, setCurrentLecture] = useState<ILesson | null>(null);
   const [completedLectures, setCompletedLectures] = useState<string[]>([]);
 
+  // Populate curriculum details.
   const courseId = useLocation().pathname.split("/")[2];
   const [enrollmentDetails, setEnrollmentDetails] =
     useState<IEnrollment | null>(null);
-
   const fetchCompletedLessons = useCallback(async () => {
     try {
       if (!courseId) {
@@ -53,23 +53,21 @@ const Curriculum: React.FC<CurriculumProps> = ({
     fetchCompletedLessons();
   }, [fetchCompletedLessons]);
 
-  const isLectureCompleted = (lectureId: string): boolean => {
-    return completedLectures.includes(lectureId);
-  };
-
   const toggleSection = (index: number) => {
     setExpandedSections((prev) =>
       prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
     );
   };
 
+  // Lesson completion functions.
+  const isLectureCompleted = (lectureId: string): boolean => {
+    return completedLectures.includes(lectureId);
+  };
   const handleCheckboxClick = async (e: React.MouseEvent, lecture: ILesson) => {
     e.stopPropagation();
     setCurrentLecture(lecture);
     setIsModalOpen(true);
   };
-
-  // API call to update lesson completion in back end.
   const lessonUpdate = async (updatedCompletedLessons: string[]) => {
     try {
       const updates: Partial<IEnrollment> = {
@@ -83,7 +81,6 @@ const Curriculum: React.FC<CurriculumProps> = ({
       console.log("error updating completed lesson", error);
     }
   };
-
   const handleConfirmComplete = async () => {
     if (currentLecture && currentLecture._id) {
       try {
@@ -104,7 +101,6 @@ const Curriculum: React.FC<CurriculumProps> = ({
     }
     setIsModalOpen(false);
   };
-
   const handleConfirmUncomplete = async () => {
     if (currentLecture && currentLecture._id) {
       try {
