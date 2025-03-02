@@ -83,6 +83,10 @@ const Header: React.FC = () => {
             <li>
               <Link to="/courses">Courses</Link>
             </li>
+
+            <li>
+              <Link to="/my-learning">My Learning</Link>
+            </li>
             <li>
               <Link to="/subscriptions">Subscriptions</Link>
             </li>

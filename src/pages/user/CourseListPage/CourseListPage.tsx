@@ -56,13 +56,9 @@ const CourseListPage = () => {
   }, []);
 
   // Handle both string IDs and populated category objects
-  const getCategoryName = (category: any): string => {
+  const getCategoryName = (category: ICategory | string): string => {
     if (!category) return "Uncategorized";
-    if (typeof category === "object" && category.name) {
-      return category.name;
-    }
-    const categoryObj = categories.find((cat) => cat._id === category);
-    return categoryObj ? categoryObj.name : "Unknown";
+    return typeof category === "object" ? category.name : "unknown";
   };
 
   // Filter courses.
@@ -161,7 +157,8 @@ const CourseListPage = () => {
                     <p>Language : {course.language}</p>
                     <p className="subtitle">{course.subtitle}</p>
                     <p className="category">
-                      Category : {getCategoryName(course.category)}
+                      Category :{" "}
+                      {getCategoryName(course.category as string | ICategory)}
                     </p>
                   </Link>
                 </div>
