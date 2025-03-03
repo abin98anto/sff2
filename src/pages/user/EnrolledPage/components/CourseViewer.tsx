@@ -1,9 +1,7 @@
 import React, { useState, useCallback } from "react";
 import "./CourseViewer.scss";
-// import { ICourse, Lesson, Section } from "../../../../entities/courses/Course";
 import VideoPlayer from "./VideoPlayer";
 import Curriculum from "./Curriculum";
-import ChatBubble from "./ChatBubble";
 import ICourse, { ILesson, ISection } from "../../../../entities/ICourse";
 
 interface CourseViewerProps {
