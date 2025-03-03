@@ -11,7 +11,6 @@ interface Message {
 }
 
 const ChatBubble: React.FC = () => {
-  // Sample data (replace with API data in a real app)
   const users: string[] = [
     "John Doe",
     "Jane Smith",
