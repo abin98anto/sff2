@@ -18,7 +18,7 @@ const MyLearningPage = () => {
   const [enrolledCourses, setEnrolledCourses] = useState<ICourse[]>([]);
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(true);
-  
+
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const coursesPerPage = 8;
@@ -84,7 +84,7 @@ const MyLearningPage = () => {
 
               <div className="course-info">
                 <Link
-                  to={`/course-enrolled?id=${course._id}`}
+                  to={`/study/${course._id}`}
                   key={course._id}
                   className="course-card-link"
                 >

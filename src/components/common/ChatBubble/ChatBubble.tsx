@@ -1,106 +1,213 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./ChatBubble.scss";
 import { useAppSelector } from "../../../hooks/reduxHooks";
-
-interface Message {
-  id: number;
-  text: string;
-  sender: string;
-  timestamp: string;
-  read?: boolean;
-}
+import IChat from "../../../entities/IChat";
+import IMessage from "../../../entities/IMessage";
+import { socket } from "../../../shared/config/socketConfig";
+import axiosInstance from "../../../shared/config/axiosConfig";
+import { IUser } from "../../../entities/IUser";
+import ICourse from "../../../entities/ICourse";
+import Loading from "../Loading/Loading";
 
 const ChatBubble: React.FC = () => {
-  const users: string[] = [
-    "John Doe",
-    "Jane Smith",
-    "Alex Brown",
-    "Emily White",
-  ];
-  const initialMessages: Message[] = [
-    {
-      id: 1,
-      text: "Hey, how’s the course going?",
-      sender: "John Doe",
-      timestamp: "10:30 AM",
-      read: false,
-    },
-    {
-      id: 2,
-      text: "Pretty good, thanks! How about you?",
-      sender: "You",
-      timestamp: "10:32 AM",
-      read: true,
-    },
-    {
-      id: 3,
-      text: "Glad to hear that! I’m struggling with Module 3.",
-      sender: "John Doe",
-      timestamp: "10:35 AM",
-      read: false,
-    },
-  ];
-
   const { userInfo } = useAppSelector((state) => state.user);
+  const userId = userInfo?._id; // Safely extract _id as a string
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [showPlaceholder, setShowPlaceholder] = useState<boolean>(false);
-  const [activeUser, setActiveUser] = useState<string>(users[0] || "");
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [activeChat, setActiveChat] = useState<IChat | null>(null); // No default active chat
+  const [messages, setMessages] = useState<IMessage[]>([]);
   const [newMessage, setNewMessage] = useState<string>("");
+  const [chats, setChats] = useState<IChat[]>([]);
 
   // Refs to track the chat container, overlay, and placeholder for click-outside detection
   const chatRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const placeholderRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Calculate unread messages for the active user (or any user if no active user)
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Calculate unread messages for the active chat
   const unreadCount = messages.filter(
-    (msg) => msg.sender !== "You" && !msg.read
+    (msg) => msg.senderId !== userId && !msg.isRead
   ).length;
 
-  // Handle clicking the bubble to expand/collapse or show placeholder
-  const handleBubbleClick = () => {
-    if (!userInfo) {
-      setShowPlaceholder(true);
-    } else if (users.length === 0) {
-      setShowPlaceholder(true);
-    } else {
-      setIsExpanded(!isExpanded);
-      // Mark all messages as read when expanding
-      if (!isExpanded) {
-        setMessages(
-          messages.map((msg) =>
-            msg.sender !== "You" ? { ...msg, read: true } : msg
-          )
-        );
+  useEffect(() => {
+    if (!userId) return;
+
+    // Connect to socket if not already connected
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    socket.on("receive_message", (message: IMessage) => {
+      console.log("receiving message", message);
+      setMessages((prevMessages) => [...prevMessages, message]);
+
+      // Update chat list too if the message belongs to any chat
+      if (chats.some((chat) => chat._id === message.chatId)) {
+        updateChatWithMessage(message);
       }
+    });
+
+    fetchChats();
+
+    // Clean up on unmount
+    return () => {
+      socket.off("receive_message");
+      // Don't disconnect, just remove listeners
+    };
+  }, [userId]);
+
+  const formatMessageTime = (timestamp: string | Date) => {
+    if (!timestamp) return "";
+
+    try {
+      const date = new Date(timestamp);
+      if (isNaN(date.getTime())) {
+        return "Just now";
+      }
+      return date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch (error) {
+      return "Just now";
     }
   };
 
-  // Handle clicking a user in the sidebar (only in expanded mode)
-  const handleUserClick = (user: string): void => {
-    setActiveUser(user);
-    // In a real app, fetch messages for the selected user here
+  // Fetch chats for the logged-in user
+  const fetchChats = async () => {
+    try {
+      if (!userId) return;
+      const response = await axiosInstance.get(`/chat/list?userId=${userId}`);
+      const chatsData: IChat[] = response.data.data || [];
+      console.log("Chat data:", chatsData);
+      setChats(chatsData);
+    } catch (error) {
+      console.error("Failed to fetch chats:", error);
+    }
   };
 
-  // Handle sending a message
-  const handleSendMessage = (e: React.FormEvent<HTMLFormElement>): void => {
+  // Fetch messages for a specific chat
+  const fetchMessages = async (chatId: string) => {
+    try {
+      if (!userId) return;
+      setIsLoading(true);
+      const response = await axiosInstance.get(`/chat/messages/${chatId}`);
+
+      // Properly extract messages based on your API response structure
+      let messagesArray: IMessage[] = [];
+      if (
+        response.data.success &&
+        response.data.data &&
+        response.data.data.messages
+      ) {
+        messagesArray = response.data.data.messages;
+      } else if (response.data.messages) {
+        messagesArray = response.data.messages;
+      }
+
+      console.log("Messages array:", messagesArray);
+
+      setMessages(
+        messagesArray.map((msg: IMessage) => ({
+          ...msg,
+          isRead: msg.isRead || false,
+        }))
+      );
+    } catch (error) {
+      console.error("Failed to fetch messages:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Update chat with a new message (e.g., add message ID to chat.messages)
+  const updateChatWithMessage = (message: IMessage) => {
+    if (activeChat) {
+      setChats((prevChats) =>
+        prevChats.map((chat) =>
+          chat._id === message.chatId
+            ? { ...chat, messages: [...chat.messages, message._id || ""] }
+            : chat
+        )
+      );
+    }
+  };
+
+  // Handle clicking the bubble to expand/collapse or show placeholder
+  const handleBubbleClick = () => {
+    if (!userId) {
+      setShowPlaceholder(true);
+    } else if (chats.length === 0) {
+      setShowPlaceholder(true);
+    } else {
+      setIsExpanded(!isExpanded);
+    }
+  };
+
+  // Handle clicking a chat in the sidebar (only in expanded mode)
+  const handleChatClick = (chat: IChat): void => {
+    setActiveChat(chat);
+    fetchMessages(chat._id);
+    // Join the room for this specific chat
+    socket.emit("joinRoom", chat._id);
+    console.log("joining room for chat:", chat._id);
+  };
+
+  const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (newMessage.trim() && userInfo && users.length > 0) {
-      // Changed !userInfo to userInfo
-      const newMsg: Message = {
-        id: messages.length + 1,
-        text: newMessage,
-        sender: "You",
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        read: true,
+    if (newMessage.trim() && userId && activeChat) {
+      const senderId = userId; // userId is a string from userInfo?._id
+
+      let receiverId: string | undefined;
+      if (typeof activeChat.tutorId === "string") {
+        receiverId =
+          activeChat.tutorId === userId
+            ? (activeChat.studentId as string)
+            : activeChat.tutorId;
+      } else {
+        receiverId =
+          (activeChat.tutorId as IUser)._id === userId
+            ? typeof activeChat.studentId === "string"
+              ? activeChat.studentId
+              : (activeChat.studentId as IUser)._id
+            : (activeChat.tutorId as IUser)._id;
+      }
+
+      if (!receiverId) {
+        console.error("Could not determine receiver ID");
+        return;
+      }
+
+      const message: IMessage = {
+        chatId: activeChat._id,
+        senderId: senderId,
+        receiverId: receiverId,
+        content: newMessage,
+        contentType: "text",
+        isRead: false,
+        timestamp: new Date(),
       };
-      setMessages([...messages, newMsg]);
-      setNewMessage("");
+      console.log("Sending message via HTTP:", message);
+
+      try {
+        const response = await axiosInstance.post("/chat/send", message);
+        const savedMessage = response.data;
+        setMessages((prevMessages) => [...prevMessages, savedMessage]);
+        updateChatWithMessage(savedMessage);
+        setNewMessage("");
+      } catch (error) {
+        console.error("Failed to send message:", error);
+      }
     }
   };
 
@@ -138,67 +245,111 @@ const ChatBubble: React.FC = () => {
       {/* Minimized Bubble (always visible, even when placeholder or expanded chat are shown) */}
       <div className="chat-bubble-minimized" onClick={handleBubbleClick}>
         <span className="chat-icon">💬</span>
-        {userInfo && unreadCount > 0 && (
+        {userId && unreadCount > 0 && (
           <span className="unread-count">{unreadCount}</span>
         )}
       </div>
 
-      {/* Placeholder Speech Bubble (visible when not logged in or no users) */}
-      {showPlaceholder && (!userInfo || users.length === 0) && (
+      {/* Placeholder Speech Bubble (visible when not logged in or no chats) */}
+      {showPlaceholder && (!userId || chats.length === 0) && (
         <div className="chat-placeholder" ref={placeholderRef}>
           <span>There are no chats to see</span>
         </div>
       )}
 
-      {/* Expanded Chat Window with Overlay (visible when expanded, logged in, and users exist) */}
-      {isExpanded && userInfo && users.length > 0 && (
+      {/* Expanded Chat Window with Overlay (visible when expanded, logged in, and chats exist) */}
+      {isExpanded && userId && chats.length > 0 && (
         <>
           <div className="chat-overlay" ref={overlayRef}></div>
           <div className="chat-container" ref={chatRef}>
             <div className="chat-sidebar">
               <h3>Chats</h3>
               <ul className="chat-list">
-                {users.map((user) => (
+                {chats.map((chat) => (
                   <li
-                    key={user}
+                    key={chat._id}
                     className={`chat-item ${
-                      user === activeUser ? "active" : ""
+                      activeChat?._id === chat._id ? "active" : ""
                     }`}
-                    onClick={() => handleUserClick(user)}
+                    onClick={() => handleChatClick(chat)}
                   >
-                    {user}
+                    {/* Display name if available, otherwise just the ID */}
+                    {typeof chat.tutorId === "string"
+                      ? chat.tutorId === userId
+                        ? typeof chat.studentId === "string"
+                          ? chat.studentId
+                          : (chat.studentId as IUser).name
+                        : chat.tutorId
+                      : (chat.tutorId as IUser)._id === userId
+                      ? typeof chat.studentId === "string"
+                        ? chat.studentId
+                        : (chat.studentId as IUser).name
+                      : (chat.tutorId as IUser).name}{" "}
+                    (Course:{" "}
+                    {typeof chat.courseId === "string"
+                      ? chat.courseId
+                      : (chat.courseId as ICourse).title}
+                    )
                   </li>
                 ))}
               </ul>
             </div>
             <div className="chat-main">
               <div className="chat-header">
-                <h4>{activeUser}</h4>
+                <h4>
+                  {activeChat
+                    ? typeof activeChat.tutorId === "string"
+                      ? activeChat.tutorId === userId
+                        ? typeof activeChat.studentId === "string"
+                          ? activeChat.studentId
+                          : (activeChat.studentId as IUser).name
+                        : activeChat.tutorId
+                      : (activeChat.tutorId as IUser)._id === userId
+                      ? typeof activeChat.studentId === "string"
+                        ? activeChat.studentId
+                        : (activeChat.studentId as IUser).name
+                      : (activeChat.tutorId as IUser).name
+                    : "Select a chat"}
+                </h4>
               </div>
-              <div className="chat-messages">
-                {messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`message ${
-                      msg.sender === "You" ? "sent" : "received"
-                    }`}
-                  >
-                    <p>{msg.text}</p>
-                    <span className="timestamp">{msg.timestamp}</span>
-                  </div>
-                ))}
-              </div>
-              <form className="chat-input" onSubmit={handleSendMessage}>
-                <input
-                  type="text"
-                  placeholder="Type a message..."
-                  value={newMessage}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setNewMessage(e.target.value)
-                  }
-                />
-                <button type="submit">Send</button>
-              </form>
+              {/* Only show messages and input if a chat is selected */}
+              {activeChat && (
+                <>
+                  {isLoading ? (
+                    <div className="loading-messages">
+                      <Loading />
+                    </div>
+                  ) : (
+                    <div className="chat-messages">
+                      {messages.map((msg) => (
+                        <div
+                          key={msg._id || `msg-${messages.indexOf(msg) + 1}`}
+                          className={`message ${
+                            msg.senderId === userId ? "sent" : "received"
+                          }`}
+                        >
+                          <p>{msg.content}</p>
+                          <span className="timestamp">
+                            {formatMessageTime(msg.timestamp)}
+                          </span>
+                        </div>
+                      ))}
+                      <div ref={messagesEndRef} />
+                    </div>
+                  )}
+                  <form className="chat-input" onSubmit={handleSendMessage}>
+                    <input
+                      type="text"
+                      placeholder="Type a message..."
+                      value={newMessage}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setNewMessage(e.target.value)
+                      }
+                    />
+                    <button type="submit">Send</button>
+                  </form>
+                </>
+              )}
             </div>
           </div>
         </>
