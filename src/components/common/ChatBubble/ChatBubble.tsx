@@ -11,27 +11,26 @@ import axiosInstance from "../../../shared/config/axiosConfig";
 import type { IUser } from "../../../entities/IUser";
 import type ICourse from "../../../entities/ICourse";
 import Loading from "../Loading/Loading";
+import Swal from "sweetalert2";
 
 const ChatBubble: React.FC = () => {
   const { userInfo } = useAppSelector((state) => state.user);
-  const userId = userInfo?._id; // Safely extract _id as a string
+  const userId = userInfo?._id;
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [showPlaceholder, setShowPlaceholder] = useState<boolean>(false);
-  const [activeChat, setActiveChat] = useState<IChat | null>(null); // No default active chat
+  const [activeChat, setActiveChat] = useState<IChat | null>(null);
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [newMessage, setNewMessage] = useState<string>("");
   const [chats, setChats] = useState<IChat[]>([]);
 
-  // Refs to track the chat container, overlay, and placeholder for click-outside detection
   const chatRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const placeholderRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Dedicated function to scroll to bottom
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTop =
@@ -41,9 +40,8 @@ const ChatBubble: React.FC = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messagesContainerRef]); //Corrected dependency
+  }, [messages]); // Changed to depend on messages array
 
-  // Calculate unread messages for the active chat
   const unreadCount = messages.filter(
     (msg) => msg.senderId !== userId && !msg.isRead
   ).length;
@@ -51,17 +49,14 @@ const ChatBubble: React.FC = () => {
   useEffect(() => {
     if (!userId) return;
 
-    // Connect to socket if not already connected
     if (!socket.connected) {
       socket.connect();
     }
 
+    // Handle real-time messages for the active chat
     socket.on("receive_message", (message: IMessage) => {
-      console.log("receiving message", message);
-
       if (message.content && message.content.trim() !== "") {
         setMessages((prevMessages) => {
-          // Check if this message already exists in our messages array
           const messageExists = prevMessages.some(
             (msg) =>
               (msg._id && msg._id === message._id) ||
@@ -74,7 +69,6 @@ const ChatBubble: React.FC = () => {
           );
 
           if (!messageExists) {
-            // Schedule scrolling after state update and DOM render
             setTimeout(() => {
               scrollToBottom();
             }, 100);
@@ -83,21 +77,40 @@ const ChatBubble: React.FC = () => {
           return prevMessages;
         });
 
-        // Update chat list too if the message belongs to any chat
         if (chats.some((chat) => chat._id === message.chatId)) {
           updateChatWithMessage(message);
         }
       }
     });
 
+    // Handle notifications for all messages (even when chat is minimized)
+    socket.on("messageNotification", (notification) => {
+      // console.log("noftifjctn", notification);
+      if (notification.senderId !== userId && notification.receiverId === userId) {
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "info",
+          title: "New Message",
+          text: `${notification.sender}: ${notification.content}`,
+          showConfirmButton: false,
+          timer: 6000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.addEventListener("mouseenter", () => Swal.stopTimer());
+            toast.addEventListener("mouseleave", () => Swal.resumeTimer());
+          },
+        });
+      }
+    });
+
     fetchChats();
 
-    // Clean up on unmount
     return () => {
       socket.off("receive_message");
-      // Don't disconnect, just remove listeners
+      socket.off("messageNotification");
     };
-  }, [userId]); //Corrected dependency
+  }, [userId]);
 
   const formatMessageTime = (timestamp: string | Date) => {
     if (!timestamp) return "";
@@ -116,27 +129,23 @@ const ChatBubble: React.FC = () => {
     }
   };
 
-  // Fetch chats for the logged-in user
   const fetchChats = async () => {
     try {
       if (!userId) return;
       const response = await axiosInstance.get(`/chat/list?userId=${userId}`);
       const chatsData: IChat[] = response.data.data || [];
-      console.log("Chat data:", chatsData);
       setChats(chatsData);
     } catch (error) {
       console.error("Failed to fetch chats:", error);
     }
   };
 
-  // Fetch messages for a specific chat
   const fetchMessages = async (chatId: string) => {
     try {
       if (!userId) return;
       setIsLoading(true);
       const response = await axiosInstance.get(`/chat/messages/${chatId}`);
 
-      // Properly extract messages based on your API response structure
       let messagesArray: IMessage[] = [];
       if (
         response.data.success &&
@@ -147,8 +156,6 @@ const ChatBubble: React.FC = () => {
       } else if (response.data.messages) {
         messagesArray = response.data.messages;
       }
-
-      console.log("Messages array:", messagesArray);
 
       setMessages(
         messagesArray.map((msg: IMessage) => ({
@@ -161,11 +168,9 @@ const ChatBubble: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-    // Return a resolved promise so we can chain .then() to it
     return Promise.resolve();
   };
 
-  // Update chat with a new message (e.g., add message ID to chat.messages)
   const updateChatWithMessage = (message: IMessage) => {
     if (activeChat) {
       setChats((prevChats) =>
@@ -178,7 +183,6 @@ const ChatBubble: React.FC = () => {
     }
   };
 
-  // Handle clicking the bubble to expand/collapse or show placeholder
   const handleBubbleClick = () => {
     if (!userId) {
       setShowPlaceholder(true);
@@ -189,24 +193,20 @@ const ChatBubble: React.FC = () => {
     }
   };
 
-  // Handle clicking a chat in the sidebar (only in expanded mode)
   const handleChatClick = (chat: IChat): void => {
     setActiveChat(chat);
     fetchMessages(chat._id).then(() => {
-      // Use setTimeout to ensure DOM is updated before scrolling
       setTimeout(() => {
         scrollToBottom();
       }, 100);
     });
-    // Join the room for this specific chat
     socket.emit("joinRoom", chat._id);
-    console.log("joining room for chat:", chat._id);
   };
 
   const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (newMessage.trim() && userId && activeChat) {
-      const senderId = userId; // userId is a string from userInfo?._id
+      const senderId = userId;
 
       let receiverId: string | undefined;
       if (typeof activeChat.tutorId === "string") {
@@ -237,13 +237,10 @@ const ChatBubble: React.FC = () => {
         isRead: false,
         timestamp: new Date(),
       };
-      console.log("Sending message via HTTP:", message);
 
       try {
         await axiosInstance.post("/chat/send", message);
         setNewMessage("");
-
-        // Use setTimeout to ensure DOM is updated before scrolling
         setTimeout(() => {
           scrollToBottom();
         }, 100);
@@ -253,7 +250,6 @@ const ChatBubble: React.FC = () => {
     }
   };
 
-  // Handle clicks outside the chat or placeholder to collapse/hide
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -274,17 +270,14 @@ const ChatBubble: React.FC = () => {
       }
     };
 
-    // Bind the event listener
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      // Clean up the event listener on unmount
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isExpanded, showPlaceholder]);
 
   return (
     <>
-      {/* Minimized Bubble (always visible, even when placeholder or expanded chat are shown) */}
       <div className="chat-bubble-minimized" onClick={handleBubbleClick}>
         <span className="chat-icon">💬</span>
         {userId && unreadCount > 0 && (
@@ -292,14 +285,12 @@ const ChatBubble: React.FC = () => {
         )}
       </div>
 
-      {/* Placeholder Speech Bubble (visible when not logged in or no chats) */}
       {showPlaceholder && (!userId || chats.length === 0) && (
         <div className="chat-placeholder" ref={placeholderRef}>
           <span>There are no chats to see</span>
         </div>
       )}
 
-      {/* Expanded Chat Window with Overlay (visible when expanded, logged in, and chats exist) */}
       {isExpanded && userId && chats.length > 0 && (
         <>
           <div className="chat-overlay" ref={overlayRef}></div>
@@ -315,7 +306,6 @@ const ChatBubble: React.FC = () => {
                     }`}
                     onClick={() => handleChatClick(chat)}
                   >
-                    {/* Display name if available, otherwise just the ID */}
                     {typeof chat.tutorId === "string"
                       ? chat.tutorId === userId
                         ? typeof chat.studentId === "string"
@@ -354,7 +344,6 @@ const ChatBubble: React.FC = () => {
                     : "Select a chat"}
                 </h4>
               </div>
-              {/* Only show messages and input if a chat is selected */}
               {activeChat && (
                 <>
                   {isLoading ? (
