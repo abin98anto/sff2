@@ -86,7 +86,10 @@ const ChatBubble: React.FC = () => {
     // Handle notifications for all messages (even when chat is minimized)
     socket.on("messageNotification", (notification) => {
       // console.log("noftifjctn", notification);
-      if (notification.senderId !== userId && notification.receiverId === userId) {
+      if (
+        notification.senderId !== userId &&
+        notification.receiverId === userId
+      ) {
         Swal.fire({
           toast: true,
           position: "top-end",
@@ -276,6 +279,108 @@ const ChatBubble: React.FC = () => {
     };
   }, [isExpanded, showPlaceholder]);
 
+  // Utility function to generate video call link
+  const generateVideoCallLink = (chatId: string) => {
+    const generateRandomString = (length: number) => {
+      const characters =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      let result = "";
+      for (let i = 0; i < length; i++) {
+        result += characters.charAt(
+          Math.floor(Math.random() * characters.length)
+        );
+      }
+      return result;
+    };
+
+    // Generate a unique room ID
+    const roomId = `${chatId}_${generateRandomString(8)}`;
+
+    // Create the video call URL
+    return `/video-call?roomId=${roomId}&userId=${userId}`;
+  };
+
+  // Video call invitation handler
+  const handleVideoCallInvitation = () => {
+    if (!activeChat || !userId) {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Please select a chat first!",
+      });
+      return;
+    }
+
+    // Determine the receiver ID (student)
+    let receiverId: string | undefined;
+    if (typeof activeChat.studentId === "string") {
+      receiverId = activeChat.studentId;
+    } else {
+      receiverId = activeChat.studentId?._id;
+    }
+
+    if (!receiverId) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Could not determine recipient",
+      });
+      return;
+    }
+
+    // Generate video call link
+    const videoCallLink = generateVideoCallLink(activeChat._id);
+
+    // Emit socket event for video call invitation
+    socket.emit("sendVideoCallInvitation", {
+      chatId: activeChat._id,
+      senderId: userId,
+      receiverId: receiverId,
+      videoCallLink: videoCallLink,
+      participants: {
+        senderId: userId,
+        receiverId: receiverId,
+        chatId: activeChat._id,
+      },
+    });
+
+    // Open the video call link in a new tab
+    window.open(videoCallLink, "_blank");
+
+    Swal.fire({
+      icon: "success",
+      title: "Video Call Invitation Sent!",
+      text: "The invitation has been sent to the student.",
+    });
+  };
+
+  useEffect(() => {
+    const handleVideoCallInvitation = (invitationData: {
+      chatId: string;
+      senderId: string;
+      videoCallLink: string;
+    }) => {
+      Swal.fire({
+        title: "Video Call Invitation",
+        text: "You have a new video call invitation",
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonText: "Join Call",
+        cancelButtonText: "Decline",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.open(invitationData.videoCallLink, "_blank");
+        }
+      });
+    };
+
+    socket.on("videoCallInvitation", handleVideoCallInvitation);
+
+    return () => {
+      socket.off("videoCallInvitation", handleVideoCallInvitation);
+    };
+  }, []);
+
   return (
     <>
       <div className="chat-bubble-minimized" onClick={handleBubbleClick}>
@@ -378,6 +483,14 @@ const ChatBubble: React.FC = () => {
                       }
                     />
                     <button type="submit">Send</button>
+                    {userInfo.role === "tutor" && activeChat && (
+                      <button
+                        className="video-call-btn"
+                        onClick={handleVideoCallInvitation}
+                      >
+                        Start Video Call
+                      </button>
+                    )}
                   </form>
                 </>
               )}
