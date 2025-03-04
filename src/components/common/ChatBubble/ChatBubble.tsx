@@ -1,12 +1,15 @@
-import React, { useState, useEffect, useRef } from "react";
+"use client";
+
+import type React from "react";
+import { useState, useEffect, useRef } from "react";
 import "./ChatBubble.scss";
 import { useAppSelector } from "../../../hooks/reduxHooks";
-import IChat from "../../../entities/IChat";
-import IMessage from "../../../entities/IMessage";
+import type IChat from "../../../entities/IChat";
+import type IMessage from "../../../entities/IMessage";
 import { socket } from "../../../shared/config/socketConfig";
 import axiosInstance from "../../../shared/config/axiosConfig";
-import { IUser } from "../../../entities/IUser";
-import ICourse from "../../../entities/ICourse";
+import type { IUser } from "../../../entities/IUser";
+import type ICourse from "../../../entities/ICourse";
 import Loading from "../Loading/Loading";
 
 const ChatBubble: React.FC = () => {
@@ -25,14 +28,20 @@ const ChatBubble: React.FC = () => {
   const chatRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const placeholderRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Dedicated function to scroll to bottom
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
+    }
   };
+
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messagesContainerRef]); //Corrected dependency
 
   // Calculate unread messages for the active chat
   const unreadCount = messages.filter(
@@ -49,11 +58,35 @@ const ChatBubble: React.FC = () => {
 
     socket.on("receive_message", (message: IMessage) => {
       console.log("receiving message", message);
-      setMessages((prevMessages) => [...prevMessages, message]);
 
-      // Update chat list too if the message belongs to any chat
-      if (chats.some((chat) => chat._id === message.chatId)) {
-        updateChatWithMessage(message);
+      if (message.content && message.content.trim() !== "") {
+        setMessages((prevMessages) => {
+          // Check if this message already exists in our messages array
+          const messageExists = prevMessages.some(
+            (msg) =>
+              (msg._id && msg._id === message._id) ||
+              (msg.timestamp &&
+                message.timestamp &&
+                new Date(msg.timestamp).getTime() ===
+                  new Date(message.timestamp).getTime() &&
+                msg.senderId === message.senderId &&
+                msg.content === message.content)
+          );
+
+          if (!messageExists) {
+            // Schedule scrolling after state update and DOM render
+            setTimeout(() => {
+              scrollToBottom();
+            }, 100);
+            return [...prevMessages, message];
+          }
+          return prevMessages;
+        });
+
+        // Update chat list too if the message belongs to any chat
+        if (chats.some((chat) => chat._id === message.chatId)) {
+          updateChatWithMessage(message);
+        }
       }
     });
 
@@ -64,7 +97,7 @@ const ChatBubble: React.FC = () => {
       socket.off("receive_message");
       // Don't disconnect, just remove listeners
     };
-  }, [userId]);
+  }, [userId]); //Corrected dependency
 
   const formatMessageTime = (timestamp: string | Date) => {
     if (!timestamp) return "";
@@ -128,6 +161,8 @@ const ChatBubble: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+    // Return a resolved promise so we can chain .then() to it
+    return Promise.resolve();
   };
 
   // Update chat with a new message (e.g., add message ID to chat.messages)
@@ -157,7 +192,12 @@ const ChatBubble: React.FC = () => {
   // Handle clicking a chat in the sidebar (only in expanded mode)
   const handleChatClick = (chat: IChat): void => {
     setActiveChat(chat);
-    fetchMessages(chat._id);
+    fetchMessages(chat._id).then(() => {
+      // Use setTimeout to ensure DOM is updated before scrolling
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+    });
     // Join the room for this specific chat
     socket.emit("joinRoom", chat._id);
     console.log("joining room for chat:", chat._id);
@@ -200,11 +240,13 @@ const ChatBubble: React.FC = () => {
       console.log("Sending message via HTTP:", message);
 
       try {
-        const response = await axiosInstance.post("/chat/send", message);
-        const savedMessage = response.data;
-        setMessages((prevMessages) => [...prevMessages, savedMessage]);
-        updateChatWithMessage(savedMessage);
+        await axiosInstance.post("/chat/send", message);
         setNewMessage("");
+
+        // Use setTimeout to ensure DOM is updated before scrolling
+        setTimeout(() => {
+          scrollToBottom();
+        }, 100);
       } catch (error) {
         console.error("Failed to send message:", error);
       }
@@ -320,7 +362,7 @@ const ChatBubble: React.FC = () => {
                       <Loading />
                     </div>
                   ) : (
-                    <div className="chat-messages">
+                    <div className="chat-messages" ref={messagesContainerRef}>
                       {messages.map((msg) => (
                         <div
                           key={msg._id || `msg-${messages.indexOf(msg) + 1}`}

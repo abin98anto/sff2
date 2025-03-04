@@ -167,6 +167,11 @@
       padding: 5px;
       overflow-y: auto;
       background-color: #fff;
+      display: flex;
+      flex-direction: column;
+      max-height: calc(
+        80vh - 120px
+      ); /* Adjust based on your header and input heights */
 
       .message {
         margin-bottom: 15px;
@@ -177,14 +182,14 @@
 
         &.received {
           background-color: #f1f1f1;
-          float: left;
+          align-self: flex-start;
           clear: both;
         }
 
         &.sent {
           background-color: #ff6a3d;
           color: white;
-          float: right;
+          align-self: flex-end;
           clear: both;
         }
 
