@@ -1,11 +1,11 @@
 import { ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
 import comments from "../../../shared/constants/comments";
-
-export type ZegoElement = HTMLElement | null | undefined;
+import { useEffect, useRef, useState } from "react";
+import axiosInstance from "../../../shared/config/axiosConfig";
+import { useLocation } from "react-router-dom";
 
 function randomID(len: number) {
   let result = "";
-  if (result) return result;
   const chars =
     "12345qwertyuiopasdfgh67890jklmnbvcxzMNBVCZXASDQWERTYHGFUIOLKJP";
   const maxPos = chars.length;
@@ -17,49 +17,73 @@ function randomID(len: number) {
   return result;
 }
 
-export function getUrlParams(url = window.location.href) {
-  const urlStr = url.split("?")[1];
-  return new URLSearchParams(urlStr);
-}
-
 const VideoCallPage = () => {
-  const roomID = getUrlParams().get("roomID") || randomID(5);
+  const location = useLocation();
+  const meetingContainerRef = useRef<HTMLDivElement>(null);
 
-  const myMeeting = async (element: ZegoElement) => {
-    const appID = 381031416;
-    const serverSecret = import.meta.env.VITE_ZEGO_SERVER_SECRET;
-    const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-      appID,
-      serverSecret,
-      roomID,
-      randomID(5),
-      randomID(5)
-    );
+  const [userId, setUserId] = useState<string | null>(null);
+  const [studentId, setStudentId] = useState<string | null>(null);
+  const [roomID, setRoomID] = useState<string | null>(null);
 
-    // Create instance object from Kit Token.
-    const zp = ZegoUIKitPrebuilt.create(kitToken);
-    // start the call
-    zp.joinRoom({
-      container: element,
-      //   showPreJoinView: false,
-      sharedLinks: [
-        {
-          name: "Meeting link",
-          url: comments.ZEGO_BASE_URL + roomID,
-        },
-      ],
-      scenario: {
-        mode: ZegoUIKitPrebuilt.VideoConference,
-      },
-    });
-  };
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const userIdParam = searchParams.get("userId") || randomID(5);
+    const studentIdParam = searchParams.get("studentId") || randomID(5);
+    const roomIDParam = searchParams.get("roomID") || randomID(5);
+
+    setUserId(userIdParam);
+    setStudentId(studentIdParam);
+    setRoomID(roomIDParam);
+  }, [location.search]);
+
+  useEffect(() => {
+    if (roomID && userId && studentId && meetingContainerRef.current) {
+      const initializeVideoCall = async () => {
+        try {
+          const appID = 381031416;
+          const serverSecret = import.meta.env.VITE_ZEGO_SERVER_SECRET;
+          const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+            appID,
+            serverSecret,
+            roomID,
+            studentId,
+            userId
+          );
+
+          const zp = ZegoUIKitPrebuilt.create(kitToken);
+          zp.joinRoom({
+            container: meetingContainerRef.current,
+            showPreJoinView: false,
+            sharedLinks: [
+              {
+                name: "Meeting link",
+                url: comments.ZEGO_BASE_URL + roomID,
+              },
+            ],
+            scenario: {
+              mode: ZegoUIKitPrebuilt.VideoConference,
+            },
+            onLeaveRoom: () => {
+              window.close();
+            },
+          });
+
+          await axiosInstance.post("/chat/video-call", {
+            roomID,
+            userId,
+            studentId,
+          });
+        } catch (error) {
+          console.error("Failed to initialize video call", error);
+        }
+      };
+
+      initializeVideoCall();
+    }
+  }, [roomID, userId, studentId]);
 
   return (
-    <div
-      className="myCallContainer"
-      ref={myMeeting}
-      style={{ width: "100vw", height: "100vh" }}
-    ></div>
+    <div ref={meetingContainerRef} style={{ width: "100%", height: "100vh" }} />
   );
 };
 

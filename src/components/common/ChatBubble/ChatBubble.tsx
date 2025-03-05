@@ -10,10 +10,12 @@ import { IUser } from "../../../entities/IUser";
 import type IChat from "../../../entities/IChat";
 import type IMessage from "../../../entities/IMessage";
 import type ICourse from "../../../entities/ICourse";
+import { useNavigate } from "react-router-dom";
 
 const ChatBubble: React.FC = () => {
   const { userInfo } = useAppSelector((state) => state.user);
   const userId = userInfo?._id;
+  const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
@@ -143,13 +145,57 @@ const ChatBubble: React.FC = () => {
       }
     });
 
+    socket.on("callInvite", (data) => {
+      console.log("data from the back end", data);
+      // console.log("user id", userId);
+      if (data.studentId === userId) {
+        console.log("the guy");
+        navigate(`/video-call?roomID=${data.roomID}`);
+        // const videoCallUrl = `/video-call?roomID=${data.roomID}`;
+        // window.open(videoCallUrl, "_blank");
+      }
+      // console.log("not hte guy");
+      //localhost:5173/video-call?roomID=MZnD7
+    });
+
     fetchChats();
 
     return () => {
       socket.off("receive_message");
       socket.off("messageNotification");
+      socket.off("callInvite");
     };
   }, [userId]);
+
+  const handleVideoCallInvitation = async () => {
+    if (activeChat && userId) {
+      const receiverId =
+        typeof activeChat.tutorId === "string"
+          ? activeChat.tutorId === userId
+            ? activeChat.studentId
+            : activeChat.tutorId
+          : (activeChat.tutorId as IUser)._id === userId
+          ? typeof activeChat.studentId === "string"
+            ? activeChat.studentId
+            : (activeChat.studentId as IUser)._id
+          : (activeChat.tutorId as IUser)._id;
+
+      const roomID = `room_${userId}_${receiverId}`;
+      // Open video call page in a new tab with necessary parameters
+      const videoCallUrl = `/video-call?userId=${userInfo.name}&studentId=${receiverId}&roomID=${roomID}`;
+      window.open(videoCallUrl, "_blank");
+
+      // try {
+      //   await axiosInstance.post("/chat/video-call", {
+      //     userId,
+      //     receiverId,
+      //     joinUrl: videoCallUrl,
+      //   });
+      // } catch (error) {
+      //   console.error("Failed to send video call invite", error);
+      // }
+    }
+  };
 
   // Populate chat list.
   const fetchChats = async () => {
@@ -360,7 +406,7 @@ const ChatBubble: React.FC = () => {
                     {userInfo.role === "tutor" && activeChat && (
                       <button
                         className="video-call-btn"
-                        // onClick={handleVideoCallInvitation}
+                        onClick={handleVideoCallInvitation}
                       >
                         Video Call
                       </button>
