@@ -146,16 +146,48 @@ const ChatBubble: React.FC = () => {
     });
 
     socket.on("callInvite", (data) => {
-      console.log("data from the back end", data);
-      // console.log("user id", userId);
       if (data.studentId === userId) {
-        console.log("the guy");
-        navigate(`/video-call?roomID=${data.roomID}`);
-        // const videoCallUrl = `/video-call?roomID=${data.roomID}`;
-        // window.open(videoCallUrl, "_blank");
+        Swal.fire({
+          title: "Incoming Video Call",
+          html: `
+            <p>You have an incoming video call.</p>
+          `,
+          icon: "info",
+          showCancelButton: true,
+          confirmButtonText: "Join Call",
+          cancelButtonText: "Decline",
+          timer: 30000, // 30 seconds
+          timerProgressBar: true,
+          didOpen: () => {
+            // Update countdown timer
+            const countdownEl = document.getElementById("countdown");
+            let remainingTime = 30;
+
+            const countdownInterval = setInterval(() => {
+              remainingTime--;
+              if (countdownEl) {
+                countdownEl.textContent = remainingTime.toString();
+              }
+
+              if (remainingTime <= 0) {
+                clearInterval(countdownInterval);
+              }
+            }, 1000);
+          },
+          willClose: () => {
+            // If the alert closes without user action, do nothing
+          },
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // User clicked 'Join Call'
+            const videoCallUrl = `/video-call?roomID=${data.roomID}`;
+            window.open(videoCallUrl, "_blank");
+          } else if (result.dismiss === Swal.DismissReason.timer) {
+            // Call automatically declined due to timeout
+            console.log("Call automatically declined");
+          }
+        });
       }
-      // console.log("not hte guy");
-      //localhost:5173/video-call?roomID=MZnD7
     });
 
     fetchChats();
@@ -181,19 +213,8 @@ const ChatBubble: React.FC = () => {
           : (activeChat.tutorId as IUser)._id;
 
       const roomID = `room_${userId}_${receiverId}`;
-      // Open video call page in a new tab with necessary parameters
       const videoCallUrl = `/video-call?userId=${userInfo.name}&studentId=${receiverId}&roomID=${roomID}`;
       window.open(videoCallUrl, "_blank");
-
-      // try {
-      //   await axiosInstance.post("/chat/video-call", {
-      //     userId,
-      //     receiverId,
-      //     joinUrl: videoCallUrl,
-      //   });
-      // } catch (error) {
-      //   console.error("Failed to send video call invite", error);
-      // }
     }
   };
 

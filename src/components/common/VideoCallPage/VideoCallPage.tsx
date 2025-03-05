@@ -1,8 +1,9 @@
 import { ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
+import { useLocation } from "react-router-dom";
+
 import comments from "../../../shared/constants/comments";
 import { useEffect, useRef, useState } from "react";
 import axiosInstance from "../../../shared/config/axiosConfig";
-import { useLocation } from "react-router-dom";
 
 function randomID(len: number) {
   let result = "";
