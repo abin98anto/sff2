@@ -34,9 +34,15 @@ const MyLearningPage = () => {
           limit: coursesPerPage,
         },
       });
-      setEnrolledCourses(
-        response.data.data.map((enrollment: IEnrollment) => enrollment.courseId)
+
+      const pendingEnrollments = response.data.data.filter(
+        (enrollment: IEnrollment) => enrollment.status === "pending"
       );
+
+      setEnrolledCourses(
+        pendingEnrollments.map((enrollment: IEnrollment) => enrollment.courseId)
+      );
+
       setTotalPages(response.data.totalPages || 1);
       setLoading(false);
     } catch (err) {
