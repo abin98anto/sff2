@@ -9,6 +9,7 @@ import EnrolledPage from "../pages/user/EnrolledPage/EnrolledPage";
 import MyLearningPage from "../pages/user/MyLearningPage/MyLearningPage";
 import ChatBubble from "../components/common/ChatBubble/ChatBubble";
 import VideoCallPage from "../components/common/VideoCallPage/VideoCallPage";
+import UserProfile from "../pages/user/UserProfile/UserProfile";
 
 const UserRoutes = () => {
   return (
@@ -21,6 +22,7 @@ const UserRoutes = () => {
           <Route path="/course/:courseId" element={<CourseDetailsPage />} />
           <Route path="/study/:courseId" element={<EnrolledPage />} />
           <Route path="/my-learning" element={<MyLearningPage />} />
+          <Route path="/profile" element={<UserProfile />} />
         </Route>
         <Route path="/video-call" element={<VideoCallPage />} />
         <Route path="*" element={<PageNotFound />} />

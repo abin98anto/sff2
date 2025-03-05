@@ -40,11 +40,6 @@ const ChatBubble: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
-  // to get unread message count.
-  // const unreadCount = messages.filter(
-  //   (msg) => msg.senderId !== userId && !msg.isRead
-  // ).length;
-
   // Close chat modal.
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -143,6 +138,7 @@ const ChatBubble: React.FC = () => {
       }
     });
 
+    // video call invite.
     socket.on("callInvite", (data) => {
       if (data.studentId === userId) {
         Swal.fire({
@@ -197,6 +193,7 @@ const ChatBubble: React.FC = () => {
     };
   }, [userId]);
 
+  // Send video call invitation.
   const handleVideoCallInvitation = async () => {
     if (activeChat && userId) {
       const receiverId =
@@ -284,6 +281,7 @@ const ChatBubble: React.FC = () => {
     socket.emit("joinRoom", chat._id);
   };
 
+  // Send message.
   const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (newMessage.trim() && userId && activeChat) {
