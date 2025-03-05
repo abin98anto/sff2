@@ -1,17 +1,15 @@
-"use client";
+import React, { useState, useEffect, useRef } from "react";
+import Swal from "sweetalert2";
 
-import type React from "react";
-import { useState, useEffect, useRef } from "react";
 import "./ChatBubble.scss";
 import { useAppSelector } from "../../../hooks/reduxHooks";
-import type IChat from "../../../entities/IChat";
-import type IMessage from "../../../entities/IMessage";
 import { socket } from "../../../shared/config/socketConfig";
 import axiosInstance from "../../../shared/config/axiosConfig";
-import type { IUser } from "../../../entities/IUser";
-import type ICourse from "../../../entities/ICourse";
 import Loading from "../Loading/Loading";
-import Swal from "sweetalert2";
+import { IUser } from "../../../entities/IUser";
+import type IChat from "../../../entities/IChat";
+import type IMessage from "../../../entities/IMessage";
+import type ICourse from "../../../entities/ICourse";
 
 const ChatBubble: React.FC = () => {
   const { userInfo } = useAppSelector((state) => state.user);
@@ -31,20 +29,60 @@ const ChatBubble: React.FC = () => {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // To make the chat go to the recent message.
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTop =
         messagesContainerRef.current.scrollHeight;
     }
   };
-
   useEffect(() => {
     scrollToBottom();
-  }, [messages]); // Changed to depend on messages array
+  }, [messages]);
 
-  const unreadCount = messages.filter(
-    (msg) => msg.senderId !== userId && !msg.isRead
-  ).length;
+  // to get unread message count.
+  // const unreadCount = messages.filter(
+  //   (msg) => msg.senderId !== userId && !msg.isRead
+  // ).length;
+
+  // Close chat modal.
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isExpanded &&
+        chatRef.current &&
+        !chatRef.current.contains(event.target as Node) &&
+        overlayRef.current &&
+        overlayRef.current.contains(event.target as Node)
+      ) {
+        setIsExpanded(false);
+      }
+      if (
+        showPlaceholder &&
+        placeholderRef.current &&
+        !placeholderRef.current.contains(event.target as Node)
+      ) {
+        setShowPlaceholder(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isExpanded, showPlaceholder]);
+
+  const formatMessageTime = (timestamp: string | Date) => {
+    if (!timestamp) return "";
+    try {
+      const date = new Date(timestamp);
+      if (isNaN(date.getTime())) return "Just now";
+      return date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch (error) {
+      return "Just now";
+    }
+  };
 
   useEffect(() => {
     if (!userId) return;
@@ -53,7 +91,10 @@ const ChatBubble: React.FC = () => {
       socket.connect();
     }
 
-    // Handle real-time messages for the active chat
+    // Join user-specific room
+    socket.emit("joinUserRoom", userId);
+
+    // receive message from server.
     socket.on("receive_message", (message: IMessage) => {
       if (message.content && message.content.trim() !== "") {
         setMessages((prevMessages) => {
@@ -67,25 +108,20 @@ const ChatBubble: React.FC = () => {
                 msg.senderId === message.senderId &&
                 msg.content === message.content)
           );
-
           if (!messageExists) {
-            setTimeout(() => {
-              scrollToBottom();
-            }, 100);
+            setTimeout(() => scrollToBottom(), 100);
             return [...prevMessages, message];
           }
           return prevMessages;
         });
-
         if (chats.some((chat) => chat._id === message.chatId)) {
           updateChatWithMessage(message);
         }
       }
     });
 
-    // Handle notifications for all messages (even when chat is minimized)
+    // to display notification.
     socket.on("messageNotification", (notification) => {
-      // console.log("noftifjctn", notification);
       if (
         notification.senderId !== userId &&
         notification.receiverId === userId
@@ -115,23 +151,7 @@ const ChatBubble: React.FC = () => {
     };
   }, [userId]);
 
-  const formatMessageTime = (timestamp: string | Date) => {
-    if (!timestamp) return "";
-
-    try {
-      const date = new Date(timestamp);
-      if (isNaN(date.getTime())) {
-        return "Just now";
-      }
-      return date.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } catch (error) {
-      return "Just now";
-    }
-  };
-
+  // Populate chat list.
   const fetchChats = async () => {
     try {
       if (!userId) return;
@@ -143,12 +163,12 @@ const ChatBubble: React.FC = () => {
     }
   };
 
+  // Populate messages of a chat..
   const fetchMessages = async (chatId: string) => {
     try {
       if (!userId) return;
       setIsLoading(true);
       const response = await axiosInstance.get(`/chat/messages/${chatId}`);
-
       let messagesArray: IMessage[] = [];
       if (
         response.data.success &&
@@ -159,7 +179,6 @@ const ChatBubble: React.FC = () => {
       } else if (response.data.messages) {
         messagesArray = response.data.messages;
       }
-
       setMessages(
         messagesArray.map((msg: IMessage) => ({
           ...msg,
@@ -171,9 +190,9 @@ const ChatBubble: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-    return Promise.resolve();
   };
 
+  // handle new message in the chat div.
   const updateChatWithMessage = (message: IMessage) => {
     if (activeChat) {
       setChats((prevChats) =>
@@ -187,22 +206,16 @@ const ChatBubble: React.FC = () => {
   };
 
   const handleBubbleClick = () => {
-    if (!userId) {
-      setShowPlaceholder(true);
-    } else if (chats.length === 0) {
+    if (!userId || chats.length === 0) {
       setShowPlaceholder(true);
     } else {
       setIsExpanded(!isExpanded);
     }
   };
 
-  const handleChatClick = (chat: IChat): void => {
+  const handleChatClick = (chat: IChat) => {
     setActiveChat(chat);
-    fetchMessages(chat._id).then(() => {
-      setTimeout(() => {
-        scrollToBottom();
-      }, 100);
-    });
+    fetchMessages(chat._id).then(() => setTimeout(() => scrollToBottom(), 100));
     socket.emit("joinRoom", chat._id);
   };
 
@@ -210,31 +223,22 @@ const ChatBubble: React.FC = () => {
     e.preventDefault();
     if (newMessage.trim() && userId && activeChat) {
       const senderId = userId;
-
-      let receiverId: string | undefined;
-      if (typeof activeChat.tutorId === "string") {
-        receiverId =
-          activeChat.tutorId === userId
+      let receiverId =
+        typeof activeChat.tutorId === "string"
+          ? activeChat.tutorId === userId
             ? (activeChat.studentId as string)
-            : activeChat.tutorId;
-      } else {
-        receiverId =
-          (activeChat.tutorId as IUser)._id === userId
-            ? typeof activeChat.studentId === "string"
-              ? activeChat.studentId
-              : (activeChat.studentId as IUser)._id
-            : (activeChat.tutorId as IUser)._id;
-      }
+            : activeChat.tutorId
+          : (activeChat.tutorId as IUser)._id === userId
+          ? typeof activeChat.studentId === "string"
+            ? activeChat.studentId
+            : (activeChat.studentId as IUser)._id
+          : (activeChat.tutorId as IUser)._id;
 
-      if (!receiverId) {
-        console.error("Could not determine receiver ID");
-        return;
-      }
-
+      receiverId !== undefined ? receiverId : (receiverId = "");
       const message: IMessage = {
         chatId: activeChat._id,
-        senderId: senderId,
-        receiverId: receiverId,
+        senderId,
+        receiverId,
         content: newMessage,
         contentType: "text",
         isRead: false,
@@ -244,150 +248,20 @@ const ChatBubble: React.FC = () => {
       try {
         await axiosInstance.post("/chat/send", message);
         setNewMessage("");
-        setTimeout(() => {
-          scrollToBottom();
-        }, 100);
+        setTimeout(() => scrollToBottom(), 100);
       } catch (error) {
         console.error("Failed to send message:", error);
       }
     }
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        isExpanded &&
-        chatRef.current &&
-        !chatRef.current.contains(event.target as Node) &&
-        overlayRef.current &&
-        overlayRef.current.contains(event.target as Node)
-      ) {
-        setIsExpanded(false);
-      }
-      if (
-        showPlaceholder &&
-        placeholderRef.current &&
-        !placeholderRef.current.contains(event.target as Node)
-      ) {
-        setShowPlaceholder(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isExpanded, showPlaceholder]);
-
-  // Utility function to generate video call link
-  const generateVideoCallLink = (chatId: string) => {
-    const generateRandomString = (length: number) => {
-      const characters =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-      let result = "";
-      for (let i = 0; i < length; i++) {
-        result += characters.charAt(
-          Math.floor(Math.random() * characters.length)
-        );
-      }
-      return result;
-    };
-
-    // Generate a unique room ID
-    const roomId = `${chatId}_${generateRandomString(8)}`;
-
-    // Create the video call URL
-    return `/video-call?roomId=${roomId}&userId=${userId}`;
-  };
-
-  // Video call invitation handler
-  const handleVideoCallInvitation = () => {
-    if (!activeChat || !userId) {
-      Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: "Please select a chat first!",
-      });
-      return;
-    }
-
-    // Determine the receiver ID (student)
-    let receiverId: string | undefined;
-    if (typeof activeChat.studentId === "string") {
-      receiverId = activeChat.studentId;
-    } else {
-      receiverId = activeChat.studentId?._id;
-    }
-
-    if (!receiverId) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Could not determine recipient",
-      });
-      return;
-    }
-
-    // Generate video call link
-    const videoCallLink = generateVideoCallLink(activeChat._id);
-
-    // Emit socket event for video call invitation
-    socket.emit("sendVideoCallInvitation", {
-      chatId: activeChat._id,
-      senderId: userId,
-      receiverId: receiverId,
-      videoCallLink: videoCallLink,
-      participants: {
-        senderId: userId,
-        receiverId: receiverId,
-        chatId: activeChat._id,
-      },
-    });
-
-    // Open the video call link in a new tab
-    window.open(videoCallLink, "_blank");
-
-    Swal.fire({
-      icon: "success",
-      title: "Video Call Invitation Sent!",
-      text: "The invitation has been sent to the student.",
-    });
-  };
-
-  useEffect(() => {
-    const handleVideoCallInvitation = (invitationData: {
-      chatId: string;
-      senderId: string;
-      videoCallLink: string;
-    }) => {
-      Swal.fire({
-        title: "Video Call Invitation",
-        text: "You have a new video call invitation",
-        icon: "info",
-        showCancelButton: true,
-        confirmButtonText: "Join Call",
-        cancelButtonText: "Decline",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          window.open(invitationData.videoCallLink, "_blank");
-        }
-      });
-    };
-
-    socket.on("videoCallInvitation", handleVideoCallInvitation);
-
-    return () => {
-      socket.off("videoCallInvitation", handleVideoCallInvitation);
-    };
-  }, []);
-
   return (
     <>
       <div className="chat-bubble-minimized" onClick={handleBubbleClick}>
         <span className="chat-icon">💬</span>
-        {userId && unreadCount > 0 && (
+        {/* {userId && unreadCount > 0 && (
           <span className="unread-count">{unreadCount}</span>
-        )}
+        )} */}
       </div>
 
       {showPlaceholder && (!userId || chats.length === 0) && (
@@ -486,9 +360,9 @@ const ChatBubble: React.FC = () => {
                     {userInfo.role === "tutor" && activeChat && (
                       <button
                         className="video-call-btn"
-                        onClick={handleVideoCallInvitation}
+                        // onClick={handleVideoCallInvitation}
                       >
-                        Start Video Call
+                        Video Call
                       </button>
                     )}
                   </form>
