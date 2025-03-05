@@ -10,12 +10,10 @@ import { IUser } from "../../../entities/IUser";
 import type IChat from "../../../entities/IChat";
 import type IMessage from "../../../entities/IMessage";
 import type ICourse from "../../../entities/ICourse";
-import { useNavigate } from "react-router-dom";
 
 const ChatBubble: React.FC = () => {
   const { userInfo } = useAppSelector((state) => state.user);
   const userId = userInfo?._id;
-  const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
