@@ -5,7 +5,7 @@ import { PencilIcon, LockIcon, DownloadIcon } from "./Icons";
 import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
 import useSnackbar from "../../../hooks/useSnackbar";
 import CustomSnackbar from "../../../components/common/CustomSnackbar";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import handleFileUpload, {
   validateImageFile,
 } from "../../../shared/utils/cloudinary/fileUpload";
@@ -18,6 +18,7 @@ import axiosInstance from "../../../shared/config/axiosConfig";
 // } from "../../../components/common/DataTable/DataTable";
 import { format } from "date-fns";
 import DataTable from "../../../components/common/Table/DataTable";
+import generateCertificate from "../../../shared/utils/certificate-generation/generateCertificate";
 
 // Interface for enrollment data
 interface CourseInfo {
@@ -40,14 +41,14 @@ interface TableData<T = any> {
   total: number;
 }
 
-interface QueryParams {
-  page: number;
-  limit: number;
-  search: string;
-  sortField?: string;
-  sortOrder?: "asc" | "desc";
-  filters?: Record<string, string>;
-}
+// interface QueryParams {
+//   page: number;
+//   limit: number;
+//   search: string;
+//   sortField?: string;
+//   sortOrder?: "asc" | "desc";
+//   filters?: Record<string, string>;
+// }
 
 const UserProfile: React.FC = () => {
   const { userInfo } = useAppSelector((state) => state.user);
@@ -135,9 +136,7 @@ const UserProfile: React.FC = () => {
   };
 
   // Fetch user courses - explicitly typed to match the DataTable's expected types
-  const fetchUserCourses = async (
-    params: QueryParams
-  ): Promise<TableData<IEnrollment>> => {
+  const fetchUserCourses = async (): Promise<TableData<IEnrollment>> => {
     try {
       // const { page, limit, search, sortField, sortOrder } = params;
       let url = `/enrollment/user-enrollments`;
@@ -169,26 +168,52 @@ const UserProfile: React.FC = () => {
     courseName: string
   ) => {
     try {
-      const response = await axiosInstance.get(
-        `/certificates/${enrollmentId}`,
-        {
-          responseType: "blob",
-        }
-      );
+      // Show a loading message
+      showSnackbar("Generating certificate...", "success");
 
-      // Create a blob link to download
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `${courseName}_Certificate.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      // First, try to fetch the certificate data from the server
+      const response = await axiosInstance.get(`/enrollment/${enrollmentId}`);
+      const enrollmentData = response.data.data;
 
-      showSnackbar("Certificate downloaded successfully", "success");
+      if (!enrollmentData) {
+        throw new Error("Could not retrieve enrollment data");
+      }
+
+      // Format the completion date
+      const completionDate = enrollmentData.completedDate
+        ? format(new Date(enrollmentData.completedDate), "MMMM dd, yyyy")
+        : format(new Date(), "MMMM dd, yyyy");
+
+      console.log("Certificate data prepared:", {
+        userName: userInfo?.name,
+        courseName,
+        completionDate,
+        enrollmentId,
+      });
+
+      // Prepare the certificate data
+      const certificateData = {
+        userName: userInfo?.name || "Student",
+        courseName: courseName,
+        completionDate: completionDate,
+        enrollmentId: enrollmentId,
+      };
+
+      // Generate and download the certificate
+      await generateCertificate(certificateData);
+
+      // Show success message after a slight delay to ensure download has started
+      setTimeout(() => {
+        showSnackbar("Certificate generated successfully", "success");
+      }, 1000);
     } catch (error) {
       console.error("Error downloading certificate:", error);
-      showSnackbar("Failed to download certificate", "error");
+      showSnackbar(
+        "Failed to generate certificate. Please try again.",
+        "error"
+      );
+
+      // Add fallback server-side generation here if you have that functionality
     }
   };
 
@@ -329,18 +354,16 @@ const UserProfile: React.FC = () => {
                   key: "startDate",
                   label: "Start Date",
                   render: (row) => {
+                    console.log("ene enee erow", row);
                     // Check if startDate exists and is valid
-                    if (!row.courseId.startDate) {
+                    if (!row.enrolledAt) {
                       return "N/A"; // Return a fallback if no date
                     }
 
                     try {
-                      return format(
-                        new Date(row.courseId.startDate),
-                        "MMM dd, yyyy"
-                      );
+                      return format(new Date(row.enrolledAt), "MMM dd, yyyy");
                     } catch (error) {
-                      console.error("Invalid date:", row.courseId.startDate);
+                      console.error("Invalid date:", row.enrolledAt);
                       return "Invalid date"; // Return a fallback for invalid dates
                     }
                   },
@@ -364,7 +387,7 @@ const UserProfile: React.FC = () => {
                       <button
                         className="download-button"
                         onClick={() =>
-                          handleCertificateDownload(row._id, row.courseId.name)
+                          handleCertificateDownload(row._id, row.courseId.title)
                         }
                       >
                         <DownloadIcon /> Download
