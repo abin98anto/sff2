@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-
 import "./SubscriptionsPage.scss";
 import { useAppSelector } from "../../../hooks/reduxHooks";
 import ISubscription from "../../../entities/ISubscription";
@@ -18,16 +17,29 @@ interface RazorpayResponse {
 
 const SubscriptionPage = () => {
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
-
   const [plans, setPlans] = useState<ISubscription[]>([]);
   const [loading, setLoading] = useState(true);
-  let hasActivePlan = false;
+  const [userActivePlan, setUserActivePlan] = useState<string | null>(null); // Store the active plan name
 
   const { userInfo, isAuthenticated } = useAppSelector(
     (state: AppRootState) => state.user
   );
 
-  // Fetching plans.
+  // Check user's subscription status
+  const checkSubStatus = async () => {
+    if (!isAuthenticated || !userInfo?.email) return;
+
+    try {
+      const response = await axiosInstance.get("/order/sub-check");
+      const subscription = response.data.data;
+      setUserActivePlan(subscription?.name || null);
+    } catch (error) {
+      console.log("Error checking subscription status:", error);
+      // Don't show error to user since this is a background check
+    }
+  };
+
+  // Fetching plans
   const fetchPlans = async () => {
     try {
       const response = await axiosInstance.get(API.SUBSCRIPTION_GET);
@@ -37,7 +49,7 @@ const SubscriptionPage = () => {
       const data = response.data.data.data;
       setPlans([...data.filter((plan: ISubscription) => plan.isActive)]);
     } catch (err) {
-      console.log("Error fetching subscription plans.", err);
+      console.log("Error fetching subscription plans:", err);
       showSnackbar("Error Fetching Plans", "error");
     } finally {
       setLoading(false);
@@ -45,10 +57,16 @@ const SubscriptionPage = () => {
   };
 
   useEffect(() => {
-    fetchPlans();
-  }, [userInfo]);
+    const initialize = async () => {
+      setLoading(true);
+      await checkSubStatus();
+      await fetchPlans();
+      setLoading(false);
+    };
+    initialize();
+  }, [userInfo, isAuthenticated]);
 
-  // Loading screen.
+  // Loading screen
   if (loading) {
     return (
       <div className="subscription-container">
@@ -57,14 +75,12 @@ const SubscriptionPage = () => {
     );
   }
 
-  // Checking for current plan.
+  // Check if plan is user's current plan
   const isCurrentPlan = (plan: ISubscription) => {
-    if (!isAuthenticated || !userInfo?.email) return false;
-    hasActivePlan = true;
-    return plan.users.some((user) => user.userEmail === userInfo.email);
+    return isAuthenticated && userActivePlan === plan.name;
   };
 
-  // Payments.
+  // Payments
   const initializeRazorpay = (): Promise<boolean> => {
     return new Promise((resolve) => {
       const script = document.createElement("script");
@@ -77,18 +93,15 @@ const SubscriptionPage = () => {
 
   const handlePayment = async (plan: ISubscription) => {
     try {
-      // Checking if user is logged in.
+      // Check if user is logged in
       if (!userInfo) {
         showSnackbar("Please log in to subscribe to a plan", "error");
         return;
       }
 
-      // Check if user already has an active subscription for this plan
-      if (hasActivePlan) {
-        showSnackbar(
-          "You already have an active subscription.",
-          "error"
-        );
+      // Check if user already has an active subscription
+      if (userActivePlan) {
+        showSnackbar("You already have an active subscription.", "error");
         return;
       }
 
@@ -103,7 +116,7 @@ const SubscriptionPage = () => {
           ? plan.discountPrice
           : plan.price;
 
-      // Razorpay backend.
+      // Razorpay backend
       const response = await axiosInstance.post(API.RAZORPAY_ADD, {
         amount: price! * 100,
         currency: "INR",
@@ -138,6 +151,8 @@ const SubscriptionPage = () => {
               }' plan`,
               "success"
             );
+            // Update the user's active plan after successful payment
+            setUserActivePlan(plan.name);
           } catch (err) {
             console.log("Error Adding Order", err);
             showSnackbar("Error Adding Order", "error");

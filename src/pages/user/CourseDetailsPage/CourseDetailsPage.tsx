@@ -19,9 +19,8 @@ const CourseDetailsPage: React.FC = () => {
     [key: string]: boolean;
   }>({});
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
-  // const [enrollingCourse, setEnrollingCourse] = useState(false);
 
-  // Fetching course details.
+  // Fetching course details
   const { courseId } = useParams<{ courseId: string }>();
   const fetchCourse = async () => {
     try {
@@ -36,11 +35,12 @@ const CourseDetailsPage: React.FC = () => {
       console.error(errorMessage, err);
     }
   };
+
   useEffect(() => {
     fetchCourse();
   }, [courseId]);
 
-  // Curriculum section expansion.
+  // Curriculum section expansion
   const toggleSection = (sectionId: string) => {
     setExpandedSections((prev) => ({
       ...prev,
@@ -63,7 +63,7 @@ const CourseDetailsPage: React.FC = () => {
     setExpandedSections({});
   };
 
-  // Duration calculation.
+  // Duration calculation
   const getTotalStats = () => {
     if (!course?.curriculum) {
       return { sections: 0, lessons: 0, totalDuration: "0" };
@@ -81,13 +81,34 @@ const CourseDetailsPage: React.FC = () => {
   };
   const { sections, lessons, totalDuration } = getTotalStats();
 
-  // Enrolling process.
+  // Enrolling process
   const { userInfo } = useAppSelector((state) => state.user);
   const navigate = useNavigate();
+
+  const checkSubscriptionStatus = async (): Promise<boolean> => {
+    try {
+      const response = await axiosInstance.get("/order/sub-check");
+      return !!response.data.data;
+    } catch (error) {
+      console.error("Error checking subscription status:", error);
+      return false;
+    }
+  };
+
   const handleCourseEnroll = async () => {
     try {
       if (!userInfo) {
         showSnackbar("Please login to continue", "error");
+        return;
+      }
+
+      // Check subscription status
+      const hasSubscription = await checkSubscriptionStatus();
+      if (!hasSubscription) {
+        showSnackbar(
+          "You need an active subscription to enroll in this course",
+          "error"
+        );
         return;
       }
 
@@ -102,7 +123,9 @@ const CourseDetailsPage: React.FC = () => {
       navigate("/study/" + data.courseId);
       setLoading(false);
     } catch (error) {
-      console.log("error enrolling course in the front end", error);
+      console.log("Error enrolling course in the front end:", error);
+      showSnackbar("Error enrolling in the course", "error");
+      setLoading(false);
     }
   };
 
@@ -129,11 +152,7 @@ const CourseDetailsPage: React.FC = () => {
           </p>
           <p>Language: {course?.language}</p>
           <p>Duration: {totalDuration} hrs</p>
-          <button
-            className="start-course-button"
-            onClick={handleCourseEnroll}
-            // disabled={enrollingCourse}
-          >
+          <button className="start-course-button" onClick={handleCourseEnroll}>
             Start Course
           </button>
         </div>
