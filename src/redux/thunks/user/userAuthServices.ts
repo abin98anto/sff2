@@ -2,8 +2,8 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 
 import { IUser } from "../../../entities/IUser";
-import { LoginData } from "../../../entities/misc/LoginData";
-import { VerifyOTPData } from "../../../entities/misc/verifyOtpData";
+import LoginData from "../../../entities/misc/LoginData";
+import VerifyOTPData from "../../../entities/misc/verifyOtpData";
 import axiosInstance from "../../../shared/config/axiosConfig";
 import API from "../../../shared/constants/API";
 import comments from "../../../shared/constants/comments";

@@ -148,16 +148,16 @@ const ProfileSection = () => {
   };
 
   return (
-    <Box className="profile-section">
-      <Typography variant="h4" className="profile-header">
+    <Box className="tutor-profile-section">
+      <Typography variant="h4" className="tutor-profile-header">
         Profile Settings
       </Typography>
 
       {/* Profile Picture Section */}
-      <Box className="profile-picture-container">
-        <Box className="profile-picture-section">
-          <Avatar src={profileImage || ""} className="profile-avatar" />
-          <Box className="profile-picture-actions">
+      <Box className="tutor-profile-picture-container">
+        <Box className="tutor-profile-picture-section">
+          <Avatar src={profileImage || ""} className="tutor-profile-avatar" />
+          <Box className="tutor-profile-picture-actions">
             <input
               type="file"
               accept="image/*"
@@ -170,7 +170,7 @@ const ProfileSection = () => {
                 component="span"
                 startIcon={<EditIcon />}
                 variant="outlined"
-                className="change-photo-btn"
+                className="tutor-change-photo-btn"
                 onClick={handleImageUploadClick}
               >
                 Change Photo
@@ -179,7 +179,7 @@ const ProfileSection = () => {
             <IconButton
               color="error"
               size="small"
-              className="delete-photo-btn"
+              className="tutor-delete-photo-btn"
               disabled={
                 !userInfo?.picture ||
                 userInfo?.picture === "/default-avatar.png"
@@ -191,11 +191,15 @@ const ProfileSection = () => {
         </Box>
       </Box>
 
-      <Grid container spacing={4} className="main-content">
-        <Grid item xs={12} md={6} className="left-column">
+      <Grid container spacing={4} className="tutor-main-content">
+        <Grid item xs={12} md={6} className="tutor-left-column">
           <form onSubmit={handleSubmit}>
-            <Box className="basic-info-section">
-              <Typography variant="h6" gutterBottom className="section-title">
+            <Box className="tutor-basic-info-section">
+              <Typography
+                variant="h6"
+                gutterBottom
+                className="tutor-section-title"
+              >
                 Personal Information
               </Typography>
               <TextField
@@ -203,7 +207,7 @@ const ProfileSection = () => {
                 label="Name"
                 name="name"
                 variant="outlined"
-                className="form-field"
+                className="tutor-form-field"
                 value={formData.name}
                 onChange={handleChange}
               />
@@ -213,19 +217,23 @@ const ProfileSection = () => {
                 name="email"
                 variant="outlined"
                 type="email"
-                className="form-field"
+                className="tutor-form-field"
                 value={formData.email}
                 onChange={handleChange}
               />
             </Box>
 
-            <Box className="resume-section">
-              <Typography variant="h6" gutterBottom className="section-title">
+            <Box className="tutor-resume-section">
+              <Typography
+                variant="h6"
+                gutterBottom
+                className="tutor-section-title"
+              >
                 Resume
               </Typography>
-              <Box className="resume-content">
+              <Box className="tutor-resume-content">
                 {resume ? (
-                  <Box className="current-resume">
+                  <Box className="tutor-current-resume">
                     <Button
                       variant="text"
                       onClick={() => setIsModalOpen(true)}
@@ -242,7 +250,7 @@ const ProfileSection = () => {
                     </IconButton>
                   </Box>
                 ) : (
-                  <Typography className="text-content">
+                  <Typography className="tutor-text-content">
                     No resume uploaded
                   </Typography>
                 )}
@@ -258,7 +266,7 @@ const ProfileSection = () => {
                     component="span"
                     startIcon={<UploadIcon />}
                     variant="outlined"
-                    className="upload-btn"
+                    className="tutor-upload-btn"
                   >
                     Upload Resume
                   </Button>
@@ -266,17 +274,17 @@ const ProfileSection = () => {
               </Box>
             </Box>
 
-            <Box className="action-buttons personal-info-actions">
+            <Box className="tutor-action-buttons tutor-personal-info-actions">
               <Button
                 variant="contained"
                 color="primary"
-                className="save-btn"
+                className="tutor-save-btn"
                 type="submit"
                 disabled={loading}
               >
                 {loading ? <Loading /> : "Save Personal Info"}
               </Button>
-              <Button variant="outlined" className="cancel-btn">
+              <Button variant="outlined" className="tutor-cancel-btn">
                 Cancel
               </Button>
             </Box>
@@ -284,9 +292,9 @@ const ProfileSection = () => {
         </Grid>
 
         {/* Right Column - Password Change */}
-        {/* <Grid item xs={12} md={6} className="right-column">
-          <Paper className="password-section">
-            <Typography variant="h6" gutterBottom className="section-title">
+        {/* <Grid item xs={12} md={6} className="tutor-right-column">
+          <Paper className="tutor-password-section">
+            <Typography variant="h6" gutterBottom className="tutor-section-title">
               Change Password
             </Typography>
             <TextField
@@ -294,27 +302,27 @@ const ProfileSection = () => {
               label="Current Password"
               type="password"
               variant="outlined"
-              className="form-field"
+              className="tutor-form-field"
             />
             <TextField
               fullWidth
               label="New Password"
               type="password"
               variant="outlined"
-              className="form-field"
+              className="tutor-form-field"
             />
             <TextField
               fullWidth
               label="Confirm New Password"
               type="password"
               variant="outlined"
-              className="form-field"
+              className="tutor-form-field"
             />
-            <Box className="action-buttons password-actions">
-              <Button variant="contained" color="primary" className="save-btn">
+            <Box className="tutor-action-buttons tutor-password-actions">
+              <Button variant="contained" color="primary" className="tutor-save-btn">
                 Change Password
               </Button>
-              <Button variant="outlined" className="cancel-btn">
+              <Button variant="outlined" className="tutor-cancel-btn">
                 Cancel
               </Button>
             </Box>

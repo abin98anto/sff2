@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   BarChart2,
-  // Users,
+  Users,
   // MessageCircleMore,
   CircleUserRound,
 } from "lucide-react";
@@ -18,11 +18,11 @@ const menuItems = [
     icon: BarChart2,
     path: "/tutor",
   },
-  // {
-  //   title: "My Students",
-  //   icon: Users,
-  //   path: "/tutor/my-students",
-  // },
+  {
+    title: "My Students",
+    icon: Users,
+    path: "/tutor/my-students",
+  },
   // {
   //   title: "Messages",
   //   icon: MessageCircleMore,

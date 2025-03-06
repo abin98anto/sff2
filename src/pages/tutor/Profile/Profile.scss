@@ -1,39 +1,39 @@
-.profile-section {
+.tutor-profile-section {
   width: 100%;
   color: #ffffff;
   text-align: center;
 
-  .profile-header,
-  .section-title,
-  .text-content,
-  .field-label {
+  .tutor-profile-header,
+  .tutor-section-title,
+  .tutor-text-content,
+  .tutor-field-label {
     color: #ffffff;
   }
 
-  .profile-picture-container {
+  .tutor-profile-picture-container {
     display: flex;
     justify-content: center;
     margin-bottom: 3rem;
 
-    .profile-picture-section {
+    .tutor-profile-picture-section {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 1rem;
 
-      .profile-avatar {
+      .tutor-profile-avatar {
         width: 150px;
         height: 150px;
         background-color: #555;
       }
 
-      .profile-picture-actions {
+      .tutor-profile-picture-actions {
         display: flex;
         gap: 1rem;
         align-items: center;
 
-        .change-photo-btn,
-        .upload-btn {
+        .tutor-change-photo-btn,
+        .tutor-upload-btn {
           color: #2196f3;
           border-color: #2196f3;
 
@@ -42,7 +42,7 @@
           }
         }
 
-        .delete-photo-btn {
+        .tutor-delete-photo-btn {
           color: #f44336;
 
           &:hover {
@@ -53,7 +53,7 @@
     }
   }
 
-  .form-field {
+  .tutor-form-field {
     margin-bottom: 1.5rem;
 
     input {
@@ -83,16 +83,16 @@
     }
   }
 
-  .resume-section {
+  .tutor-resume-section {
     margin-bottom: 2rem;
 
-    .resume-content {
+    .tutor-resume-content {
       margin-top: 1rem;
       display: flex;
       flex-direction: column;
       gap: 1rem;
 
-      .current-resume {
+      .tutor-current-resume {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -103,20 +103,20 @@
     }
   }
 
-  /* .password-section {
+  /* .tutor-password-section {
     background-color: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 8px;
     padding: 2rem;
   } */
 
-  .action-buttons {
+  .tutor-action-buttons {
     display: flex;
     gap: 1rem;
     justify-content: center;
     margin-top: 2rem;
 
-    .save-btn {
+    .tutor-save-btn {
       background-color: #2196f3;
       color: #ffffff;
 
@@ -125,7 +125,7 @@
       }
     }
 
-    .cancel-btn {
+    .tutor-cancel-btn {
       color: #ffffff;
       border-color: rgba(255, 255, 255, 0.5);
 
@@ -138,7 +138,7 @@
 }
 
 /* Center the remaining section */
-.main-content {
+.tutor-main-content {
   display: flex;
   justify-content: center;
   align-items: center;

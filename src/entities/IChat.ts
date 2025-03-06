@@ -5,6 +5,6 @@ export default interface IChat {
   _id: string;
   tutorId: string | IUser;
   studentId: string | IUser;
-  courseId: string | ICourse;
+  courseId: ICourse | string;
   messages: string[];
 }
