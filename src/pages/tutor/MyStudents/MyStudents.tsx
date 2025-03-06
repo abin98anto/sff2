@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { MessageSquare, CheckCircle } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import axiosInstance from "../../../shared/config/axiosConfig";
 import DataTable, { Column } from "../../../components/common/Table/DataTable";
 import CustomSnackbar from "../../../components/common/CustomSnackbar";
@@ -104,7 +104,6 @@ const MyStudents = () => {
       label: "Actions",
       render: (row: IStudentData) => (
         <div className="action-buttons">
-          {/* Only show buttons if status is completed */}
           {row.enrollment?.status?.toLowerCase() === "completed" && (
             <button
               onClick={() => handleReviewOpen(row)}
@@ -191,12 +190,11 @@ const MyStudents = () => {
     setIsLoading(true);
 
     try {
-      const response = await axiosInstance.post("/review/submit", {
-        studentId: selectedStudent.studentId._id,
-        courseId: selectedStudent.courseId._id,
-        passed: isPassed,
+      const response = await axiosInstance.put("/enrollment/update", {
+        _id: selectedStudent.enrollment?._id,
+        status: "passed",
       });
-
+      console.log("the yes res", response.data);
       if (response.data.success) {
         showSnackbar(
           isPassed
