@@ -21,6 +21,7 @@
     "aws-sdk": "^2.1692.0",
     "axios": "^1.7.9",
     "crypto-browserify": "^3.12.1",
+    "date-fns": "^4.1.0",
     "ldrs": "^1.0.2",
     "lodash.debounce": "^4.0.8",
     "lucide-react": "^0.473.0",

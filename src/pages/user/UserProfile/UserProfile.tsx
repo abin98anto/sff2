@@ -1,12 +1,11 @@
 import type React from "react";
 import "./UserProfile.scss";
 import { Avatar, Box } from "@mui/material";
-
-import { PencilIcon, LockIcon } from "./Icons";
+import { PencilIcon, LockIcon, DownloadIcon } from "./Icons";
 import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
 import useSnackbar from "../../../hooks/useSnackbar";
 import CustomSnackbar from "../../../components/common/CustomSnackbar";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import handleFileUpload, {
   validateImageFile,
 } from "../../../shared/utils/cloudinary/fileUpload";
@@ -14,11 +13,47 @@ import comments from "../../../shared/constants/comments";
 import { updateUser } from "../../../redux/thunks/user/userUpdateServices";
 import CustomModal from "../../../components/common/Modal/CustomModal/CustomModal";
 import axiosInstance from "../../../shared/config/axiosConfig";
+// import DataTable, {
+//   Column,
+// } from "../../../components/common/DataTable/DataTable";
+import { format } from "date-fns";
+import DataTable from "../../../components/common/Table/DataTable";
+
+// Interface for enrollment data
+interface CourseInfo {
+  _id: string;
+  name: string;
+  startDate: string;
+}
+
+interface IEnrollment {
+  _id: string;
+  userId: string;
+  courseId: CourseInfo;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface TableData<T = any> {
+  data: T[];
+  total: number;
+}
+
+interface QueryParams {
+  page: number;
+  limit: number;
+  search: string;
+  sortField?: string;
+  sortOrder?: "asc" | "desc";
+  filters?: Record<string, string>;
+}
 
 const UserProfile: React.FC = () => {
   const { userInfo } = useAppSelector((state) => state.user);
   const [loading, setLoading] = useState(false);
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
+  const [activeTab, setActiveTab] = useState<"account" | "courses">("account");
 
   // Image upload.
   const dispatch = useAppDispatch();
@@ -81,7 +116,7 @@ const UserProfile: React.FC = () => {
         currentPassword,
         newPassword,
       });
-      
+
       if (response.data.success) {
         showSnackbar("Password changed successfully!", "success");
         setIsModalOpen(false);
@@ -89,10 +124,71 @@ const UserProfile: React.FC = () => {
         setNewPassword("");
         setConfirmPassword("");
       } else {
-        showSnackbar(response.data.message || "Failed to change password", "error");
+        showSnackbar(
+          response.data.message || "Failed to change password",
+          "error"
+        );
       }
     } catch (err) {
       showSnackbar("Error changing password", "error");
+    }
+  };
+
+  // Fetch user courses - explicitly typed to match the DataTable's expected types
+  const fetchUserCourses = async (
+    params: QueryParams
+  ): Promise<TableData<IEnrollment>> => {
+    try {
+      // const { page, limit, search, sortField, sortOrder } = params;
+      let url = `/enrollment/user-enrollments`;
+
+      // if (search) {
+      //   url += `&search=${search}`;
+      // }
+
+      // if (sortField && sortOrder) {
+      //   url += `&sortField=${sortField}&sortOrder=${sortOrder}`;
+      // }
+
+      const response = await axiosInstance.get(url);
+      console.log("the response0", response.data.data);
+      return {
+        data: response.data.data || [],
+        total: response.data.total || 0,
+      };
+    } catch (error) {
+      console.error("Error fetching user courses:", error);
+      showSnackbar("Failed to fetch courses", "error");
+      return { data: [], total: 0 };
+    }
+  };
+
+  // Handle certificate download
+  const handleCertificateDownload = async (
+    enrollmentId: string,
+    courseName: string
+  ) => {
+    try {
+      const response = await axiosInstance.get(
+        `/certificates/${enrollmentId}`,
+        {
+          responseType: "blob",
+        }
+      );
+
+      // Create a blob link to download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `${courseName}_Certificate.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      showSnackbar("Certificate downloaded successfully", "success");
+    } catch (error) {
+      console.error("Error downloading certificate:", error);
+      showSnackbar("Failed to download certificate", "error");
     }
   };
 
@@ -102,87 +198,188 @@ const UserProfile: React.FC = () => {
       <div className="sidebar">
         <h2 className="sidebar-title">Settings</h2>
         <ul className="sidebar-menu">
-          <li className="sidebar-menu-item active">
-            <a href="#account">Account</a>
+          <li
+            className={`sidebar-menu-item ${
+              activeTab === "account" ? "active" : ""
+            }`}
+          >
+            <a
+              href="#account"
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveTab("account");
+              }}
+            >
+              Account
+            </a>
           </li>
-          <li className="sidebar-menu-item">
-            <a href="#courses">My Courses</a>
+          <li
+            className={`sidebar-menu-item ${
+              activeTab === "courses" ? "active" : ""
+            }`}
+          >
+            <a
+              href="#courses"
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveTab("courses");
+              }}
+            >
+              My Courses
+            </a>
           </li>
         </ul>
       </div>
 
       {/* Main Content */}
       <div className="main-content">
-        <h1 className="page-title">Account</h1>
+        {activeTab === "account" ? (
+          <>
+            <h1 className="page-title">Account</h1>
 
-        {/* Profile Section */}
-        <div className="profile-section">
-          <div className="profile-image-container">
-            <Avatar
-              src={profileImage}
-              sx={{
-                width: 300,
-                height: 300,
-                border: "2px solid #primary.main",
-              }}
-            />
-            <Box className="profile-picture-actions">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                id="profile-image-input"
-                hidden
-                onChange={handleImageChange}
-              />
-              <button
-                className="edit-profile-button"
-                onClick={handleImageUploadClick}
-              >
-                <PencilIcon />
-              </button>
-            </Box>
-          </div>
-        </div>
-
-        {/* Form Section */}
-        <div className="form-section">
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="name">Name</label>
-              <input
-                type="text"
-                id="name"
-                className="form-control"
-                value={userInfo?.name}
-                readOnly
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
-              <div className="input-with-icon">
-                <input
-                  type="email"
-                  id="email"
-                  className="form-control"
-                  value={userInfo?.email}
-                  readOnly
+            {/* Profile Section */}
+            <div className="profile-section">
+              <div className="profile-image-container">
+                <Avatar
+                  src={profileImage}
+                  sx={{
+                    width: 300,
+                    height: 300,
+                    border: "2px solid #primary.main",
+                  }}
                 />
-                <LockIcon />
+                <Box className="profile-picture-actions">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    id="profile-image-input"
+                    hidden
+                    onChange={handleImageChange}
+                  />
+                  <button
+                    className="edit-profile-button"
+                    onClick={handleImageUploadClick}
+                  >
+                    <PencilIcon />
+                  </button>
+                </Box>
               </div>
             </div>
-          </div>
 
-          {/* Action Cards */}
-          <div className="action-cards">
-            <div className="action-card" onClick={() => setIsModalOpen(true)}>
-              <div className="action-card-icon">
-                <LockIcon />
+            {/* Form Section */}
+            <div className="form-section">
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="name">Name</label>
+                  <input
+                    type="text"
+                    id="name"
+                    className="form-control"
+                    value={userInfo?.name}
+                    readOnly
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="email">Email</label>
+                  <div className="input-with-icon">
+                    <input
+                      type="email"
+                      id="email"
+                      className="form-control"
+                      value={userInfo?.email}
+                      readOnly
+                    />
+                    <LockIcon />
+                  </div>
+                </div>
               </div>
-              <h3 className="action-card-title">Change password</h3>
+
+              {/* Action Cards */}
+              <div className="action-cards">
+                <div
+                  className="action-card"
+                  onClick={() => setIsModalOpen(true)}
+                >
+                  <div className="action-card-icon">
+                    <LockIcon />
+                  </div>
+                  <h3 className="action-card-title">Change password</h3>
+                </div>
+              </div>
             </div>
+          </>
+        ) : (
+          <div className="courses-container">
+            <h1 className="page-title">My Courses</h1>
+            {/* Using the generic type parameter to specify IEnrollment */}
+            <DataTable
+              columns={[
+                {
+                  key: "slNo",
+                  label: "Sl No",
+                  render: (_, index) => index + 1,
+                },
+                {
+                  key: "courseName",
+                  label: "Course Name",
+                  render: (row) => row.courseId.title,
+                },
+                {
+                  key: "startDate",
+                  label: "Start Date",
+                  render: (row) => {
+                    // Check if startDate exists and is valid
+                    if (!row.courseId.startDate) {
+                      return "N/A"; // Return a fallback if no date
+                    }
+
+                    try {
+                      return format(
+                        new Date(row.courseId.startDate),
+                        "MMM dd, yyyy"
+                      );
+                    } catch (error) {
+                      console.error("Invalid date:", row.courseId.startDate);
+                      return "Invalid date"; // Return a fallback for invalid dates
+                    }
+                  },
+                },
+                {
+                  key: "status",
+                  label: "Status",
+                  render: (row) => (
+                    <span
+                      className={`status-badge ${row.status.toLowerCase()}`}
+                    >
+                      {row.status}
+                    </span>
+                  ),
+                },
+                {
+                  key: "certificate",
+                  label: "Certificate",
+                  render: (row) =>
+                    row.status.toLowerCase() === "passed" ? (
+                      <button
+                        className="download-button"
+                        onClick={() =>
+                          handleCertificateDownload(row._id, row.courseId.name)
+                        }
+                      >
+                        <DownloadIcon /> Download
+                      </button>
+                    ) : (
+                      <span className="not-available">Not Available</span>
+                    ),
+                },
+              ]}
+              fetchData={fetchUserCourses}
+              pageSize={5}
+              initialSort={{ field: "startDate", order: "desc" }}
+            />
           </div>
-        </div>
+        )}
       </div>
 
       {/* Change Password Modal */}
