@@ -239,7 +239,7 @@ const BasicInformation = ({
             <div>
               <select
                 id="category"
-                value={data.category}
+                value={data.category as string}
                 onChange={(e) => handleChange("category", e.target.value)}
                 disabled={isLoading}
               >

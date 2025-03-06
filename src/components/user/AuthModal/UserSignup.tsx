@@ -62,6 +62,7 @@ const UserSignup: React.FC<UserSignupProps> = ({
       const userData: IUser = {
         ...data,
         role: userRole === "tutor" ? userRoles.TUTOR : userRoles.USER,
+        createdAt: ""
       };
       await dispatch(sendOTP(userData));
       onSignupSuccess();
