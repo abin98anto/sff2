@@ -75,6 +75,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
             onSignupSuccess={() => setCurrentSection("otp")}
             userRole={userRole}
             image={getImageForSection(currentSection, userRole)}
+            onClose={onClose}
           />
         );
       case "otp":

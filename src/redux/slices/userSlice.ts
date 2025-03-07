@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 import IUserState from "../../entities/misc/IUserState";
 import {
+  googleSignIn,
   login,
   logout,
   sendOTP,
@@ -104,6 +105,24 @@ const userSlice = createSlice({
       })
       .addCase(updateUser.rejected, (state) => {
         state.loading = false;
+      })
+
+      // Google Auth
+      .addCase(googleSignIn.pending, (state) => {
+        state.loading = true;
+        state.error = "";
+      })
+      .addCase(googleSignIn.fulfilled, (state, action) => {
+        console.log(action.payload);
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.error = "";
+        state.userInfo = action.payload.user.userData;
+      })
+      .addCase(googleSignIn.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          (action.payload as string) || "error in google sign in - slice";
       });
   },
 });

@@ -1,9 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { hourglass } from "ldrs";
+import { jwtDecode } from "jwt-decode";
 
-import GoogleButton from "./google-btn/GoogleButton";
-import { sendOTP } from "../../../redux/thunks/user/userAuthServices";
+// import GoogleButton from "./google-btn/GoogleButton";
+import {
+  googleSignIn,
+  sendOTP,
+} from "../../../redux/thunks/user/userAuthServices";
 import { signupSchema } from "../../../shared/config/yupConfig";
 import comments from "../../../shared/constants/comments";
 import { IUser } from "../../../entities/IUser";
@@ -12,16 +16,58 @@ import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
 import { AppRootState } from "../../../redux/store";
 import useSnackbar from "../../../hooks/useSnackbar";
 import CustomSnackbar from "../../common/CustomSnackbar";
+// import { useNavigate } from "react-router-dom";
+
+// Add TypeScript declarations for Google Sign-In API
+interface GoogleCredentialResponse {
+  credential: string;
+  select_by: string;
+}
+
+interface GoogleAccountsId {
+  initialize: (config: {
+    client_id: string;
+    callback: (response: GoogleCredentialResponse) => void;
+    auto_select?: boolean;
+    cancel_on_tap_outside?: boolean;
+  }) => void;
+  renderButton: (
+    element: HTMLElement | null,
+    options: {
+      theme?: "outline" | "filled_blue" | "filled_black";
+      size?: "large" | "medium" | "small";
+      text?: "signin_with" | "signup_with" | "continue_with" | "signin";
+      shape?: "rectangular" | "pill" | "circle" | "square";
+      width?: number;
+    }
+  ) => void;
+  prompt: () => void;
+}
+
+interface GoogleAccounts {
+  id: GoogleAccountsId;
+}
+
+// Extend Window interface
+declare global {
+  interface Window {
+    google?: {
+      accounts: GoogleAccounts;
+    };
+  }
+}
 
 interface UserSignupProps {
   onSignupSuccess: () => void;
   userRole: "user" | "tutor";
-  image: string;
+  image?: string;
+  onClose: () => void;
 }
 
 const UserSignup: React.FC<UserSignupProps> = ({
   onSignupSuccess,
   userRole,
+  onClose,
 }) => {
   const [formData, setFormData] = useState({
     name: "",
@@ -31,7 +77,9 @@ const UserSignup: React.FC<UserSignupProps> = ({
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [googleInitialized, setGoogleInitialized] = useState(false);
 
+  // const navigate = useNavigate();
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
 
   const { loading } = useAppSelector((state: AppRootState) => state.user);
@@ -62,7 +110,7 @@ const UserSignup: React.FC<UserSignupProps> = ({
       const userData: IUser = {
         ...data,
         role: userRole === "tutor" ? userRoles.TUTOR : userRoles.USER,
-        createdAt: ""
+        createdAt: "",
       };
       await dispatch(sendOTP(userData));
       onSignupSuccess();
@@ -81,6 +129,120 @@ const UserSignup: React.FC<UserSignupProps> = ({
       }
     }
   };
+
+  const handleGoogleSignIn = async (response: GoogleCredentialResponse) => {
+    try {
+      if (!response.credential) {
+        showSnackbar("No Google credentials received", "error");
+        return;
+      }
+
+      const decoded: any = jwtDecode(response.credential);
+      // console.log("Google sign-in successful. Decoded token:", decoded);
+
+      const user = {
+        name:
+          decoded.name ||
+          `${decoded.given_name} ${decoded.family_name || ""}`.trim(),
+        email: decoded.email,
+        profilePicture: decoded.picture,
+        role: userRole === "tutor" ? userRoles.TUTOR : userRoles.USER,
+      };
+
+      console.log("Sending user data to backend:", user);
+      const result = await dispatch(googleSignIn(user)).unwrap();
+
+      if (result && result.user) {
+        console.log("Login successful, navigating to home");
+        // navigate("/");
+        onClose();
+      } else {
+        showSnackbar(
+          "Google sign-in failed: Unexpected response from server",
+          "error"
+        );
+      }
+    } catch (error) {
+      console.error("Google sign-in failed", error);
+      showSnackbar("Google sign-in failed. Please try again later.", "error");
+    }
+  };
+
+  useEffect(() => {
+    const loadGoogleScript = () => {
+      // Check if the Google script is already loaded
+      if (
+        document.querySelector(
+          'script[src="https://accounts.google.com/gsi/client"]'
+        )
+      ) {
+        initializeGoogleSignIn();
+        return;
+      }
+
+      // Load the Google script if it's not already loaded
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = initializeGoogleSignIn;
+      script.onerror = () => {
+        console.error("Failed to load Google Sign-In script");
+        showSnackbar(
+          "Failed to load Google Sign-In. Please try again later.",
+          "error"
+        );
+      };
+      document.body.appendChild(script);
+    };
+
+    const initializeGoogleSignIn = () => {
+      if (window.google && !googleInitialized) {
+        try {
+          const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+          if (!clientId) {
+            console.error("Google Client ID is not configured");
+            showSnackbar("Google Sign-In is not properly configured", "error");
+            return;
+          }
+
+          window.google.accounts.id.initialize({
+            client_id: clientId,
+            callback: handleGoogleSignIn,
+            auto_select: false,
+            cancel_on_tap_outside: true,
+          });
+
+          // Only render the button if the container exists
+          const buttonContainer = document.getElementById(
+            "google-signin-button"
+          );
+          if (buttonContainer) {
+            window.google.accounts.id.renderButton(buttonContainer, {
+              theme: "outline",
+              size: "large",
+              text: "signin_with",
+              shape: "rectangular",
+              width: 240,
+            });
+          } else {
+            console.error("Google sign-in button container not found");
+          }
+
+          setGoogleInitialized(true);
+          console.log("Google Sign-In initialized successfully");
+        } catch (error) {
+          console.error("Error initializing Google Sign-In:", error);
+          showSnackbar("Failed to initialize Google Sign-In", "error");
+        }
+      }
+    };
+
+    loadGoogleScript();
+
+    // Clean up function
+    return () => {};
+  }, [showSnackbar, googleInitialized, userRole]);
 
   return (
     <div className="auth-section">
@@ -148,10 +310,12 @@ const UserSignup: React.FC<UserSignupProps> = ({
         <div className="divider">
           <span>or</span>
         </div>
-        <div className="google-signin-button">
-          <GoogleButton />
-          <span>Sign in with Google</span>
-        </div>
+
+        {/* Single Google sign-in button implementation */}
+        <div
+          id="google-signin-button"
+          className="google-signin-container"
+        ></div>
       </form>
 
       <CustomSnackbar

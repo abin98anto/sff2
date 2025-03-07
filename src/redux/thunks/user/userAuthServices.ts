@@ -91,3 +91,21 @@ export const deleteUser = createAsyncThunk(
     }
   }
 );
+
+// Google signup/login.
+export const googleSignIn = createAsyncThunk(
+  "user/googleSignIn",
+  async (token: Partial<IUser>, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post("/auth/google", { token });
+      // console.log("the response thunk", response);
+      return {
+        message: response.data.message,
+        user: response.data.data,
+      };
+    } catch (error) {
+      console.log("error signing with googel in thunk", error);
+      return rejectWithValue("error signing with googel in thunk");
+    }
+  }
+);
