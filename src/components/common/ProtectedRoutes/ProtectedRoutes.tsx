@@ -1,28 +1,14 @@
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-
 import { AppRootState } from "../../../redux/store";
 
-interface ProtectedRouteProps {
-  allowedRoles: string[];
-  redirectTo?: string;
-}
-
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
-  allowedRoles,
-  redirectTo = "/",
-}) => {
+const ProtectedRoute = () => {
   const userInfo = useSelector((state: AppRootState) => state.user.userInfo);
+  const location = useLocation();
+  const currentUrl = `${window.location.origin}${location.pathname}${location.search}${location.hash}`;
+  const where = currentUrl.split("/")[3] === "admin" ? "admin" : "";
 
-  if (!userInfo) {
-    return <Navigate to={redirectTo} replace />;
-  }
-
-  if (!allowedRoles.includes(userInfo.role)) {
-    return <Navigate to={redirectTo} replace />;
-  }
-
-  return <Outlet />;
+  return userInfo ? <Outlet /> : <Navigate to={`/${where}`} />;
 };
 
 export default ProtectedRoute;

@@ -10,6 +10,7 @@ import MyLearningPage from "../pages/user/MyLearningPage/MyLearningPage";
 import ChatBubble from "../components/common/ChatBubble/ChatBubble";
 import VideoCallPage from "../components/common/VideoCallPage/VideoCallPage";
 import UserProfile from "../pages/user/UserProfile/UserProfile";
+import ProtectedRoute from "../components/common/ProtectedRoutes/ProtectedRoutes";
 
 const UserRoutes = () => {
   return (
@@ -21,10 +22,15 @@ const UserRoutes = () => {
           <Route path="/courses" element={<CourseListPage />} />
           <Route path="/course/:courseId" element={<CourseDetailsPage />} />
           <Route path="/study/:courseId" element={<EnrolledPage />} />
-          <Route path="/my-learning" element={<MyLearningPage />} />
-          <Route path="/profile" element={<UserProfile />} />
+
+          <Route element={<ProtectedRoute />}>
+            <Route path="/my-learning" element={<MyLearningPage />} />
+            <Route path="/profile" element={<UserProfile />} />
+          </Route>
         </Route>
-        <Route path="/video-call" element={<VideoCallPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/video-call" element={<VideoCallPage />} />
+        </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>
 
