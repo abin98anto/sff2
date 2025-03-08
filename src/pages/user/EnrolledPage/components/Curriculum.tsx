@@ -7,6 +7,7 @@ import Modal from "./Modal";
 import { ILesson, ISection } from "../../../../entities/ICourse";
 import axiosInstance from "../../../../shared/config/axiosConfig";
 import IEnrollment from "../../../../entities/IEnrollment";
+import { EnrollStatus } from "../../../../entities/misc/enrollStatus";
 
 interface CurriculumProps {
   sections: ISection[] | undefined;
@@ -28,11 +29,13 @@ const Curriculum: React.FC<CurriculumProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentLecture, setCurrentLecture] = useState<ILesson | null>(null);
   const [completedLectures, setCompletedLectures] = useState<string[]>([]);
-
-  // Populate curriculum details.
-  const courseId = useLocation().pathname.split("/")[2];
   const [enrollmentDetails, setEnrollmentDetails] =
     useState<IEnrollment | null>(null);
+
+  const location = useLocation();
+  const courseId = location.pathname.split("/")[2];
+
+  // Fetch completed lessons
   const fetchCompletedLessons = useCallback(async () => {
     try {
       if (!courseId) {
@@ -43,7 +46,7 @@ const Curriculum: React.FC<CurriculumProps> = ({
         courseId,
       });
       setEnrollmentDetails(response.data.data);
-      setCompletedLectures(response.data.data.completedLessons);
+      setCompletedLectures(response.data.data.completedLessons || []);
     } catch (error) {
       console.error("Error fetching completed lessons:", error);
     }
@@ -59,48 +62,89 @@ const Curriculum: React.FC<CurriculumProps> = ({
     );
   };
 
-  // Lesson completion functions.
+  // Calculate total lessons in the course
+  const getTotalLessons = (): number => {
+    return (
+      sections?.reduce((total, section) => total + section.lessons.length, 0) ||
+      0
+    );
+  };
+
+  // Check if course is fully completed
+  const isCourseCompleted = (updatedCompletedLessons: string[]): boolean => {
+    const totalLessons = getTotalLessons();
+    return updatedCompletedLessons.length === totalLessons;
+  };
+
+  // Update enrollment status to completed
+  const updateEnrollmentStatus = async () => {
+    try {
+      const updates: Partial<IEnrollment> = {
+        _id: enrollmentDetails?._id,
+        status: EnrollStatus.COMPLETED, // Assuming status field exists in IEnrollment
+      };
+      await axiosInstance.put("/enrollment/update", { updates });
+      console.log("Enrollment status updated to completed");
+    } catch (error) {
+      console.error("Error updating enrollment status:", error);
+    }
+  };
+
+  // Lesson completion functions
   const isLectureCompleted = (lectureId: string): boolean => {
     return completedLectures.includes(lectureId);
   };
+
   const handleCheckboxClick = async (e: React.MouseEvent, lecture: ILesson) => {
     e.stopPropagation();
     setCurrentLecture(lecture);
     setIsModalOpen(true);
   };
+
   const lessonUpdate = async (updatedCompletedLessons: string[]) => {
     try {
       const updates: Partial<IEnrollment> = {
         _id: enrollmentDetails?._id,
         completedLessons: updatedCompletedLessons,
       };
-      await axiosInstance.put("/enrollment/update", {
-        updates,
-      });
+      await axiosInstance.put("/enrollment/update", { updates });
     } catch (error) {
-      console.log("error updating completed lesson", error);
+      console.log("Error updating completed lesson:", error);
     }
   };
+
   const handleConfirmComplete = async () => {
     if (currentLecture && currentLecture._id) {
       try {
         const lessonId = currentLecture._id;
         let updatedCompletedLessons = [];
-        !enrollmentDetails?.completedLessons
-          ? updatedCompletedLessons.push(lessonId)
-          : (updatedCompletedLessons = [
-              ...enrollmentDetails?.completedLessons!,
-              lessonId,
-            ]);
-        lessonUpdate(updatedCompletedLessons);
-        setCompletedLectures((prev) => [...prev, lessonId]);
+        if (!enrollmentDetails?.completedLessons) {
+          updatedCompletedLessons = [lessonId];
+        } else {
+          updatedCompletedLessons = [
+            ...enrollmentDetails.completedLessons,
+            lessonId,
+          ];
+        }
+
+        // Remove duplicates (in case lessonId is already in the list)
+        updatedCompletedLessons = [...new Set(updatedCompletedLessons)];
+
+        await lessonUpdate(updatedCompletedLessons);
+        setCompletedLectures(updatedCompletedLessons);
         onLectureComplete(lessonId);
+
+        // Check if course is completed and update status
+        if (isCourseCompleted(updatedCompletedLessons)) {
+          await updateEnrollmentStatus();
+        }
       } catch (error) {
         console.error("Error completing lecture:", error);
       }
     }
     setIsModalOpen(false);
   };
+
   const handleConfirmUncomplete = async () => {
     if (currentLecture && currentLecture._id) {
       try {
@@ -108,8 +152,8 @@ const Curriculum: React.FC<CurriculumProps> = ({
         const updatedCompletedLessons = completedLectures.filter(
           (id) => id !== lessonId
         );
-        lessonUpdate(updatedCompletedLessons);
-        setCompletedLectures((prev) => prev.filter((id) => id !== lessonId));
+        await lessonUpdate(updatedCompletedLessons);
+        setCompletedLectures(updatedCompletedLessons);
         onLectureUncomplete(lessonId);
       } catch (error) {
         console.error("Error uncompleting lecture:", error);
