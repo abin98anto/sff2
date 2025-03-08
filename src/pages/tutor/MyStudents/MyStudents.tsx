@@ -6,6 +6,7 @@ import CustomSnackbar from "../../../components/common/CustomSnackbar";
 import useSnackbar from "../../../hooks/useSnackbar";
 import CustomModal from "../../../components/common/Modal/CustomModal/CustomModal";
 import "./MyStudents.scss";
+import { EnrollStatus } from "../../../entities/misc/enrollStatus";
 
 // Define your interfaces
 interface IStudent {
@@ -191,8 +192,10 @@ const MyStudents = () => {
 
     try {
       const response = await axiosInstance.put("/enrollment/update", {
-        _id: selectedStudent.enrollment?._id,
-        status: "passed",
+        updates: {
+          _id: selectedStudent.enrollment?._id,
+          status: EnrollStatus.PASSED,
+        },
       });
       console.log("the yes res", response.data);
       if (response.data.success) {
