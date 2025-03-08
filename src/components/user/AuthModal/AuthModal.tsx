@@ -3,6 +3,7 @@ import { useState } from "react";
 import UserLogin from "./UserLogin";
 import UserSignup from "./UserSignup";
 import OtpVerification from "./OtpVerification";
+import ForgotPassword from "./ForgotPassword";
 import "./AuthModal.scss";
 import axiosInstance from "../../../shared/config/axiosConfig";
 import API from "../../../shared/constants/API";
@@ -12,7 +13,7 @@ import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
 import { AppRootState } from "../../../redux/store";
 import comments from "../../../shared/constants/comments";
 
-type AuthSection = "signup" | "otp" | "login";
+type AuthSection = "signup" | "otp" | "login" | "forgotPassword";
 type UserRole = "user" | "tutor";
 
 interface AuthModalProps {
@@ -31,7 +32,6 @@ const AuthModal: React.FC<AuthModalProps> = ({
   const [userRole, setUserRole] = useState<UserRole>("user");
 
   const { userInfo } = useAppSelector((state: AppRootState) => state.user);
-
   const dispatch = useAppDispatch();
 
   const handleClose = async () => {
@@ -54,6 +54,10 @@ const AuthModal: React.FC<AuthModalProps> = ({
     setCurrentSection("login");
   };
 
+  const handlePasswordChanged = () => {
+    setCurrentSection("login");
+  };
+
   const getImageForSection = (section: AuthSection, role: UserRole) => {
     switch (section) {
       case "signup":
@@ -61,6 +65,8 @@ const AuthModal: React.FC<AuthModalProps> = ({
       case "otp":
         return role === "tutor" ? images.TUTOR_SIGNUP : images.ROCKET_SIGNUP;
       case "login":
+        return role === "tutor" ? images.TUTOR_LOGIN : images.LOGIN_IMG;
+      case "forgotPassword":
         return role === "tutor" ? images.TUTOR_LOGIN : images.LOGIN_IMG;
       default:
         return images.ROCKET_SIGNUP;
@@ -88,6 +94,14 @@ const AuthModal: React.FC<AuthModalProps> = ({
             userRole={userRole}
             image={getImageForSection(currentSection, userRole)}
             onClose={onClose}
+            onForgotPassword={() => setCurrentSection("forgotPassword")}
+          />
+        );
+      case "forgotPassword":
+        return (
+          <ForgotPassword
+            onPasswordChanged={handlePasswordChanged}
+            image={getImageForSection(currentSection, userRole)} // Added image prop
           />
         );
     }
@@ -121,6 +135,14 @@ const AuthModal: React.FC<AuthModalProps> = ({
             </button>
           </>
         );
+      case "forgotPassword":
+        return (
+          <>
+            <button onClick={() => setCurrentSection("login")}>
+              Back to Login
+            </button>
+          </>
+        );
       default:
         return null;
     }
@@ -132,22 +154,24 @@ const AuthModal: React.FC<AuthModalProps> = ({
     <div className="auth-modal-overlay">
       <div className="auth-modal">
         <button className="close-button" onClick={handleClose}>
-          &times;
+          ×
         </button>
         <div className="auth-modal-content">
           <div className="auth-form-container">
             <div className="auth-form">{renderSection()}</div>
             <div className="auth-links">{renderAuthLinks()}</div>
           </div>
-          <div className="auth-image">
-            <img
-              src={
-                getImageForSection(currentSection, userRole) ||
-                "/placeholder.svg"
-              }
-              alt="Auth illustration"
-            />
-          </div>
+          {currentSection !== "otp" && ( // Hide image for OTP section if needed
+            <div className="auth-image">
+              <img
+                src={
+                  getImageForSection(currentSection, userRole) ||
+                  "/placeholder.svg"
+                }
+                alt="Auth illustration"
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

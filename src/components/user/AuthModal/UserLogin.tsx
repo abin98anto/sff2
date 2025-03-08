@@ -16,7 +16,6 @@ import { useNavigate } from "react-router-dom";
 import userRoles from "../../../entities/misc/userRole";
 import { jwtDecode } from "jwt-decode";
 
-// Add TypeScript declarations for Google Sign-In API
 interface GoogleCredentialResponse {
   credential: string;
   select_by: string;
@@ -46,7 +45,6 @@ interface GoogleAccounts {
   id: GoogleAccountsId;
 }
 
-// Extend Window interface
 declare global {
   interface Window {
     google?: {
@@ -59,9 +57,14 @@ interface UserLoginProps {
   userRole: "user" | "tutor" | "admin";
   image: string;
   onClose: () => void;
+  onForgotPassword: () => void;
 }
 
-const UserLogin: React.FC<UserLoginProps> = ({ userRole, onClose }) => {
+const UserLogin: React.FC<UserLoginProps> = ({
+  userRole,
+  onClose,
+  onForgotPassword,
+}) => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -121,8 +124,6 @@ const UserLogin: React.FC<UserLoginProps> = ({ userRole, onClose }) => {
       }
 
       const decoded: any = jwtDecode(response.credential);
-      // console.log("Google sign-in successful. Decoded token:", decoded);
-
       const user = {
         name:
           decoded.name ||
@@ -152,7 +153,6 @@ const UserLogin: React.FC<UserLoginProps> = ({ userRole, onClose }) => {
 
   useEffect(() => {
     const loadGoogleScript = () => {
-      // Check if the Google script is already loaded
       if (
         document.querySelector(
           'script[src="https://accounts.google.com/gsi/client"]'
@@ -162,7 +162,6 @@ const UserLogin: React.FC<UserLoginProps> = ({ userRole, onClose }) => {
         return;
       }
 
-      // Load the Google script if it's not already loaded
       const script = document.createElement("script");
       script.src = "https://accounts.google.com/gsi/client";
       script.async = true;
@@ -195,7 +194,6 @@ const UserLogin: React.FC<UserLoginProps> = ({ userRole, onClose }) => {
             cancel_on_tap_outside: true,
           });
 
-          // Only render the button if the container exists
           const buttonContainer = document.getElementById(
             "google-signin-button"
           );
@@ -222,7 +220,6 @@ const UserLogin: React.FC<UserLoginProps> = ({ userRole, onClose }) => {
 
     loadGoogleScript();
 
-    // Clean up function
     return () => {};
   }, [showSnackbar, googleInitialized, userRole]);
 
@@ -254,6 +251,31 @@ const UserLogin: React.FC<UserLoginProps> = ({ userRole, onClose }) => {
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
         </div>
+
+        <div
+          style={{
+            textAlign: "right",
+            marginBottom: "1rem",
+            marginTop: "-0.5rem",
+          }}
+        >
+          <button
+            type="button"
+            onClick={onForgotPassword}
+            style={{
+              background: "none",
+              border: "none",
+              padding: 0,
+              color: "#666",
+              cursor: "pointer",
+              fontSize: "0.85rem",
+              textDecoration: "underline",
+            }}
+          >
+            Forgot Password?
+          </button>
+        </div>
+
         <button type="submit">
           {loading ? (
             <l-hourglass
