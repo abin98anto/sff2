@@ -10,6 +10,8 @@ import { IUser } from "../../../entities/IUser";
 import type IChat from "../../../entities/IChat";
 import type IMessage from "../../../entities/IMessage";
 import type ICourse from "../../../entities/ICourse";
+import API from "../../../shared/constants/API";
+import comments from "../../../shared/constants/comments";
 
 const ChatBubble: React.FC = () => {
   const { userInfo } = useAppSelector((state) => state.user);
@@ -90,7 +92,7 @@ const ChatBubble: React.FC = () => {
     socket.emit("joinUserRoom", userId);
 
     // receive message from server.
-    socket.on("receive_message", (message: IMessage) => {
+    socket.on(comments.IO_RECIEVE_MSG, (message: IMessage) => {
       if (message.content && message.content.trim() !== "") {
         setMessages((prevMessages) => {
           const messageExists = prevMessages.some(
@@ -116,7 +118,7 @@ const ChatBubble: React.FC = () => {
     });
 
     // to display notification.
-    socket.on("messageNotification", (notification) => {
+    socket.on(comments.IO_MSG_NOTIFICATION, (notification) => {
       if (
         notification.senderId !== userId &&
         notification.receiverId === userId
@@ -139,7 +141,7 @@ const ChatBubble: React.FC = () => {
     });
 
     // video call invite.
-    socket.on("callInvite", (data) => {
+    socket.on(comments.IO_CALL_INVITE, (data) => {
       if (data.studentId === userId) {
         Swal.fire({
           title: "Incoming Video Call",
@@ -150,10 +152,9 @@ const ChatBubble: React.FC = () => {
           showCancelButton: true,
           confirmButtonText: "Join Call",
           cancelButtonText: "Decline",
-          timer: 30000, // 30 seconds
+          timer: 30000,
           timerProgressBar: true,
           didOpen: () => {
-            // Update countdown timer
             const countdownEl = document.getElementById("countdown");
             let remainingTime = 30;
 
@@ -168,17 +169,13 @@ const ChatBubble: React.FC = () => {
               }
             }, 1000);
           },
-          willClose: () => {
-            // If the alert closes without user action, do nothing
-          },
+          willClose: () => {},
         }).then((result) => {
           if (result.isConfirmed) {
-            // User clicked 'Join Call'
-            const videoCallUrl = `/video-call?roomID=${data.roomID}`;
+            const videoCallUrl = API.VIDEO_CALL + data.roomID;
             window.open(videoCallUrl, "_blank");
           } else if (result.dismiss === Swal.DismissReason.timer) {
-            // Call automatically declined due to timeout
-            console.log("Call automatically declined");
+            console.log(comments.CALL_AUTO_END);
           }
         });
       }
@@ -187,9 +184,9 @@ const ChatBubble: React.FC = () => {
     fetchChats();
 
     return () => {
-      socket.off("receive_message");
-      socket.off("messageNotification");
-      socket.off("callInvite");
+      socket.off(comments.IO_RECIEVE_MSG);
+      socket.off(comments.IO_MSG_NOTIFICATION);
+      socket.off(comments.IO_CALL_INVITE);
     };
   }, [userId]);
 
@@ -217,11 +214,11 @@ const ChatBubble: React.FC = () => {
   const fetchChats = async () => {
     try {
       if (!userId) return;
-      const response = await axiosInstance.get(`/chat/list?userId=${userId}`);
+      const response = await axiosInstance.get(API.CHAT_LIST + userId);
       const chatsData: IChat[] = response.data.data || [];
       setChats(chatsData);
     } catch (error) {
-      console.error("Failed to fetch chats:", error);
+      console.error(comments.CHAT_FETCH_FAIL, error);
     }
   };
 
@@ -230,7 +227,7 @@ const ChatBubble: React.FC = () => {
     try {
       if (!userId) return;
       setIsLoading(true);
-      const response = await axiosInstance.get(`/chat/messages/${chatId}`);
+      const response = await axiosInstance.get(API.CHAT_MESSAGES + chatId);
       let messagesArray: IMessage[] = [];
       if (
         response.data.success &&
@@ -248,7 +245,7 @@ const ChatBubble: React.FC = () => {
         }))
       );
     } catch (error) {
-      console.error("Failed to fetch messages:", error);
+      console.error(comments.MSG_FETCH_FAIL, error);
     } finally {
       setIsLoading(false);
     }
@@ -309,11 +306,11 @@ const ChatBubble: React.FC = () => {
       };
 
       try {
-        await axiosInstance.post("/chat/send", message);
+        await axiosInstance.post(API.MSG_SENT, message);
         setNewMessage("");
         setTimeout(() => scrollToBottom(), 100);
       } catch (error) {
-        console.error("Failed to send message:", error);
+        console.error(comments.MSG_SENT_FAIL, error);
       }
     }
   };
@@ -322,9 +319,6 @@ const ChatBubble: React.FC = () => {
     <>
       <div className="chat-bubble-minimized" onClick={handleBubbleClick}>
         <span className="chat-icon">💬</span>
-        {/* {userId && unreadCount > 0 && (
-          <span className="unread-count">{unreadCount}</span>
-        )} */}
       </div>
 
       {showPlaceholder && (!userId || chats.length === 0) && (

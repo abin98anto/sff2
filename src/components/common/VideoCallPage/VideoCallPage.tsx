@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import comments from "../../../shared/constants/comments";
 import { useEffect, useRef, useState } from "react";
 import axiosInstance from "../../../shared/config/axiosConfig";
+import API from "../../../shared/constants/API";
 
 function randomID(len: number) {
   let result = "";
@@ -69,13 +70,13 @@ const VideoCallPage = () => {
             },
           });
 
-          await axiosInstance.post("/chat/video-call", {
+          await axiosInstance.post(API.VIDEO_CALL_PAGE, {
             roomID,
             userId,
             studentId,
           });
         } catch (error) {
-          console.error("Failed to initialize video call", error);
+          console.error(comments.VIDEO_CALLINIT_FAIL, error);
         }
       };
 

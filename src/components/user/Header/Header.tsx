@@ -9,11 +9,12 @@ import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
 import AuthModal from "../AuthModal/AuthModal";
 import { logout } from "../../../redux/thunks/user/userAuthServices";
 import CustomModal from "../../common/Modal/CustomModal/CustomModal";
+import API from "../../../shared/constants/API";
+import comments from "../../../shared/constants/comments";
 
 type AuthModalType = "login" | "signup";
 
 const Header: React.FC = () => {
-  // Auth modal functions.
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalType, setAuthModalType] = useState<AuthModalType>("login");
 
@@ -42,9 +43,9 @@ const Header: React.FC = () => {
 
   useEffect(() => {
     if (userInfo?.role === "admin") {
-      navigate("/admin/dashboard");
+      navigate(API.ADMIN_DASH);
     } else if (userInfo?.role === "tutor") {
-      navigate("/tutor");
+      navigate(API.TUTOR_DASHBOARD);
     }
   }, [userInfo]);
 
@@ -63,11 +64,10 @@ const Header: React.FC = () => {
       await dispatch(logout()).unwrap();
       closeLogoutModal();
     } catch (error) {
-      console.log("logout error", error);
+      console.log(comments.LOGOUT_ERR, error);
     }
   };
   const handleLogoutCancel = () => {
-    console.log("Logout cancelled");
     closeLogoutModal();
   };
 
@@ -81,15 +81,15 @@ const Header: React.FC = () => {
         <nav className="user-nav">
           <ul>
             <li>
-              <Link to="/courses">Courses</Link>
+              <Link to={API.COURSE_GET}>Courses</Link>
             </li>
             {userInfo && (
               <li>
-                <Link to="/my-learning">My Learning</Link>
+                <Link to={API.MY_LEARNING}>My Learning</Link>
               </li>
             )}
             <li>
-              <Link to="/subscriptions">Subscriptions</Link>
+              <Link to={API.SUBSCRIPTION_GET}>Subscriptions</Link>
             </li>
           </ul>
         </nav>

@@ -15,6 +15,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import userRoles from "../../../entities/misc/userRole";
 import { jwtDecode } from "jwt-decode";
+import API from "../../../shared/constants/API";
 
 interface GoogleCredentialResponse {
   credential: string;
@@ -103,9 +104,9 @@ const UserLogin: React.FC<UserLoginProps> = ({
 
       await dispatch(login(userData)).unwrap();
       if (userRole === "tutor") {
-        navigate("/tutor");
+        navigate(API.TUTOR_DASHBOARD);
       } else if (userRole === "admin") {
-        navigate("/admin/dashboard");
+        navigate(API.ADMIN_DASH);
       } else {
         onClose();
       }
@@ -119,7 +120,7 @@ const UserLogin: React.FC<UserLoginProps> = ({
   const handleGoogleSignIn = async (response: GoogleCredentialResponse) => {
     try {
       if (!response.credential) {
-        showSnackbar("No Google credentials received", "error");
+        showSnackbar(comments.OAUTH_TOKEN_MISSING, "error");
         return;
       }
 
@@ -133,46 +134,34 @@ const UserLogin: React.FC<UserLoginProps> = ({
         role: userRole === "tutor" ? userRoles.TUTOR : userRoles.USER,
       };
 
-      console.log("Sending user data to backend:", user);
       const result = await dispatch(googleSignIn(user)).unwrap();
 
       if (result && result.user) {
-        console.log("Login successful, navigating to home");
         onClose();
       } else {
-        showSnackbar(
-          "Google sign-in failed: Unexpected response from server",
-          "error"
-        );
+        showSnackbar(comments.OAUTH_FAIL, "error");
       }
     } catch (error) {
-      console.error("Google sign-in failed", error);
-      showSnackbar("Google sign-in failed. Please try again later.", "error");
+      console.error(comments.OAUTH_FAIL, error);
+      showSnackbar(comments.OAUTH_FAIL, "error");
     }
   };
 
   useEffect(() => {
     const loadGoogleScript = () => {
-      if (
-        document.querySelector(
-          'script[src="https://accounts.google.com/gsi/client"]'
-        )
-      ) {
+      if (document.querySelector(API.G_QUERY_SELECT)) {
         initializeGoogleSignIn();
         return;
       }
 
       const script = document.createElement("script");
-      script.src = "https://accounts.google.com/gsi/client";
+      script.src = API.G_ACCOUNTS;
       script.async = true;
       script.defer = true;
       script.onload = initializeGoogleSignIn;
       script.onerror = () => {
-        console.error("Failed to load Google Sign-In script");
-        showSnackbar(
-          "Failed to load Google Sign-In. Please try again later.",
-          "error"
-        );
+        console.error(comments.OAUTH_FAIL);
+        showSnackbar(comments.OAUTH_FAIL, "error");
       };
       document.body.appendChild(script);
     };
@@ -182,8 +171,8 @@ const UserLogin: React.FC<UserLoginProps> = ({
         try {
           const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
           if (!clientId) {
-            console.error("Google Client ID is not configured");
-            showSnackbar("Google Sign-In is not properly configured", "error");
+            console.error(comments.OAUTH_NOCLIENTID);
+            showSnackbar(comments.OAUTH_NOCLIENTID, "error");
             return;
           }
 
@@ -206,14 +195,13 @@ const UserLogin: React.FC<UserLoginProps> = ({
               width: 240,
             });
           } else {
-            console.error("Google sign-in button container not found");
+            console.error(comments.OAUTH_FAIL);
           }
 
           setGoogleInitialized(true);
-          console.log("Google Sign-In initialized successfully");
         } catch (error) {
-          console.error("Error initializing Google Sign-In:", error);
-          showSnackbar("Failed to initialize Google Sign-In", "error");
+          console.error(comments.OAUTH_FAIL, error);
+          showSnackbar(comments.OAUTH_FAIL, "error");
         }
       }
     };

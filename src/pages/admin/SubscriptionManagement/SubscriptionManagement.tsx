@@ -8,6 +8,7 @@ import axiosInstance from "../../../shared/config/axiosConfig";
 import API from "../../../shared/constants/API";
 import "./SubscriptionManagement.scss";
 import CustomModal from "../../../components/common/Modal/CustomModal/CustomModal";
+import comments from "../../../shared/constants/comments";
 
 interface SubscriptionFormData {
   _id?: string;
@@ -48,9 +49,9 @@ const initialState: SubscriptionFormData = {
 const SubscriptionManagement = () => {
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
 
-  const [isModalOpen, setIsModalOpen] = useState(false); // For add/edit modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false); // For confirmation modal
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [formData, setFormData] = useState<SubscriptionFormData>(initialState);
   const [subscriptionToToggle, setSubscriptionToToggle] =
     useState<ISubscription | null>(null);
@@ -148,8 +149,8 @@ const SubscriptionManagement = () => {
           total: response.data.data.total || 0,
         };
       } catch (err) {
-        showSnackbar("Error fetching subscription data", "error");
-        console.error("Error fetching subscription data", err);
+        showSnackbar(comments.SUBS_FETCH_FAIL, "error");
+        console.error(comments.SUBS_FETCH_FAIL, err);
         return { data: [], total: 0 };
       }
     },
@@ -204,11 +205,11 @@ const SubscriptionManagement = () => {
   const handleSubmit = async () => {
     try {
       if (!formData.name) {
-        showSnackbar("Name is required", "error");
+        showSnackbar(comments.NAME_REQ, "error");
         return;
       }
       if (formData.price < 0 || formData.discountPrice < 0) {
-        showSnackbar("Price and discount price must be non-negative", "error");
+        showSnackbar(comments.PRICE_INVALID, "error");
         return;
       }
       if (
@@ -216,7 +217,7 @@ const SubscriptionManagement = () => {
         formData.discountExpiry &&
         formData.discountStartDate >= formData.discountExpiry
       ) {
-        showSnackbar("Expiry date must be after start date", "error");
+        showSnackbar(comments.DATE_INVALID, "error");
         return;
       }
 
@@ -230,10 +231,10 @@ const SubscriptionManagement = () => {
           ...payload,
           _id: formData._id,
         });
-        showSnackbar("Subscription updated successfully", "success");
+        showSnackbar(comments.SUBS_UPDATED, "success");
       } else {
         await axiosInstance.post(API.SUBSCRIPTION_ADD, payload);
-        showSnackbar("Subscription added successfully", "success");
+        showSnackbar(comments.SUBS_UPDATED, "success");
       }
 
       setFormData(initialState);

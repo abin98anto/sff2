@@ -28,11 +28,11 @@ const CourseManagement = () => {
   const navigate = useNavigate();
 
   const handleEdit = (row: ICourse) => {
-    navigate(`/admin/edit-course/${row._id}`, { state: { course: row } });
+    navigate(`${API.EDIT_COURSE}/${row._id}`, { state: { course: row } });
   };
 
   const addCourse = () => {
-    navigate("/admin/add-course");
+    navigate(API.ADD_COURSE);
   };
 
   // Populating the table.
@@ -159,8 +159,8 @@ const CourseManagement = () => {
         }
       }
     } catch (error) {
-      console.error("Error updating course status:", error);
-      showSnackbar("Failed to update course status", "error");
+      console.error(comments.COURSE_UPDATE_FAIL, error);
+      showSnackbar(comments.COURSE_UPDATE_FAIL, "error");
     } finally {
       setToggleModalOpen(false);
       setToggleId(null);

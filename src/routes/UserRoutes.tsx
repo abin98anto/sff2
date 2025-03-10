@@ -21,9 +21,9 @@ const UserRoutes = () => {
           <Route path="/subscriptions" element={<SubscriptionPage />} />
           <Route path="/courses" element={<CourseListPage />} />
           <Route path="/course/:courseId" element={<CourseDetailsPage />} />
-          <Route path="/study/:courseId" element={<EnrolledPage />} />
 
           <Route element={<ProtectedRoute />}>
+            <Route path="/study/:courseId" element={<EnrolledPage />} />
             <Route path="/my-learning" element={<MyLearningPage />} />
             <Route path="/profile" element={<UserProfile />} />
           </Route>

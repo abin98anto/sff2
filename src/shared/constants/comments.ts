@@ -1,4 +1,5 @@
 const comments = {
+  // Original comments from comments.ts
   ALL_FIELDS_REQ: "Please fill all the fields.",
   CPASS_REQ: "Confirm password is required",
   CPASS_INVALID: "Passwords must match",
@@ -109,6 +110,141 @@ const comments = {
     window.location.host +
     window.location.pathname +
     "?roomID=",
+
+  // Socket.io stuffs.
+  IO_CONNECTION: "connection",
+  IO_JOINROOM: "joinRoom",
+  IO_DISCONNECT: "disconnect",
+  IO_CLIENT_CONNECT: "New client connected",
+  IO_CLIENT_DISCONNECT: "Client disconnected",
+  IO_RECIEVE_MSG: "recieve_message",
+  IO_MSG_NOTIFICATION: "messageNotification",
+  IO_CALL_INVITE: "callInvite",
+  CALL_AUTO_END: "Call automatically declined",
+
+  // Chat stuff.
+  CHAT_FETCH_FAIL: "Error fetching chat list.",
+  MSG_FETCH_FAIL: "Error fetching chat messages.",
+  MSG_SENT_FAIL: "Error sending message.",
+  VIDEO_CALLINIT_FAIL: "Error initializing video call.",
+
+  // Forgot Password
+  PASS_MISMATCH: "Passwords do not match.",
+  PASS_RESET_SUCC: "Password reset successfully",
+  PASS_RESET_FAIL: "Error resetting password",
+
+  // Google OAuth stuffs.
+  OAUTH_TOKEN_MISSING: "Goggle token missing.",
+  OAUTH_FAIL: "Google sign in failed.",
+  OAUTH_NOCLIENTID: "Google Client ID is not configured",
+  OAUTH_INIT: "Google Sign-In initialized successfully",
+
+  FORGOT_PASS_FAIL: "Error in forgot password in controller",
+  RESET_PASS_FAIL: "Error in reset password in controller",
+
+  LOGOUT_ERR: "Error logging out",
+
+  NO_TUTORS: "No tutors received from the server.",
+  COURSE_UPDATED: "Course updated successfully",
+
+  SUBS_FETCH_FAIL: "Error fetching subscriptions",
+  PRICE_INVALID: "Price and discount price must be non-negative",
+  DATE_INVALID: "Expiry date must be after start date",
+  SUBS_UPDATED: "Subscription updated successfully",
+
+  // New added TutorManagement component strings
+  TUTOR_MANAGEMENT_TITLE: "Tutor Management",
+  APPROVE_TUTOR_BUTTON: "Approve Tutor",
+  TUTOR_FETCH_ERROR: "Error fetching tutor details",
+  TUTOR_FETCH_ERROR_LOG: "Error fetching tutor details",
+  UNVERIFIED_TUTOR_FETCH_ERROR: "Error fetching unverified tutor details",
+  UNVERIFIED_TUTOR_FETCH_ERROR_LOG: "Error fetching unverified tutor details",
+  NO_USER_SELECTED: "No user selected to block/unblock",
+  USER_BLOCKED: "blocked",
+  USER_UNBLOCKED: "unblocked",
+  USER_STATUS_UPDATE_PREFIX: "User",
+  USER_STATUS_UPDATE_ERROR: "Error updating user status",
+  USER_STATUS_UPDATE_ERROR_LOG: "Error updating user status",
+  NO_RESUME_AVAILABLE: "No resume available for this tutor",
+  TUTOR_APPROVED_SUCCESS: "Tutor approved successfully",
+  TUTOR_APPROVE_ERROR: "Error approving tutor",
+  TUTOR_APPROVE_ERROR_LOG: "Error approving tutor",
+  DENIAL_REASON_REQUIRED: "Please provide a reason for denial",
+  TUTOR_DENIED_SUCCESS: "Tutor denied successfully",
+  TUTOR_DENY_ERROR: "Error denying tutor",
+  TUTOR_DENY_ERROR_LOG: "Error denying tutor",
+  CONFIRM_ACTION_HEADER: "Confirm Action",
+  BLOCK_BUTTON: "Block",
+  UNBLOCK_BUTTON: "Unblock",
+  CANCEL_BUTTON: "Cancel",
+  CONFIRM_BLOCK_MESSAGE_PREFIX: "Are you sure you want to",
+  BLOCK_ACTION: "block",
+  UNBLOCK_ACTION: "unblock",
+  CONFIRM_BLOCK_MESSAGE_SUFFIX: "the user",
+  APPROVE_TUTOR_HEADER: "Approve Tutor",
+  CLOSE_BUTTON: "Close",
+  VIEW_RESUME_BUTTON: "View Resume",
+  APPROVE_BUTTON: "Approve",
+  DENY_BUTTON: "Deny",
+  CONFIRM_APPROVAL_HEADER: "Confirm Approval",
+  YES_APPROVE_BUTTON: "Yes, Approve",
+  CONFIRM_APPROVE_MESSAGE_PREFIX: "Are you sure you want to approve",
+  CONFIRM_APPROVE_MESSAGE_SUFFIX: "as a tutor?",
+  CONFIRM_DENIAL_HEADER: "Confirm Denial",
+  YES_DENY_BUTTON: "Yes, Deny",
+  CONFIRM_DENY_MESSAGE_PREFIX: "Are you sure you want to deny",
+  CONFIRM_DENY_MESSAGE_SUFFIX: "'s request to become a tutor?",
+  DENIAL_REASON_LABEL: "Reason for denial:",
+  DENIAL_REASON_PLACEHOLDER: "Enter the reason for denying this tutor",
+
+  // Table column headers
+  TUTOR_COL_SLNO: "Sl No.",
+  TUTOR_COL_NAME: "Name",
+  TUTOR_COL_STUDENTS: "Students",
+  TUTOR_COL_REVIEWS: "Reviews Taken",
+  TUTOR_COL_SESSIONS: "Sessions Taken",
+  TUTOR_COL_STATUS: "Status",
+  TUTOR_COL_JOINED: "Joined",
+  TUTOR_COL_ACTIONS: "Actions",
+  TUTOR_COL_EMAIL: "Email",
+
+  // Status indicators
+  STATUS_ACTIVE: "Active",
+  STATUS_INACTIVE: "Inactive",
+
+  USER_MANAGEMENT_TITLE: "User Management",
+  USER_FETCH_ERROR: "Error fetching student details",
+  USER_FETCH_ERROR_LOG: "Error fetching student details",
+  USER_STATUS_UPDATE_SUFFIX: "successfully",
+
+  // Table column headers for User Management
+  USER_COL_SLNO: "Sl No.",
+  USER_COL_NAME: "Name",
+  USER_COL_STATUS: "Status",
+  USER_COL_JOINED: "Joined",
+  USER_COL_ACTIONS: "Actions",
+
+  // MyStudents component strings
+  MY_STUDENTS_TITLE: "My Students",
+  STUDENT_COL_SLNO: "Sl No.",
+  STUDENT_COL_NAME: "Student Name",
+  STUDENT_COL_COURSE: "Course Name",
+  STUDENT_COL_START_DATE: "Start Date",
+  STUDENT_COL_STATUS: "Status",
+  STUDENT_COL_ACTIONS: "Actions",
+  STUDENT_STATUS_ACTIVE: "Active",
+  STUDENT_STATUS_INACTIVE: "Inactive",
+  STUDENT_STATUS_PENDING: "Pending",
+  STUDENT_REVIEW_TITLE: "Student Review",
+  STUDENT_REVIEW_CONFIRMATION: "Has student",
+  STUDENT_REVIEW_PASSED: "passed your review for the course",
+  STUDENT_REVIEW_PASS_BUTTON: "Yes, Pass",
+  STUDENT_REVIEW_FAIL_BUTTON: "No, Fail",
+  STUDENT_REVIEW_PROCESSING: "Processing...",
+  STUDENT_FETCH_ERROR: "Failed to fetch student data",
+  STUDENT_REVIEW_SUCCESS: "Student successfully passed the review!",
+  STUDENT_REVIEW_FAIL: "Student has not passed the review",
+  STUDENT_REVIEW_ERROR: "Failed to submit review",
 };
 
 export default comments;

@@ -1,10 +1,10 @@
+import API from "../../../shared/constants/API";
 import "./Footer.scss";
 
 const Footer = () => {
   return (
     <footer className="user-footer">
       <div className="user-footer-container">
-        {/* Logo and Social Links */}
         <div>
           <div className="user-footer-logo">
             <strong className="logo">SkillForge</strong>
@@ -38,10 +38,10 @@ const Footer = () => {
             <h4>Quick Links</h4>
             <ul>
               <li>
-                <a href="/subscription">Subscribe Now!</a>
+                <a href={API.SUBSCRIPTION_GET}>Subscribe Now!</a>
               </li>
               <li>
-                <a href="/courses">Courses</a>
+                <a href={API.COURSE_GET}>Courses</a>
               </li>
             </ul>
           </div>

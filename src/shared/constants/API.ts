@@ -50,6 +50,42 @@ const API = {
   RAZORPAY_CHECKOUT: "https://checkout.razorpay.com/v1/checkout.js",
   RAZORPAY_ADD: "/order/razorpay/create",
   ORDER_ADD: "/order/add",
+
+  // Video call
+  VIDEO_CALL: "/video-call?roomID=",
+  CHAT_LIST: "/chat/list?userId=",
+  CHAT_MESSAGES: "/chat/messages/",
+  MSG_SENT: "/chat/send",
+  VIDEO_CALL_PAGE: "/chat/video-call",
+
+  // Tutor sidebar links.
+  TUTOR_DASHBOARD: "/tutor",
+  TUTOR_STUDENTS: "/tutor/my-students",
+  TUTOR_PROFILE: "/tutor/profile",
+
+  // Forgot Password
+  SET_PASS: "/set-password",
+  FORGOT_PASS: "/forgot-password",
+
+  // User Login
+  ADMIN_DASH: "/admin/dashboard",
+
+  // Google
+  G_QUERY_SELECT: 'script[src="https://accounts.google.com/gsi/client"]',
+  G_ACCOUNTS: "https://accounts.google.com/gsi/client",
+
+  MY_LEARNING: "/my-learning",
+
+  // Course
+  ADD_COURSE: "/admin/add-course",
+  EDIT_COURSE: "/admin/edit-course",
+
+  // Chat
+  CHAT_STUDENT_LIST: "/chat/student-list",
+
+  // Enrollment
+  ENROLLMENT_GET_DETAILS: "/enrollment/get-enroll-details",
+  ENROLLMENT_UPDATE: "/enrollment/update",
 };
 
 export default API;

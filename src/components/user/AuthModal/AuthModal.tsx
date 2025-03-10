@@ -101,7 +101,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
         return (
           <ForgotPassword
             onPasswordChanged={handlePasswordChanged}
-            image={getImageForSection(currentSection, userRole)} // Added image prop
+            image={getImageForSection(currentSection, userRole)}
           />
         );
     }
@@ -161,7 +161,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
             <div className="auth-form">{renderSection()}</div>
             <div className="auth-links">{renderAuthLinks()}</div>
           </div>
-          {currentSection !== "otp" && ( // Hide image for OTP section if needed
+          {currentSection !== "otp" && (
             <div className="auth-image">
               <img
                 src={

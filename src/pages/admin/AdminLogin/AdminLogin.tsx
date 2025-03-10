@@ -14,6 +14,9 @@ const AdminLogin = () => {
             userRole="admin"
             image=""
             onClose={() => navigate("/admin/dashboard")}
+            onForgotPassword={function (): void {
+              throw new Error("Function not implemented.");
+            }}
           />
         </div>
       </div>

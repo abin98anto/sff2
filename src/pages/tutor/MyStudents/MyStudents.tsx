@@ -7,6 +7,8 @@ import useSnackbar from "../../../hooks/useSnackbar";
 import CustomModal from "../../../components/common/Modal/CustomModal/CustomModal";
 import "./MyStudents.scss";
 import { EnrollStatus } from "../../../entities/misc/enrollStatus";
+import comments from "../../../shared/constants/comments";
+import API from "../../../shared/constants/API";
 
 // Define your interfaces
 interface IStudent {
@@ -62,22 +64,22 @@ const MyStudents = () => {
   const columns: Column<IStudentData>[] = [
     {
       key: "slNo",
-      label: "Sl No.",
+      label: comments.STUDENT_COL_SLNO,
       render: (_, index: number) => index + 1,
     },
     {
       key: "studentName",
-      label: "Student Name",
+      label: comments.STUDENT_COL_NAME,
       render: (item: IStudentData) => item.studentId.name,
     },
     {
       key: "courseName",
-      label: "Course Name",
+      label: comments.STUDENT_COL_COURSE,
       render: (item: IStudentData) => item.courseId.title,
     },
     {
       key: "startDate",
-      label: "Start Date",
+      label: comments.STUDENT_COL_START_DATE,
       render: (item: IStudentData) => {
         const date = item.enrollment?.startDate || item.createdAt;
         return new Intl.DateTimeFormat("en-GB", {
@@ -89,20 +91,22 @@ const MyStudents = () => {
     },
     {
       key: "status",
-      label: "Status",
+      label: comments.STUDENT_COL_STATUS,
       render: (item: IStudentData) => (
         <span
           className={`status-badge ${
-            item.enrollment?.status === "Active" ? "active" : "inactive"
+            item.enrollment?.status === comments.STUDENT_STATUS_ACTIVE
+              ? "active"
+              : "inactive"
           }`}
         >
-          {item.enrollment?.status || "Pending"}
+          {item.enrollment?.status || comments.STUDENT_STATUS_PENDING}
         </span>
       ),
     },
     {
       key: "actions",
-      label: "Actions",
+      label: comments.STUDENT_COL_ACTIONS,
       render: (row: IStudentData) => (
         <div className="action-buttons">
           {row.enrollment?.status?.toLowerCase() === "completed" && (
@@ -123,7 +127,7 @@ const MyStudents = () => {
     async (queryParams: any): Promise<TableData> => {
       try {
         // First fetch the chat list
-        const chatResponse = await axiosInstance.get(`/chat/student-list`, {
+        const chatResponse = await axiosInstance.get(API.CHAT_STUDENT_LIST, {
           params: {
             page: queryParams.page,
             limit: queryParams.limit,
@@ -141,7 +145,7 @@ const MyStudents = () => {
             chatData.map(async (chat: any) => {
               try {
                 const enrollmentResponse = await axiosInstance.post(
-                  "/enrollment/get-enroll-details",
+                  API.ENROLLMENT_GET_DETAILS,
                   {
                     courseId: chat.courseId._id,
                     userId: chat.studentId._id,
@@ -172,7 +176,7 @@ const MyStudents = () => {
 
         return { data: [], total: 0 };
       } catch (error) {
-        showSnackbar("Failed to fetch student data", "error");
+        showSnackbar(comments.STUDENT_FETCH_ERROR, "error");
         console.error("Error fetching students:", error);
         return { data: [], total: 0 };
       }
@@ -191,7 +195,7 @@ const MyStudents = () => {
     setIsLoading(true);
 
     try {
-      const response = await axiosInstance.put("/enrollment/update", {
+      const response = await axiosInstance.put(API.ENROLLMENT_UPDATE, {
         updates: {
           _id: selectedStudent.enrollment?._id,
           status: EnrollStatus.PASSED,
@@ -201,8 +205,8 @@ const MyStudents = () => {
       if (response.data.success) {
         showSnackbar(
           isPassed
-            ? "Student successfully passed the review!"
-            : "Student has not passed the review",
+            ? comments.STUDENT_REVIEW_SUCCESS
+            : comments.STUDENT_REVIEW_FAIL,
           isPassed ? "success" : "error"
         );
 
@@ -212,13 +216,13 @@ const MyStudents = () => {
         }
       } else {
         showSnackbar(
-          "Failed to submit review: " + response.data.message,
+          comments.STUDENT_REVIEW_ERROR + ": " + response.data.message,
           "error"
         );
       }
     } catch (error) {
       console.error("Error submitting review:", error);
-      showSnackbar("Failed to submit review", "error");
+      showSnackbar(comments.STUDENT_REVIEW_ERROR, "error");
     } finally {
       setIsLoading(false);
       setIsReviewModalOpen(false);
@@ -234,7 +238,7 @@ const MyStudents = () => {
     <div className="my-students">
       <div className="students-container">
         <div className="header">
-          <h1>My Students</h1>
+          <h1>{comments.MY_STUDENTS_TITLE}</h1>
         </div>
 
         <DataTable
@@ -249,16 +253,16 @@ const MyStudents = () => {
         <CustomModal
           isOpen={isReviewModalOpen}
           onClose={closeReviewModal}
-          header="Student Review"
+          header={comments.STUDENT_REVIEW_TITLE}
           className="review-modal"
           buttons={[
             {
-              text: "Yes, Pass",
+              text: comments.STUDENT_REVIEW_PASS_BUTTON,
               onClick: () => handleReviewSubmit(true),
               variant: "primary",
             },
             {
-              text: "No, Fail",
+              text: comments.STUDENT_REVIEW_FAIL_BUTTON,
               onClick: () => handleReviewSubmit(false),
               variant: "secondary",
             },
@@ -266,12 +270,15 @@ const MyStudents = () => {
         >
           <div className="review-confirmation">
             <p>
-              Has student <strong>{selectedStudent?.studentId.name}</strong>{" "}
-              passed your review for the course{" "}
+              {comments.STUDENT_REVIEW_CONFIRMATION}{" "}
+              <strong>{selectedStudent?.studentId.name}</strong>{" "}
+              {comments.STUDENT_REVIEW_PASSED}{" "}
               <strong>{selectedStudent?.courseId.title}</strong>?
             </p>
             {isLoading && (
-              <div className="loading-indicator">Processing...</div>
+              <div className="loading-indicator">
+                {comments.STUDENT_REVIEW_PROCESSING}
+              </div>
             )}
           </div>
         </CustomModal>

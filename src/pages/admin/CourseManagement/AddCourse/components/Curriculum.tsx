@@ -241,7 +241,7 @@ const Curriculum = ({
               ...lesson,
               _id:
                 lesson._id ||
-                Date.now().toString() + Math.random().toString(36).substr(2, 9), // Ensure _id exists and is unique
+                Date.now().toString() + Math.random().toString(36).substr(2, 9),
               name: newLessonName,
               videoUrl: videoUrl || lesson.videoUrl,
               pdfUrls: [...lesson.pdfUrls, ...newPdfUrls],
@@ -313,18 +313,16 @@ const Curriculum = ({
         let response;
 
         if (isEditMode) {
-          // Update existing course
           response = await axiosInstance.put(API.COURSE_UPDATE, {
             _id: courseFormData._id,
             ...formattedData,
           });
           console.log(comments.COURSE_UPDATE_SUCC, response.data);
-          setError("Course updated successfully!");
+          setError(comments.COURSE_UPDATED);
         } else {
-          // Create new course
           response = await axiosInstance.post(API.COURSE_ADD, formattedData);
           console.log(comments.COURSE_PUB_SUCC, response.data);
-          setError("Course created successfully!");
+          setError(comments.COURSE_UPDATED);
           localStorage.removeItem("courseFormData");
         }
 
@@ -397,7 +395,6 @@ const Curriculum = ({
     sectionIndex: number,
     lessonId?: string | number
   ) => {
-    console.log("Deleting:", { type, sectionIndex, lessonId });
     setEditingSectionIndex(sectionIndex);
     setEditingLessonId(lessonId?.toString() || null);
     setDeletingItemType(type);
@@ -405,11 +402,6 @@ const Curriculum = ({
   };
 
   const handleConfirmDelete = () => {
-    console.log("Confirming delete:", {
-      deletingItemType,
-      editingSectionIndex,
-      editingLessonId,
-    });
     if (deletingItemType === "section") {
       const updatedSections = sections.filter(
         (_, index) => index !== editingSectionIndex
@@ -427,7 +419,6 @@ const Curriculum = ({
           const updatedLessons = section.lessons.filter(
             (lesson) => lesson._id !== editingLessonId
           );
-          console.log("Updated lessons for section:", updatedLessons);
           return {
             ...section,
             lessons: updatedLessons,
@@ -436,7 +427,6 @@ const Curriculum = ({
         }
         return section;
       });
-      console.log("Updated sections after lesson deletion:", updatedSections);
       setSections(updatedSections);
       onUpdate(updatedSections);
     }

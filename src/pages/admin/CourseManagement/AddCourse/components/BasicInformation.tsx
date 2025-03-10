@@ -118,13 +118,13 @@ const BasicInformation = ({
         setTutors(response.data);
         setFilteredTutors(response.data);
       } else {
-        setError("No tutors received from the server.");
+        setError(comments.NO_TUTORS);
         setTutors([]);
         setFilteredTutors([]);
       }
     } catch (err) {
-      console.error("Failed to fetch tutors:", err);
-      setError("Failed to fetch tutors.");
+      console.error(comments.NO_TUTORS, err);
+      setError(comments.NO_TUTORS);
       setTutors([]);
       setFilteredTutors([]);
     } finally {

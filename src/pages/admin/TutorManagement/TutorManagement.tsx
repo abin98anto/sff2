@@ -9,6 +9,7 @@ import CustomSnackbar from "../../../components/common/CustomSnackbar";
 import CustomModal from "../../../components/common/Modal/CustomModal/CustomModal";
 import "./TutorManagement.scss";
 import ResumeModal from "../../../components/common/Modal/ResumeModal/ResumeModal";
+import comments from "../../../shared/constants/comments";
 
 interface TableData {
   data: Partial<IUser>[];
@@ -33,34 +34,34 @@ const TutorManagement = () => {
   const columns: Column<IUser>[] = [
     {
       key: "slNo",
-      label: "Sl No.",
+      label: comments.TUTOR_COL_SLNO,
       render: (_, index: number) => index + 1,
     },
     {
       key: "name",
-      label: "Name",
+      label: comments.TUTOR_COL_NAME,
     },
     {
       key: "students.length",
-      label: "Students",
+      label: comments.TUTOR_COL_STUDENTS,
       render: (item: IUser) => item.students?.length || 0,
     },
-    { key: "reviewsTaken", label: "Reviews Taken" },
-    { key: "sessionsTaken", label: "Sessions Taken" },
+    { key: "reviewsTaken", label: comments.TUTOR_COL_REVIEWS },
+    { key: "sessionsTaken", label: comments.TUTOR_COL_SESSIONS },
     {
       key: "isActive",
-      label: "Status",
+      label: comments.TUTOR_COL_STATUS,
       render: (item: IUser) => (
         <span
           className={`status-badge ${item.isActive ? "active" : "inactive"}`}
         >
-          {item.isActive ? "Active" : "Inactive"}
+          {item.isActive ? comments.STATUS_ACTIVE : comments.STATUS_INACTIVE}
         </span>
       ),
     },
     {
       key: "createdAt",
-      label: "Joined",
+      label: comments.TUTOR_COL_JOINED,
       render: (item: IUser) =>
         new Intl.DateTimeFormat("en-GB", {
           day: "2-digit",
@@ -70,7 +71,7 @@ const TutorManagement = () => {
     },
     {
       key: "actions",
-      label: "Actions",
+      label: comments.TUTOR_COL_ACTIONS,
       render: (row: IUser) => (
         <div className="action-buttons">
           <button
@@ -101,8 +102,8 @@ const TutorManagement = () => {
           total: response.data.total || 0,
         };
       } catch (err) {
-        showSnackbar("Error fetching tutor details", "error");
-        console.error("Error fetching tutor details", err);
+        showSnackbar(comments.TUTOR_FETCH_ERROR, "error");
+        console.error(comments.TUTOR_FETCH_ERROR_LOG, err);
         return { data: [], total: 0 };
       }
     },
@@ -124,8 +125,8 @@ const TutorManagement = () => {
         });
         setUnverifiedTutors(response.data || []);
       } catch (err) {
-        showSnackbar("Error fetching unverified tutor details", "error");
-        console.error("Error fetching unverified tutor details", err);
+        showSnackbar(comments.UNVERIFIED_TUTOR_FETCH_ERROR, "error");
+        console.error(comments.UNVERIFIED_TUTOR_FETCH_ERROR_LOG, err);
       }
     },
     []
@@ -139,20 +140,25 @@ const TutorManagement = () => {
   const handleConfirmBlock = async () => {
     try {
       if (!userToBlock || !userToBlock._id) {
-        showSnackbar("No user selected to block/unblock", "error");
+        showSnackbar(comments.NO_USER_SELECTED, "error");
         return;
       }
       await axiosInstance.put(`${API.USER_BLOCK}/${userToBlock._id}`);
-      const action = userToBlock.isActive ? "blocked" : "unblocked";
-      showSnackbar(`User ${action} successfully`, "success");
+      const action = userToBlock.isActive
+        ? comments.USER_BLOCKED
+        : comments.USER_UNBLOCKED;
+      showSnackbar(
+        `${comments.USER_STATUS_UPDATE_PREFIX} ${action}`,
+        "success"
+      );
       setIsConfirmModalOpen(false);
       setUserToBlock(null);
       if (refetchData.current) {
         refetchData.current();
       }
     } catch (err) {
-      showSnackbar("Error updating user status", "error");
-      console.error("Error updating user status", err);
+      showSnackbar(comments.USER_STATUS_UPDATE_ERROR, "error");
+      console.error(comments.USER_STATUS_UPDATE_ERROR_LOG, err);
     }
   };
 
@@ -166,7 +172,7 @@ const TutorManagement = () => {
       setResumeUrl(resumeLink);
       setResumeModalOpen(true);
     } else {
-      showSnackbar("No resume available for this tutor", "error");
+      showSnackbar(comments.NO_RESUME_AVAILABLE, "error");
     }
   };
 
@@ -192,14 +198,14 @@ const TutorManagement = () => {
         await axiosInstance.put(`${API.TUTOR_APPROVE}/${selectedTutor._id}`, {
           isVerified: true,
         });
-        showSnackbar("Tutor approved successfully", "success");
+        showSnackbar(comments.TUTOR_APPROVED_SUCCESS, "success");
         fetchUnverifiedTutors();
         if (refetchData.current) {
           refetchData.current();
         }
       } catch (error) {
-        showSnackbar("Error approving tutor", "error");
-        console.error("Error approving tutor", error);
+        showSnackbar(comments.TUTOR_APPROVE_ERROR, "error");
+        console.error(comments.TUTOR_APPROVE_ERROR_LOG, error);
       }
     }
     setConfirmApprovalOpen(false);
@@ -209,7 +215,7 @@ const TutorManagement = () => {
   const handleConfirmDenial = async () => {
     if (selectedTutor?._id) {
       if (!denialReason.trim()) {
-        showSnackbar("Please provide a reason for denial", "error");
+        showSnackbar(comments.DENIAL_REASON_REQUIRED, "error");
         return;
       }
       try {
@@ -217,14 +223,14 @@ const TutorManagement = () => {
           isVerified: false,
           reason: denialReason,
         });
-        showSnackbar("Tutor denied successfully", "success");
+        showSnackbar(comments.TUTOR_DENIED_SUCCESS, "success");
         fetchUnverifiedTutors();
         if (refetchData.current) {
           refetchData.current();
         }
       } catch (error) {
-        showSnackbar("Error denying tutor", "error");
-        console.error("Error denying tutor", error);
+        showSnackbar(comments.TUTOR_DENY_ERROR, "error");
+        console.error(comments.TUTOR_DENY_ERROR_LOG, error);
       }
     }
     setConfirmDenialOpen(false);
@@ -236,10 +242,10 @@ const TutorManagement = () => {
     <div className="tutor-management">
       <div className="tutor-container">
         <div className="header">
-          <h1>Tutor Management</h1>
+          <h1>{comments.TUTOR_MANAGEMENT_TITLE}</h1>
           <button className="add-button" onClick={handleOpenApproveModal}>
             <Plus size={16} />
-            Approve Tutor
+            {comments.APPROVE_TUTOR_BUTTON}
           </button>
         </div>
         <DataTable
@@ -257,15 +263,17 @@ const TutorManagement = () => {
           setIsConfirmModalOpen(false);
           setUserToBlock(null);
         }}
-        header="Confirm Action"
+        header={comments.CONFIRM_ACTION_HEADER}
         buttons={[
           {
-            text: userToBlock?.isActive ? "Block" : "Unblock",
+            text: userToBlock?.isActive
+              ? comments.BLOCK_BUTTON
+              : comments.UNBLOCK_BUTTON,
             onClick: handleConfirmBlock,
             variant: "primary",
           },
           {
-            text: "Cancel",
+            text: comments.CANCEL_BUTTON,
             onClick: () => {
               setIsConfirmModalOpen(false);
               setUserToBlock(null);
@@ -275,18 +283,21 @@ const TutorManagement = () => {
         ]}
       >
         <p>
-          Are you sure you want to {userToBlock?.isActive ? "block" : "unblock"}{" "}
-          the user "{userToBlock?.name}"?
+          {comments.CONFIRM_BLOCK_MESSAGE_PREFIX}{" "}
+          {userToBlock?.isActive
+            ? comments.BLOCK_ACTION
+            : comments.UNBLOCK_ACTION}{" "}
+          {comments.CONFIRM_BLOCK_MESSAGE_SUFFIX} "{userToBlock?.name}"?
         </p>
       </CustomModal>
 
       <CustomModal
         isOpen={isApproveModalOpen}
         onClose={() => setIsApproveModalOpen(false)}
-        header="Approve Tutor"
+        header={comments.APPROVE_TUTOR_HEADER}
         buttons={[
           {
-            text: "Close",
+            text: comments.CLOSE_BUTTON,
             onClick: () => setIsApproveModalOpen(false),
             variant: "secondary",
           },
@@ -297,10 +308,10 @@ const TutorManagement = () => {
           <table>
             <thead>
               <tr>
-                <th>Sl No.</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Actions</th>
+                <th>{comments.TUTOR_COL_SLNO}</th>
+                <th>{comments.TUTOR_COL_NAME}</th>
+                <th>{comments.TUTOR_COL_EMAIL}</th>
+                <th>{comments.TUTOR_COL_ACTIONS}</th>
               </tr>
             </thead>
             <tbody>
@@ -314,19 +325,19 @@ const TutorManagement = () => {
                       className="view-resume-btn"
                       onClick={() => handleViewResume(tutor.resume)}
                     >
-                      View Resume
+                      {comments.VIEW_RESUME_BUTTON}
                     </button>
                     <button
                       className="approve-btn"
                       onClick={() => handleApproveClick(tutor)}
                     >
-                      Approve
+                      {comments.APPROVE_BUTTON}
                     </button>
                     <button
                       className="deny-btn"
                       onClick={() => handleDenyClick(tutor)}
                     >
-                      Deny
+                      {comments.DENY_BUTTON}
                     </button>
                   </td>
                 </tr>
@@ -345,53 +356,54 @@ const TutorManagement = () => {
       <CustomModal
         isOpen={confirmApprovalOpen}
         onClose={() => setConfirmApprovalOpen(false)}
-        header="Confirm Approval"
+        header={comments.CONFIRM_APPROVAL_HEADER}
         buttons={[
           {
-            text: "Yes, Approve",
+            text: comments.YES_APPROVE_BUTTON,
             onClick: handleConfirmApproval,
             variant: "primary",
           },
           {
-            text: "Cancel",
+            text: comments.CANCEL_BUTTON,
             onClick: () => setConfirmApprovalOpen(false),
             variant: "secondary",
           },
         ]}
       >
         <p>
-          Are you sure you want to approve {selectedTutor?.name} as a tutor?
+          {comments.CONFIRM_APPROVE_MESSAGE_PREFIX} {selectedTutor?.name}{" "}
+          {comments.CONFIRM_APPROVE_MESSAGE_SUFFIX}
         </p>
       </CustomModal>
 
       <CustomModal
         isOpen={confirmDenialOpen}
         onClose={() => setConfirmDenialOpen(false)}
-        header="Confirm Denial"
+        header={comments.CONFIRM_DENIAL_HEADER}
         buttons={[
           {
-            text: "Yes, Deny",
+            text: comments.YES_DENY_BUTTON,
             onClick: handleConfirmDenial,
             variant: "primary",
           },
           {
-            text: "Cancel",
+            text: comments.CANCEL_BUTTON,
             onClick: () => setConfirmDenialOpen(false),
             variant: "secondary",
           },
         ]}
       >
         <p>
-          Are you sure you want to deny {selectedTutor?.name}'s request to
-          become a tutor?
+          {comments.CONFIRM_DENY_MESSAGE_PREFIX} {selectedTutor?.name}
+          {comments.CONFIRM_DENY_MESSAGE_SUFFIX}
         </p>
         <div style={{ marginTop: "10px" }}>
-          <label htmlFor="denialReason">Reason for denial:</label>
+          <label htmlFor="denialReason">{comments.DENIAL_REASON_LABEL}</label>
           <textarea
             id="denialReason"
             value={denialReason}
             onChange={(e) => setDenialReason(e.target.value)}
-            placeholder="Enter the reason for denying this tutor"
+            placeholder={comments.DENIAL_REASON_PLACEHOLDER}
             rows={4}
             style={{ width: "100%", marginTop: "5px" }}
           />

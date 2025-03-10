@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
+
 import CustomSnackbar from "../../common/CustomSnackbar";
 import useSnackbar from "../../../hooks/useSnackbar";
-import axiosInstance from "../../../shared/config/axiosConfig"; // Assuming this is your axios config
+import axiosInstance from "../../../shared/config/axiosConfig";
+import API from "../../../shared/constants/API";
+import comments from "../../../shared/constants/comments";
 
 interface ForgotPasswordProps {
   onPasswordChanged: () => void;
@@ -21,7 +24,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({
   const [timer, setTimer] = useState(0);
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [isOtpComplete, setIsOtpComplete] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // Added loading state
+  const [isLoading, setIsLoading] = useState(false);
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
 
   const validateEmail = (email: string) => {
@@ -47,23 +50,23 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({
 
   const handleSendOtp = async () => {
     if (!validateEmail(email)) {
-      showSnackbar("Please enter a valid email address", "error");
+      showSnackbar(comments.EMAIL_INVALID, "error");
       return;
     }
 
     setIsLoading(true);
     try {
-      const response = await axiosInstance.put("/forgot-password", { email });
+      const response = await axiosInstance.put(API.FORGOT_PASS, { email });
       if (response.data.success) {
         setIsOtpSent(true);
         setTimer(60);
-        showSnackbar("OTP sent successfully", "success");
+        showSnackbar(comments.OTP_SUCC, "success");
       } else {
-        showSnackbar(response.data.message || "Failed to send OTP", "error");
+        showSnackbar(response.data.message || comments.OTP_FAIL, "error");
       }
     } catch (error) {
-      showSnackbar("Error sending OTP. Please try again.", "error");
-      console.error("Forgot Password OTP Error:", error);
+      showSnackbar(comments.OTP_FAIL, "error");
+      console.error(comments.OTP_FAIL, error);
     } finally {
       setIsLoading(false);
     }
@@ -72,30 +75,30 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      showSnackbar("Passwords do not match", "error");
+      showSnackbar(comments.PASS_MISMATCH, "error");
       return;
     }
 
     setIsLoading(true);
     try {
-      const response = await axiosInstance.put("/set-password", {
+      const response = await axiosInstance.put(API.SET_PASS, {
         email,
-        otp: otp.join(""), // Combine OTP array into a string
+        otp: otp.join(""),
         password: newPassword,
       });
 
       if (response.data.success) {
-        showSnackbar("Password reset successfully", "success");
+        showSnackbar(comments.PASS_RESET_SUCC, "success");
         onPasswordChanged();
       } else {
         showSnackbar(
-          response.data.message || "Failed to reset password",
+          response.data.message || comments.PASS_RESET_FAIL,
           "error"
         );
       }
     } catch (error) {
-      showSnackbar("Error resetting password. Please try again.", "error");
-      console.error("Reset Password Error:", error);
+      showSnackbar(comments.PASS_RESET_FAIL, "error");
+      console.error(comments.PASS_RESET_FAIL, error);
     } finally {
       setIsLoading(false);
     }

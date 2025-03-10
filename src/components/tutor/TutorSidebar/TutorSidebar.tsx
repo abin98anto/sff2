@@ -1,37 +1,28 @@
 import { useState } from "react";
-import {
-  BarChart2,
-  Users,
-  // MessageCircleMore,
-  CircleUserRound,
-} from "lucide-react";
+import { BarChart2, Users, CircleUserRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import "./TutorSidebar.scss";
 import { useAppDispatch } from "../../../hooks/reduxHooks";
 import { logout } from "../../../redux/thunks/user/userAuthServices";
 import CustomModal from "../../common/Modal/CustomModal/CustomModal";
+import API from "../../../shared/constants/API";
 
 const menuItems = [
   {
     title: "Dashboard",
     icon: BarChart2,
-    path: "/tutor",
+    path: API.TUTOR_DASHBOARD,
   },
   {
     title: "My Students",
     icon: Users,
-    path: "/tutor/my-students",
+    path: API.TUTOR_STUDENTS,
   },
-  // {
-  //   title: "Messages",
-  //   icon: MessageCircleMore,
-  //   path: "/tutor/messages",
-  // },
   {
     title: "Profile",
     icon: CircleUserRound,
-    path: "/tutor/profile",
+    path: API.TUTOR_PROFILE,
   },
 ];
 
