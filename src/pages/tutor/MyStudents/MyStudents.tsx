@@ -31,7 +31,6 @@ interface IEnrollment {
   _id: string;
   status: string;
   startDate: string;
-  // Add other enrollment properties as needed
 }
 
 interface IStudentData {
@@ -221,7 +220,7 @@ const MyStudents = () => {
         );
       }
     } catch (error) {
-      console.error("Error submitting review:", error);
+      console.error(comments.STUDENT_REVIEW_ERROR, error);
       showSnackbar(comments.STUDENT_REVIEW_ERROR, "error");
     } finally {
       setIsLoading(false);
@@ -263,7 +262,7 @@ const MyStudents = () => {
             },
             {
               text: comments.STUDENT_REVIEW_FAIL_BUTTON,
-              onClick: () => handleReviewSubmit(false),
+              onClick: () => closeReviewModal(),
               variant: "secondary",
             },
           ]}
