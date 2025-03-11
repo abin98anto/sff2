@@ -25,6 +25,7 @@ const API = {
   COURSE_DELETE: "/courses/delete",
   COURSE_UPDATE: "/course/update",
   COURSE_GET: "/course",
+  COURSES: "/courses",
 
   // Cloudinary
   CLOUDI_UPLOAD: `https://api.cloudinary.com/v1_1/${
@@ -35,6 +36,7 @@ const API = {
   TUTORS_GET: "/admin/users/tutor",
 
   // Subscription Side.
+  SUBSCRIPIIONS: "/subscriptions",
   SUBSCRIPTION_GET: "/subsciption",
   SUBSCRIPTION_ADD: "/subsciption/add",
   SUBSCRIPTION_UPDATE: "/subsciption/update",

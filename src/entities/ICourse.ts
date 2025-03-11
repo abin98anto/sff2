@@ -17,6 +17,7 @@ export interface ISection {
 }
 
 export default interface ICourse {
+  createdAt: string | number | Date;
   _id?: string;
   title: string;
   subtitle: string;

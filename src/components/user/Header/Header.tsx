@@ -81,7 +81,7 @@ const Header: React.FC = () => {
         <nav className="user-nav">
           <ul>
             <li>
-              <Link to={API.COURSE_GET}>Courses</Link>
+              <Link to={API.COURSES}>Courses</Link>
             </li>
             {userInfo && (
               <li>
@@ -89,7 +89,7 @@ const Header: React.FC = () => {
               </li>
             )}
             <li>
-              <Link to={API.SUBSCRIPTION_GET}>Subscriptions</Link>
+              <Link to={API.SUBSCRIPIIONS}>Subscriptions</Link>
             </li>
           </ul>
         </nav>
