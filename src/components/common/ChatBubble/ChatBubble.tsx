@@ -24,6 +24,7 @@ const ChatBubble: React.FC = () => {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [newMessage, setNewMessage] = useState<string>("");
   const [chats, setChats] = useState<IChat[]>([]);
+  const [showNotifications, setShowNotifications] = useState<boolean>(true);
 
   const chatRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -44,6 +45,7 @@ const ChatBubble: React.FC = () => {
 
   // Close chat modal.
   useEffect(() => {
+    setShowNotifications(!isExpanded);
     const handleClickOutside = (event: MouseEvent) => {
       if (
         isExpanded &&
@@ -121,7 +123,8 @@ const ChatBubble: React.FC = () => {
     socket.on(comments.IO_MSG_NOTIFICATION, (notification) => {
       if (
         notification.senderId !== userId &&
-        notification.receiverId === userId
+        notification.receiverId === userId &&
+        showNotifications
       ) {
         Swal.fire({
           toast: true,
@@ -188,7 +191,7 @@ const ChatBubble: React.FC = () => {
       socket.off(comments.IO_MSG_NOTIFICATION);
       socket.off(comments.IO_CALL_INVITE);
     };
-  }, [userId]);
+  }, [userId, showNotifications]);
 
   // Send video call invitation.
   const handleVideoCallInvitation = async () => {
