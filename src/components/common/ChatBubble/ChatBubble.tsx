@@ -30,7 +30,6 @@ const ChatBubble: React.FC = () => {
   const overlayRef = useRef<HTMLDivElement>(null);
   const placeholderRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // To make the chat go to the recent message.
   const scrollToBottom = () => {
@@ -210,7 +209,6 @@ const ChatBubble: React.FC = () => {
       const roomID = `room_${userId}_${receiverId}`;
       const videoCallUrl = `/video-call?userId=${userInfo.name}&studentId=${receiverId}&roomID=${roomID}`;
 
-      // Create a video call record message
       const videoCallMessage: IMessage = {
         chatId: activeChat._id,
         senderId: userId,
@@ -222,7 +220,6 @@ const ChatBubble: React.FC = () => {
       };
 
       try {
-        // Send message to record the video call
         await axiosInstance.post(API.MSG_SENT, videoCallMessage);
       } catch (error) {
         console.error("Failed to record video call", error);
@@ -437,7 +434,6 @@ const ChatBubble: React.FC = () => {
                           </span>
                         </div>
                       ))}
-                      <div ref={messagesEndRef} />
                     </div>
                   )}
                   <form className="chat-input" onSubmit={handleSendMessage}>
