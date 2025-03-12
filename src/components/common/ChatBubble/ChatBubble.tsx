@@ -31,6 +31,26 @@ const ChatBubble: React.FC = () => {
   const placeholderRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
+  const markMessagesAsRead = async (unreadMessageIds: string[]) => {
+    if (unreadMessageIds.length === 0) return;
+
+    try {
+      await axiosInstance.put(`/chat/mark-as-read`, {
+        messageIds: unreadMessageIds,
+      });
+      // Update local state to reflect that messages are read
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          unreadMessageIds.includes(msg._id || "")
+            ? { ...msg, isRead: true }
+            : msg
+        )
+      );
+    } catch (error) {
+      console.error("Failed to mark messages as read", error);
+    }
+  };
+
   // To make the chat go to the recent message.
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
@@ -82,6 +102,7 @@ const ChatBubble: React.FC = () => {
     }
   };
 
+  // Socket listeners.
   useEffect(() => {
     if (!userId) return;
 
@@ -93,8 +114,37 @@ const ChatBubble: React.FC = () => {
     socket.emit("joinUserRoom", userId);
 
     // receive message from server.
+    // socket.on(comments.IO_RECIEVE_MSG, (message: IMessage) => {
+    //   if (message.content && message.content.trim() !== "") {
+    //     setMessages((prevMessages) => {
+    //       const messageExists = prevMessages.some(
+    //         (msg) =>
+    //           (msg._id && msg._id === message._id) ||
+    //           (msg.timestamp &&
+    //             message.timestamp &&
+    //             new Date(msg.timestamp).getTime() ===
+    //               new Date(message.timestamp).getTime() &&
+    //             msg.senderId === message.senderId &&
+    //             msg.content === message.content)
+    //       );
+    //       if (!messageExists) {
+    //         setTimeout(() => scrollToBottom(), 100);
+    //         return [...prevMessages, message];
+    //       }
+    //       return prevMessages;
+    //     });
+    //     if (chats.some((chat) => chat._id === message.chatId)) {
+    //       updateChatWithMessage(message);
+    //     }
+    //   }
+    // });
+
     socket.on(comments.IO_RECIEVE_MSG, (message: IMessage) => {
       if (message.content && message.content.trim() !== "") {
+        console.log("Received message:", message); // Log the full message
+        console.log("Current userId:", userId); // Log the current user ID
+        console.log("Current activeChat:", activeChat); // Log the current active chat
+
         setMessages((prevMessages) => {
           const messageExists = prevMessages.some(
             (msg) =>
@@ -106,12 +156,42 @@ const ChatBubble: React.FC = () => {
                 msg.senderId === message.senderId &&
                 msg.content === message.content)
           );
+
           if (!messageExists) {
             setTimeout(() => scrollToBottom(), 100);
+
+            // Detailed condition checking
+            const isActiveChat =
+              activeChat && message.chatId === activeChat._id;
+            const isNotSender = message.senderId !== userId;
+            const isUnread = !message.isRead;
+            const hasId = !!message._id;
+
+            console.log("Conditions:", {
+              isActiveChat,
+              isNotSender,
+              isUnread,
+              hasId,
+            });
+
+            if (isActiveChat && isNotSender && isUnread && hasId) {
+              console.log(
+                "Marking message as read because it is in active chat:",
+                message._id
+              );
+              markMessagesAsRead([message._id as string]);
+              // Optimistically update the message as read in the UI
+              return [...prevMessages, { ...message, isRead: true }];
+            }
+
+            console.log("Message not marked as read, adding as is:", message);
             return [...prevMessages, message];
           }
+
+          console.log("Message already exists, no action taken");
           return prevMessages;
         });
+
         if (chats.some((chat) => chat._id === message.chatId)) {
           updateChatWithMessage(message);
         }
@@ -190,7 +270,7 @@ const ChatBubble: React.FC = () => {
       socket.off(comments.IO_MSG_NOTIFICATION);
       socket.off(comments.IO_CALL_INVITE);
     };
-  }, [userId, showNotifications]);
+  }, [userId, showNotifications, activeChat]);
 
   // Send video call invitation.
   const handleVideoCallInvitation = async () => {
@@ -242,6 +322,34 @@ const ChatBubble: React.FC = () => {
   };
 
   // Populate messages of a chat..
+  // const fetchMessages = async (chatId: string) => {
+  //   try {
+  //     if (!userId) return;
+  //     setIsLoading(true);
+  //     const response = await axiosInstance.get(API.CHAT_MESSAGES + chatId);
+  //     let messagesArray: IMessage[] = [];
+  //     if (
+  //       response.data.success &&
+  //       response.data.data &&
+  //       response.data.data.messages
+  //     ) {
+  //       messagesArray = response.data.data.messages;
+  //     } else if (response.data.messages) {
+  //       messagesArray = response.data.messages;
+  //     }
+  //     setMessages(
+  //       messagesArray.map((msg: IMessage) => ({
+  //         ...msg,
+  //         isRead: msg.isRead || false,
+  //       }))
+  //     );
+  //   } catch (error) {
+  //     console.error(comments.MSG_FETCH_FAIL, error);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
   const fetchMessages = async (chatId: string) => {
     try {
       if (!userId) return;
@@ -257,12 +365,24 @@ const ChatBubble: React.FC = () => {
       } else if (response.data.messages) {
         messagesArray = response.data.messages;
       }
+
+      // Set messages in state
       setMessages(
         messagesArray.map((msg: IMessage) => ({
           ...msg,
           isRead: msg.isRead || false,
         }))
       );
+
+      // Filter unread messages not sent by the current user
+      const unreadMessageIds = messagesArray
+        .filter((msg) => !msg.isRead && msg.senderId !== userId && msg._id)
+        .map((msg) => msg._id as string);
+
+      // Mark unread messages as read
+      if (unreadMessageIds.length > 0) {
+        await markMessagesAsRead(unreadMessageIds);
+      }
     } catch (error) {
       console.error(comments.MSG_FETCH_FAIL, error);
     } finally {
@@ -290,6 +410,12 @@ const ChatBubble: React.FC = () => {
       setIsExpanded(!isExpanded);
     }
   };
+
+  // const handleChatClick = (chat: IChat) => {
+  //   setActiveChat(chat);
+  //   fetchMessages(chat._id).then(() => setTimeout(() => scrollToBottom(), 100));
+  //   socket.emit("joinRoom", chat._id);
+  // };
 
   const handleChatClick = (chat: IChat) => {
     setActiveChat(chat);
@@ -326,6 +452,7 @@ const ChatBubble: React.FC = () => {
 
       try {
         await axiosInstance.post(API.MSG_SENT, message);
+        console.log("message sent", message.chatId);
         setNewMessage("");
         setTimeout(() => scrollToBottom(), 100);
       } catch (error) {
