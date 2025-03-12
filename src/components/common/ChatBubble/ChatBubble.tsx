@@ -25,11 +25,51 @@ const ChatBubble: React.FC = () => {
   const [newMessage, setNewMessage] = useState<string>("");
   const [chats, setChats] = useState<IChat[]>([]);
   const [showNotifications, setShowNotifications] = useState<boolean>(true);
+  const [totalUnreadCount, setTotalUnreadCount] = useState<number>(0);
+  const [unreadCountByChat, setUnreadCountByChat] = useState<
+    Record<string, number>
+  >({});
 
   const chatRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const placeholderRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  const fetchUnreadMessageCount = async () => {
+    try {
+      if (!userId) return;
+      const response = await axiosInstance.get(`/chat/unread-count/${userId}`);
+      if (response.data.success && response.data.data) {
+        setTotalUnreadCount(response.data.data.unreadCount);
+      }
+    } catch (error) {
+      console.error("Failed to fetch unread message count", error);
+    }
+  };
+
+  const calculateUnreadCountByChat = () => {
+    if (!userId) return;
+
+    const unreadCounts: Record<string, number> = {};
+
+    // Initialize all chats with zero unread messages
+    chats.forEach((chat) => {
+      unreadCounts[chat._id] = 0;
+    });
+
+    // Count unread messages for each chat
+    messages.forEach((msg) => {
+      if (
+        msg.receiverId === userId &&
+        !msg.isRead &&
+        activeChat?._id === msg.chatId
+      ) {
+        unreadCounts[msg.chatId] = (unreadCounts[msg.chatId] || 0) + 1;
+      }
+    });
+
+    setUnreadCountByChat(unreadCounts);
+  };
 
   const markMessagesAsRead = async (unreadMessageIds: string[]) => {
     if (unreadMessageIds.length === 0) return;
@@ -46,6 +86,10 @@ const ChatBubble: React.FC = () => {
             : msg
         )
       );
+
+      // Update unread counts after marking messages as read
+      fetchUnreadMessageCount();
+      calculateUnreadCountByChat();
     } catch (error) {
       console.error("Failed to mark messages as read", error);
     }
@@ -74,6 +118,7 @@ const ChatBubble: React.FC = () => {
         overlayRef.current.contains(event.target as Node)
       ) {
         setIsExpanded(false);
+        setActiveChat(null); // Reset activeChat when closing the chat
       }
       if (
         showPlaceholder &&
@@ -263,6 +308,7 @@ const ChatBubble: React.FC = () => {
       }
     });
 
+    fetchUnreadMessageCount();
     fetchChats();
 
     return () => {
@@ -271,6 +317,15 @@ const ChatBubble: React.FC = () => {
       socket.off(comments.IO_CALL_INVITE);
     };
   }, [userId, showNotifications, activeChat]);
+
+  useEffect(() => {
+    calculateUnreadCountByChat();
+
+    // Update total unread count if not looking at active chat
+    if (!isExpanded) {
+      fetchUnreadMessageCount();
+    }
+  }, [messages, chats, userId, isExpanded]);
 
   // Send video call invitation.
   const handleVideoCallInvitation = async () => {
@@ -407,6 +462,9 @@ const ChatBubble: React.FC = () => {
     if (!userId || chats.length === 0) {
       setShowPlaceholder(true);
     } else {
+      if (isExpanded) {
+        setActiveChat(null); // Reset activeChat when minimizing
+      }
       setIsExpanded(!isExpanded);
     }
   };
@@ -419,7 +477,11 @@ const ChatBubble: React.FC = () => {
 
   const handleChatClick = (chat: IChat) => {
     setActiveChat(chat);
-    fetchMessages(chat._id).then(() => setTimeout(() => scrollToBottom(), 100));
+    fetchMessages(chat._id).then(() => {
+      setTimeout(() => scrollToBottom(), 100);
+      calculateUnreadCountByChat();
+      fetchUnreadMessageCount();
+    });
     socket.emit("joinRoom", chat._id);
   };
 
@@ -477,6 +539,9 @@ const ChatBubble: React.FC = () => {
     <>
       <div className="chat-bubble-minimized" onClick={handleBubbleClick}>
         <span className="chat-icon">💬</span>
+        {totalUnreadCount > 0 && (
+          <span className="unread-count">{totalUnreadCount}</span>
+        )}
       </div>
 
       {showPlaceholder && (!userId || chats.length === 0) && (
@@ -500,22 +565,33 @@ const ChatBubble: React.FC = () => {
                     }`}
                     onClick={() => handleChatClick(chat)}
                   >
-                    {typeof chat.tutorId === "string"
-                      ? chat.tutorId === userId
-                        ? typeof chat.studentId === "string"
-                          ? chat.studentId
-                          : (chat.studentId as IUser).name
-                        : chat.tutorId
-                      : (chat.tutorId as IUser)._id === userId
-                      ? typeof chat.studentId === "string"
-                        ? chat.studentId
-                        : (chat.studentId as IUser).name
-                      : (chat.tutorId as IUser).name}{" "}
-                    (Course:{" "}
-                    {typeof chat.courseId === "string"
-                      ? chat.courseId
-                      : (chat.courseId as ICourse).title}
-                    )
+                    <div className="chat-item-content">
+                      <span className="chat-name">
+                        {typeof chat.tutorId === "string"
+                          ? chat.tutorId === userId
+                            ? typeof chat.studentId === "string"
+                              ? chat.studentId
+                              : (chat.studentId as IUser).name
+                            : chat.tutorId
+                          : (chat.tutorId as IUser)._id === userId
+                          ? typeof chat.studentId === "string"
+                            ? chat.studentId
+                            : (chat.studentId as IUser).name
+                          : (chat.tutorId as IUser).name}
+                      </span>
+                      <span className="chat-course">
+                        (Course:{" "}
+                        {typeof chat.courseId === "string"
+                          ? chat.courseId
+                          : (chat.courseId as ICourse).title}
+                        )
+                      </span>
+                    </div>
+                    {unreadCountByChat[chat._id] > 0 && (
+                      <span className="chat-unread-badge">
+                        {unreadCountByChat[chat._id]}
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>
