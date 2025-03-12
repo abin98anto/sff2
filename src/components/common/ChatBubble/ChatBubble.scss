@@ -285,3 +285,18 @@
     }
   }
 }
+
+.video-call-message {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.phone-icon {
+  font-size: 1.2rem;
+}
+
+.message.video-call {
+  background-color: rgba(0, 123, 255, 0.1);
+  border-left: 3px solid #007bff;
+}

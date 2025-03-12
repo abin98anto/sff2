@@ -209,6 +209,25 @@ const ChatBubble: React.FC = () => {
 
       const roomID = `room_${userId}_${receiverId}`;
       const videoCallUrl = `/video-call?userId=${userInfo.name}&studentId=${receiverId}&roomID=${roomID}`;
+
+      // Create a video call record message
+      const videoCallMessage: IMessage = {
+        chatId: activeChat._id,
+        senderId: userId,
+        receiverId: receiverId as string,
+        content: "Video call",
+        contentType: "video-call",
+        isRead: false,
+        timestamp: new Date(),
+      };
+
+      try {
+        // Send message to record the video call
+        await axiosInstance.post(API.MSG_SENT, videoCallMessage);
+      } catch (error) {
+        console.error("Failed to record video call", error);
+      }
+
       window.open(videoCallUrl, "_blank");
     }
   };
@@ -318,6 +337,18 @@ const ChatBubble: React.FC = () => {
     }
   };
 
+  const renderMessageContent = (message: IMessage) => {
+    if (message.contentType === "video-call") {
+      return (
+        <div className="video-call-message">
+          <span className="phone-icon">📞</span>
+          <span>{message.content}</span>
+        </div>
+      );
+    }
+    return <p>{message.content}</p>;
+  };
+
   return (
     <>
       <div className="chat-bubble-minimized" onClick={handleBubbleClick}>
@@ -396,9 +427,11 @@ const ChatBubble: React.FC = () => {
                           key={msg._id || `msg-${messages.indexOf(msg) + 1}`}
                           className={`message ${
                             msg.senderId === userId ? "sent" : "received"
+                          } ${
+                            msg.contentType === "video-call" ? "video-call" : ""
                           }`}
                         >
-                          <p>{msg.content}</p>
+                          {renderMessageContent(msg)}
                           <span className="timestamp">
                             {formatMessageTime(msg.timestamp)}
                           </span>
@@ -419,6 +452,7 @@ const ChatBubble: React.FC = () => {
                     <button type="submit">Send</button>
                     {userInfo.role === "tutor" && activeChat && (
                       <button
+                        type="button"
                         className="video-call-btn"
                         onClick={handleVideoCallInvitation}
                       >
