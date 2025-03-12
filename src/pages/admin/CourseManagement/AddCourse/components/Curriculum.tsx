@@ -62,17 +62,13 @@ const Curriculum = ({
   const [newLessonName, setNewLessonName] = useState("");
   const [newLessonVideo, setNewLessonVideo] = useState<File | null>(null);
   const [newLessonPdfs, setNewLessonPdfs] = useState<File[]>([]);
-  const [newLessonDuration, setNewLessonDuration] = useState<number>(0);
+  const [_, setNewLessonDuration] = useState<number>(0);
   const [publishing, setPublishing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     setSections(data || []);
   }, [data]);
-
-  const calculateSectionDuration = (lessons: ILesson[]): number => {
-    return lessons.reduce((sum, lesson) => sum + lesson.duration, 0);
-  };
 
   const addSection = () => {
     const newSection: ISection = {
@@ -112,11 +108,11 @@ const Curriculum = ({
     setIsAddLessonModalOpen(true);
   };
 
-  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && validateVideoFile(file)) {
       setNewLessonVideo(file);
-      setNewLessonDuration(0);
+      await updateLessonDuration(file);
     } else {
       setError(comments.INVALID_VIDEO);
     }
@@ -144,6 +140,9 @@ const Curriculum = ({
       setError(comments.VIDEO_REQ);
       return;
     }
+
+    // Extract video duration
+    const videoDuration = await updateLessonDuration(newLessonVideo);
 
     setIsLoading(true);
     const videoUploadResult = await handleFileUpload(newLessonVideo, {
@@ -177,18 +176,22 @@ const Curriculum = ({
       name: newLessonName,
       videoUrl: videoUploadResult.url as string,
       pdfUrls,
-      duration: newLessonDuration,
+      duration: videoDuration,
     };
 
-    const updatedSections = sections.map((section, index) =>
-      index === editingSectionIndex
-        ? {
-            ...section,
-            lessons: [...section.lessons, newLesson],
-            duration: calculateSectionDuration([...section.lessons, newLesson]),
-          }
-        : section
-    );
+    // Create copy of sections to modify
+    const updatedSections = [...sections];
+
+    // Update the specific section with the new lesson
+    if (editingSectionIndex !== null) {
+      // Add new lesson to the section
+      updatedSections[editingSectionIndex].lessons.push(newLesson);
+
+      // Update the section's duration
+      updatedSections[editingSectionIndex].duration = calculateSectionDuration(
+        updatedSections[editingSectionIndex].lessons
+      );
+    }
 
     setSections(updatedSections);
     onUpdate(updatedSections);
@@ -203,10 +206,21 @@ const Curriculum = ({
       return;
     }
 
-    let videoUrl = sections[editingSectionIndex!]?.lessons.find(
-      (l) => l._id === editingLessonId
-    )?.videoUrl;
+    // Default to existing values if not updating the video
+    const currentLesson =
+      editingSectionIndex !== null && editingLessonId
+        ? sections[editingSectionIndex].lessons.find(
+            (l) => l._id === editingLessonId
+          )
+        : null;
+
+    let videoUrl = currentLesson?.videoUrl || "";
+    let videoDuration = currentLesson?.duration || 0;
+
     if (newLessonVideo) {
+      // If updating video, get the new duration
+      videoDuration = await updateLessonDuration(newLessonVideo);
+
       setIsLoading(true);
       const videoUploadResult = await handleFileUpload(newLessonVideo, {
         onUploadStart: () => setIsLoading(true),
@@ -217,6 +231,7 @@ const Curriculum = ({
       if (!videoUploadResult.success) {
         console.log(comments.VIDEO_UPLOAD_FAIL, videoUploadResult.error);
         setError(comments.VIDEO_UPLOAD_FAIL);
+        setIsLoading(false);
         return;
       }
       videoUrl = videoUploadResult.url as string;
@@ -233,31 +248,35 @@ const Curriculum = ({
       .filter((result) => result.success)
       .map((result) => result.url as string);
 
-    const updatedSections = sections.map((section, index) => {
-      if (index === editingSectionIndex) {
-        const updatedLessons = section.lessons.map((lesson) => {
-          if (lesson._id === editingLessonId) {
-            return {
-              ...lesson,
-              _id:
-                lesson._id ||
-                Date.now().toString() + Math.random().toString(36).substr(2, 9),
-              name: newLessonName,
-              videoUrl: videoUrl || lesson.videoUrl,
-              pdfUrls: [...lesson.pdfUrls, ...newPdfUrls],
-              duration: newLessonDuration,
-            };
-          }
-          return lesson;
-        });
-        return {
-          ...section,
-          lessons: updatedLessons,
-          duration: calculateSectionDuration(updatedLessons),
+    // Create a copy of the sections array
+    const updatedSections = [...sections];
+
+    // Update the specific lesson
+    if (editingSectionIndex !== null && editingLessonId) {
+      const sectionToUpdate = updatedSections[editingSectionIndex];
+      const lessonIndex = sectionToUpdate.lessons.findIndex(
+        (lesson) => lesson._id === editingLessonId
+      );
+
+      if (lessonIndex !== -1) {
+        // Update the lesson properties
+        sectionToUpdate.lessons[lessonIndex] = {
+          ...sectionToUpdate.lessons[lessonIndex],
+          name: newLessonName,
+          videoUrl: videoUrl,
+          pdfUrls: [
+            ...sectionToUpdate.lessons[lessonIndex].pdfUrls,
+            ...newPdfUrls,
+          ],
+          duration: videoDuration,
         };
+
+        // Recalculate section duration
+        sectionToUpdate.duration = calculateSectionDuration(
+          sectionToUpdate.lessons
+        );
       }
-      return section;
-    });
+    }
 
     setSections(updatedSections);
     onUpdate(updatedSections);
@@ -282,26 +301,28 @@ const Curriculum = ({
     return true;
   };
 
-  const prepareCourseDataForBackend = (formData: ICourse) => {
-    const cleanedCurriculum = formData.curriculum.map((section) => ({
+  const prepareCourseDataForBackend = (formData: ICourse): ICourse => {
+    const cleanedCurriculum = formData.curriculum.map((section: ISection) => ({
       ...section,
-      lessons: section.lessons.map((lesson) => {
+      lessons: section.lessons.map((lesson: ILesson) => {
         const { _id, ...rest } = lesson;
         return rest;
       }),
     }));
 
+    const totalDuration = cleanedCurriculum.reduce(
+      (total: number, section: ISection) => total + section.duration,
+      0
+    );
+
     return {
       ...formData,
       curriculum: cleanedCurriculum,
       totalLessons: cleanedCurriculum.reduce(
-        (total, section) => total + section.lessons.length,
+        (total: number, section: ISection) => total + section.lessons.length,
         0
       ),
-      totalDuration: cleanedCurriculum.reduce(
-        (total, section) => total + section.duration,
-        0
-      ),
+      totalDuration: totalDuration,
     };
   };
 
@@ -366,25 +387,23 @@ const Curriculum = ({
     lessonId: string | number,
     pdfUrl: string
   ) => {
-    const updatedSections = sections.map((section, index) => {
-      if (index === sectionIndex) {
-        const updatedLessons = section.lessons.map((lesson) => {
-          if (lesson._id === lessonId.toString()) {
-            return {
-              ...lesson,
-              pdfUrls: lesson.pdfUrls.filter((url) => url !== pdfUrl),
-            };
-          }
-          return lesson;
-        });
-        return {
-          ...section,
-          lessons: updatedLessons,
-          duration: calculateSectionDuration(updatedLessons),
-        };
-      }
-      return section;
-    });
+    const updatedSections = [...sections];
+
+    const section = updatedSections[sectionIndex];
+    const lessonIndex = section.lessons.findIndex(
+      (lesson) => lesson._id === lessonId.toString()
+    );
+
+    if (lessonIndex !== -1) {
+      // Remove the PDF URL
+      section.lessons[lessonIndex].pdfUrls = section.lessons[
+        lessonIndex
+      ].pdfUrls.filter((url) => url !== pdfUrl);
+
+      // No need to update section duration here as PDF removal doesn't affect duration
+      // But we'll recalculate anyway to ensure consistency
+      section.duration = calculateSectionDuration(section.lessons);
+    }
 
     setSections(updatedSections);
     onUpdate(updatedSections);
@@ -402,38 +421,71 @@ const Curriculum = ({
   };
 
   const handleConfirmDelete = () => {
-    if (deletingItemType === "section") {
-      const updatedSections = sections.filter(
-        (_, index) => index !== editingSectionIndex
-      );
-      setSections(updatedSections);
-      onUpdate(updatedSections);
+    const updatedSections = [...sections];
+
+    if (deletingItemType === "section" && editingSectionIndex !== null) {
+      // Remove the section
+      updatedSections.splice(editingSectionIndex, 1);
     } else if (
       deletingItemType === "lesson" &&
       editingSectionIndex !== null &&
-      typeof editingLessonId === "string" &&
       editingLessonId
     ) {
-      const updatedSections = sections.map((section, index) => {
-        if (index === editingSectionIndex) {
-          const updatedLessons = section.lessons.filter(
-            (lesson) => lesson._id !== editingLessonId
+      // Find the lesson index
+      const lessonIndex = updatedSections[
+        editingSectionIndex
+      ].lessons.findIndex((lesson) => lesson._id === editingLessonId);
+
+      if (lessonIndex !== -1) {
+        // Remove the lesson
+        updatedSections[editingSectionIndex].lessons.splice(lessonIndex, 1);
+
+        // Update section duration
+        updatedSections[editingSectionIndex].duration =
+          calculateSectionDuration(
+            updatedSections[editingSectionIndex].lessons
           );
-          return {
-            ...section,
-            lessons: updatedLessons,
-            duration: calculateSectionDuration(updatedLessons),
-          };
-        }
-        return section;
-      });
-      setSections(updatedSections);
-      onUpdate(updatedSections);
+      }
     }
+
+    setSections(updatedSections);
+    onUpdate(updatedSections);
     setIsDeleteConfirmationOpen(false);
     setDeletingItemType(null);
     setEditingSectionIndex(null);
     setEditingLessonId(null);
+  };
+
+  // Function to extract video duration from a file
+  const extractVideoDuration = (file: File): Promise<number> => {
+    return new Promise((resolve) => {
+      const video = document.createElement("video");
+      video.preload = "metadata";
+
+      video.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(video.src);
+        resolve(Math.round(video.duration));
+      };
+
+      video.src = URL.createObjectURL(file);
+    });
+  };
+
+  // Function to update lesson duration when a video is uploaded
+  const updateLessonDuration = async (file: File | null): Promise<number> => {
+    if (!file) return 0;
+    try {
+      const duration = await extractVideoDuration(file);
+      setNewLessonDuration(duration);
+      return duration;
+    } catch (error) {
+      console.error("Error extracting video duration:", error);
+      return 0;
+    }
+  };
+
+  const calculateSectionDuration = (lessons: ILesson[]): number => {
+    return lessons.reduce((sum, lesson) => sum + (lesson.duration || 0), 0);
   };
 
   return (

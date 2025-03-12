@@ -20,6 +20,12 @@ const CourseDetailsPage: React.FC = () => {
   }>({});
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
 
+  const formatDurationToHours = (seconds: number): string => {
+    if (!seconds) return "0h";
+    const hours = (seconds / 60).toFixed(2);
+    return `${hours} min`;
+  };
+
   // Fetching course details
   const { courseId } = useParams<{ courseId: string }>();
   const fetchCourse = async () => {
@@ -66,7 +72,7 @@ const CourseDetailsPage: React.FC = () => {
   // Duration calculation
   const getTotalStats = () => {
     if (!course?.curriculum) {
-      return { sections: 0, lessons: 0, totalDuration: "0" };
+      return { sections: 0, lessons: 0, totalDuration: "0h" };
     }
 
     const sections = course.curriculum.length;
@@ -76,7 +82,7 @@ const CourseDetailsPage: React.FC = () => {
     return {
       sections,
       lessons,
-      totalDuration: totalDuration.toString(),
+      totalDuration: formatDurationToHours(totalDuration),
     };
   };
   const { sections, lessons, totalDuration } = getTotalStats();
@@ -151,7 +157,7 @@ const CourseDetailsPage: React.FC = () => {
               : course?.category.name}
           </p>
           <p>Language: {course?.language}</p>
-          <p>Duration: {totalDuration} hrs</p>
+          <p>Duration: {formatDurationToHours(course?.totalDuration || 0)}</p>
           <button className="start-course-button" onClick={handleCourseEnroll}>
             Start Course
           </button>
@@ -201,7 +207,7 @@ const CourseDetailsPage: React.FC = () => {
                   <h3>{section.name}</h3>
                   <div className="section-meta">
                     {section.lessons?.length || 0} lessons •{" "}
-                    {section.duration || 0} hours
+                    {formatDurationToHours(section.duration || 0)}
                   </div>
                 </div>
               </div>
@@ -223,7 +229,7 @@ const CourseDetailsPage: React.FC = () => {
                     <div className="lecture-meta">
                       {lesson.duration && (
                         <span className="duration">
-                          {lesson.duration.toFixed(2)} hours
+                          {formatDurationToHours(lesson.duration)}
                         </span>
                       )}
                     </div>
