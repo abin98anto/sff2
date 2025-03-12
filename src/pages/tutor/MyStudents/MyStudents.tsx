@@ -52,6 +52,8 @@ interface TableData {
   total: number;
 }
 
+type StatusFilter = "all" | "pending" | "completed" | "passed";
+
 const MyStudents = () => {
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
   const [selectedStudent, setSelectedStudent] = useState<IStudentData | null>(
@@ -59,6 +61,8 @@ const MyStudents = () => {
   );
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+
   const refetchData = useRef<(() => void) | undefined>();
 
   // Populate Table columns
@@ -197,9 +201,20 @@ const MyStudents = () => {
             })
           );
 
+          // Apply status filter
+          let filteredData = studentsWithEnrollments;
+          if (statusFilter !== "all") {
+            filteredData = studentsWithEnrollments.filter((student) => {
+              const status = (
+                student.enrollment?.status || "pending"
+              ).toLowerCase();
+              return status === statusFilter;
+            });
+          }
+
           return {
-            data: studentsWithEnrollments,
-            total: chatResponse.data.total || studentsWithEnrollments.length,
+            data: filteredData,
+            total: filteredData.length,
           };
         }
 
@@ -210,7 +225,7 @@ const MyStudents = () => {
         return { data: [], total: 0 };
       }
     },
-    [showSnackbar]
+    [showSnackbar, statusFilter]
   );
 
   const handleReviewOpen = (student: IStudentData) => {
@@ -230,7 +245,7 @@ const MyStudents = () => {
           status: EnrollStatus.PASSED,
         },
       });
-      console.log("the yes res", response.data);
+
       if (response.data.success) {
         showSnackbar(
           isPassed
@@ -263,11 +278,37 @@ const MyStudents = () => {
     setSelectedStudent(null);
   };
 
+  const handleStatusFilterChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const newFilter = event.target.value as StatusFilter;
+    setStatusFilter(newFilter);
+
+    // Trigger refetch when filter changes
+    if (refetchData.current) {
+      refetchData.current();
+    }
+  };
+
   return (
     <div className="my-students">
       <div className="students-container">
         <div className="header">
           <h1>{comments.MY_STUDENTS_TITLE}</h1>
+          <div className="filter-controls">
+            <label htmlFor="statusFilter">Filter by Status:</label>
+            <select
+              id="statusFilter"
+              value={statusFilter}
+              onChange={handleStatusFilterChange}
+              className="status-filter"
+            >
+              <option value="all">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="completed">Completed</option>
+              <option value="passed">Passed</option>
+            </select>
+          </div>
         </div>
 
         <DataTable

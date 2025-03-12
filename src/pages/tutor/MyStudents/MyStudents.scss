@@ -22,3 +22,148 @@
     font-weight: 500;
   }
 }
+
+/* Filter Section Styles */
+.my-students {
+  .students-container {
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 600;
+      }
+    }
+
+    .filter-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      label {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #aaa;
+      }
+
+      .status-filter {
+        padding: 0.5rem 1rem;
+        min-width: 160px;
+        border-radius: 4px;
+        border: 1px solid #444;
+        background-color: #1a1a1a;
+        color: #fff;
+        font-size: 0.9rem;
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.7rem center;
+        background-size: 0.9rem;
+        transition: all 0.2s ease;
+
+        &:focus {
+          outline: none;
+          border-color: #ff4d00;
+          box-shadow: 0 0 0 2px rgba(255, 77, 0, 0.2);
+        }
+
+        &:hover {
+          border-color: #666;
+        }
+
+        option {
+          background-color: #222;
+          color: #fff;
+          padding: 8px;
+        }
+      }
+    }
+  }
+
+  // Existing search bar styles matching your screenshot
+  .search-container {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+
+    input[type="text"] {
+      flex: 1;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      border: 1px solid #444;
+      background-color: #1a1a1a;
+      color: #fff;
+
+      &::placeholder {
+        color: #666;
+      }
+
+      &:focus {
+        outline: none;
+        border-color: #ff4d00;
+      }
+    }
+
+    button.search-button {
+      padding: 0.5rem 1.5rem;
+      border-radius: 4px;
+      border: none;
+      background-color: #ff4d00;
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: #e64500;
+      }
+    }
+  }
+}
+
+// Status badge styles to match the filter aesthetic
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: capitalize;
+
+  &.active {
+    background-color: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+  }
+
+  &.pending {
+    background-color: rgba(241, 196, 15, 0.2);
+    color: #f1c40f;
+  }
+
+  &.completed {
+    background-color: rgba(52, 152, 219, 0.2);
+    color: #3498db;
+  }
+
+  &.passed {
+    background-color: rgba(155, 89, 182, 0.2);
+    color: #9b59b6;
+  }
+
+  &.inactive {
+    background-color: rgba(189, 195, 199, 0.2);
+    color: #bdc3c7;
+  }
+}
