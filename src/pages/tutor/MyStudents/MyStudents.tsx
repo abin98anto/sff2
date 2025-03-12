@@ -25,12 +25,14 @@ interface ICourse {
   subtitle: string;
   category: string;
   topic: string;
+  totalLessons: number;
 }
 
 interface IEnrollment {
   _id: string;
   status: string;
   startDate: string;
+  completedLessons: string[];
 }
 
 interface IStudentData {
@@ -102,6 +104,34 @@ const MyStudents = () => {
           {item.enrollment?.status || comments.STUDENT_STATUS_PENDING}
         </span>
       ),
+    },
+    {
+      key: "completionPercentage",
+      label: "Completion",
+      render: (item: IStudentData) => {
+        if (!item.enrollment || !item.courseId.totalLessons) {
+          return "0%";
+        }
+
+        const completedLessons = item.enrollment.completedLessons?.length || 0;
+        const totalLessons = item.courseId.totalLessons || 0;
+
+        if (totalLessons === 0) return "0%";
+
+        const percentage = Math.round((completedLessons / totalLessons) * 100);
+
+        return (
+          <div className="completion-progress">
+            <div className="progress-bar">
+              <div
+                className="progress-fill"
+                style={{ width: `${percentage}%` }}
+              ></div>
+            </div>
+            <span>{percentage}%</span>
+          </div>
+        );
+      },
     },
     {
       key: "actions",
