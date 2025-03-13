@@ -186,10 +186,9 @@ const ChatBubble: React.FC = () => {
 
     socket.on(comments.IO_RECIEVE_MSG, (message: IMessage) => {
       if (message.content && message.content.trim() !== "") {
-        console.log("Received message:", message); // Log the full message
-        console.log("Current userId:", userId); // Log the current user ID
-        console.log("Current activeChat:", activeChat); // Log the current active chat
+        console.log("Received message:", message);
 
+        // Update messages state
         setMessages((prevMessages) => {
           const messageExists = prevMessages.some(
             (msg) =>
@@ -205,40 +204,38 @@ const ChatBubble: React.FC = () => {
           if (!messageExists) {
             setTimeout(() => scrollToBottom(), 100);
 
-            // Detailed condition checking
-            const isActiveChat =
-              activeChat && message.chatId === activeChat._id;
-            const isNotSender = message.senderId !== userId;
-            const isUnread = !message.isRead;
-            const hasId = !!message._id;
+            // If message is for current user and not from current user
+            if (message.receiverId === userId && message.senderId !== userId) {
+              // If chat is not active or a different chat is active, increment unread count
+              if (!activeChat || activeChat._id !== message.chatId) {
+                // Update total unread count
+                setTotalUnreadCount((prev) => prev + 1);
 
-            console.log("Conditions:", {
-              isActiveChat,
-              isNotSender,
-              isUnread,
-              hasId,
-            });
-
-            if (isActiveChat && isNotSender && isUnread && hasId) {
-              console.log(
-                "Marking message as read because it is in active chat:",
-                message._id
-              );
-              markMessagesAsRead([message._id as string]);
-              // Optimistically update the message as read in the UI
-              return [...prevMessages, { ...message, isRead: true }];
+                // Update unread count for specific chat
+                setUnreadCountByChat((prev) => ({
+                  ...prev,
+                  [message.chatId]: (prev[message.chatId] || 0) + 1,
+                }));
+              } else {
+                // If chat is active, mark as read immediately
+                if (message._id) {
+                  markMessagesAsRead([message._id]);
+                  return [...prevMessages, { ...message, isRead: true }];
+                }
+              }
             }
 
-            console.log("Message not marked as read, adding as is:", message);
             return [...prevMessages, message];
           }
-
-          console.log("Message already exists, no action taken");
           return prevMessages;
         });
 
+        // Update chat list with new message
         if (chats.some((chat) => chat._id === message.chatId)) {
           updateChatWithMessage(message);
+
+          // Fetch updated unread counts
+          fetchUnreadMessageCount();
         }
       }
     });
@@ -365,12 +362,44 @@ const ChatBubble: React.FC = () => {
   };
 
   // Populate chat list.
+  // const fetchChats = async () => {
+  //   try {
+  //     if (!userId) return;
+  //     const response = await axiosInstance.get(API.CHAT_LIST + userId);
+  //     const chatsData: IChat[] = response.data.data || [];
+  //     setChats(chatsData);
+  //   } catch (error) {
+  //     console.error(comments.CHAT_FETCH_FAIL, error);
+  //   }
+  // };
+
   const fetchChats = async () => {
     try {
       if (!userId) return;
       const response = await axiosInstance.get(API.CHAT_LIST + userId);
       const chatsData: IChat[] = response.data.data || [];
       setChats(chatsData);
+
+      // Initialize unread counts for each chat
+      const unreadCounts: Record<string, number> = {};
+      for (const chat of chatsData) {
+        try {
+          const unreadResponse = await axiosInstance.get(
+            `/chat/unread-count-by-chat/${userId}/${chat._id}`
+          );
+          if (unreadResponse.data.success && unreadResponse.data.data) {
+            unreadCounts[chat._id] = unreadResponse.data.data.unreadCount;
+          }
+        } catch (error) {
+          console.error(
+            `Failed to fetch unread count for chat ${chat._id}`,
+            error
+          );
+          unreadCounts[chat._id] = 0;
+        }
+      }
+
+      setUnreadCountByChat(unreadCounts);
     } catch (error) {
       console.error(comments.CHAT_FETCH_FAIL, error);
     }
@@ -479,7 +508,14 @@ const ChatBubble: React.FC = () => {
     setActiveChat(chat);
     fetchMessages(chat._id).then(() => {
       setTimeout(() => scrollToBottom(), 100);
-      calculateUnreadCountByChat();
+
+      // Reset unread count for this chat
+      setUnreadCountByChat((prev) => ({
+        ...prev,
+        [chat._id]: 0,
+      }));
+
+      // Update total unread count
       fetchUnreadMessageCount();
     });
     socket.emit("joinRoom", chat._id);
@@ -535,6 +571,51 @@ const ChatBubble: React.FC = () => {
     return <p>{message.content}</p>;
   };
 
+  // Periodically update unread counts
+  useEffect(() => {
+    if (!userId) return;
+
+    const intervalId = setInterval(() => {
+      fetchUnreadMessageCount();
+
+      // Update unread counts for each chat if not in expanded view
+      if (!isExpanded) {
+        const updateChatUnreadCounts = async () => {
+          const updatedCounts = { ...unreadCountByChat };
+          let changed = false;
+
+          for (const chat of chats) {
+            try {
+              const response = await axiosInstance.get(
+                `/chat/unread-count-by-chat/${userId}/${chat._id}`
+              );
+              if (response.data.success && response.data.data) {
+                const newCount = response.data.data.unreadCount;
+                if (updatedCounts[chat._id] !== newCount) {
+                  updatedCounts[chat._id] = newCount;
+                  changed = true;
+                }
+              }
+            } catch (error) {
+              console.error(
+                `Failed to fetch unread count for chat ${chat._id}`,
+                error
+              );
+            }
+          }
+
+          if (changed) {
+            setUnreadCountByChat(updatedCounts);
+          }
+        };
+
+        updateChatUnreadCounts();
+      }
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [userId, chats, isExpanded, unreadCountByChat]);
+
   return (
     <>
       <div className="chat-bubble-minimized" onClick={handleBubbleClick}>
@@ -566,32 +647,34 @@ const ChatBubble: React.FC = () => {
                     onClick={() => handleChatClick(chat)}
                   >
                     <div className="chat-item-content">
-                      <span className="chat-name">
-                        {typeof chat.tutorId === "string"
-                          ? chat.tutorId === userId
+                      <div className="chat-info">
+                        <span className="chat-name">
+                          {typeof chat.tutorId === "string"
+                            ? chat.tutorId === userId
+                              ? typeof chat.studentId === "string"
+                                ? chat.studentId
+                                : (chat.studentId as IUser).name
+                              : chat.tutorId
+                            : (chat.tutorId as IUser)._id === userId
                             ? typeof chat.studentId === "string"
                               ? chat.studentId
                               : (chat.studentId as IUser).name
-                            : chat.tutorId
-                          : (chat.tutorId as IUser)._id === userId
-                          ? typeof chat.studentId === "string"
-                            ? chat.studentId
-                            : (chat.studentId as IUser).name
-                          : (chat.tutorId as IUser).name}
-                      </span>
-                      <span className="chat-course">
-                        (Course:{" "}
-                        {typeof chat.courseId === "string"
-                          ? chat.courseId
-                          : (chat.courseId as ICourse).title}
-                        )
-                      </span>
+                            : (chat.tutorId as IUser).name}
+                        </span>
+                        <span className="chat-course">
+                          (Course:{" "}
+                          {typeof chat.courseId === "string"
+                            ? chat.courseId
+                            : (chat.courseId as ICourse).title}
+                          )
+                        </span>
+                      </div>
+                      {unreadCountByChat[chat._id] > 0 && (
+                        <div className="chat-unread-count">
+                          {unreadCountByChat[chat._id]}
+                        </div>
+                      )}
                     </div>
-                    {unreadCountByChat[chat._id] > 0 && (
-                      <span className="chat-unread-badge">
-                        {unreadCountByChat[chat._id]}
-                      </span>
-                    )}
                   </li>
                 ))}
               </ul>

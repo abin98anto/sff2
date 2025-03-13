@@ -138,6 +138,12 @@
           align-items: center;
           justify-content: space-between;
           flex-wrap: wrap;
+          width: 100%;
+
+          .chat-info {
+            display: flex;
+            flex-direction: column;
+          }
 
           .chat-name {
             font-weight: bold;
