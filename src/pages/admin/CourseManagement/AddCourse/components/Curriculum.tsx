@@ -66,6 +66,8 @@ const Curriculum = ({
   const [publishing, setPublishing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const [lessonNames, setLessonNames] = useState<string[]>([]);
+
   useEffect(() => {
     setSections(data || []);
   }, [data]);
@@ -178,6 +180,10 @@ const Curriculum = ({
       pdfUrls,
       duration: videoDuration,
     };
+
+    // const existingLessons = [...lessonNames, newLesson.name];
+    // setNewLessonName(existingLessons);
+    // setNewLessonName((prev) => [...prev, newLessonName]);
 
     // Create copy of sections to modify
     const updatedSections = [...sections];

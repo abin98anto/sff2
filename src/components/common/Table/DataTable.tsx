@@ -126,7 +126,7 @@ const DataTable = <T extends Record<string, any>>({
   return (
     <div className="table-container">
       <div className="table-controls">
-        <div className="search-container">
+        {/* <div className="search-container">
           <input
             type="text"
             placeholder="Search..."
@@ -139,7 +139,7 @@ const DataTable = <T extends Record<string, any>>({
           <button onClick={handleSearch} className="search-button">
             Search
           </button>
-        </div>
+        </div> */}
       </div>
 
       {loading ? (

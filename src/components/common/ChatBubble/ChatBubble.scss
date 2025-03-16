@@ -291,3 +291,45 @@
     }
   }
 }
+
+.chat-container {
+  .chat-sidebar {
+    .chat-list {
+      .chat-item {
+        .chat-item-content {
+          .chat-info {
+            .chat-last-message {
+              font-size: 0.85em;
+              color: #777;
+              margin-top: 2px;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              max-width: 150px; // Adjust based on your sidebar width
+            }
+          }
+
+          .chat-unread-count {
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 5px;
+          }
+        }
+
+        &.active {
+          .chat-last-message {
+            color: #e0e0e0; // Lighter color for readability on active background
+          }
+        }
+      }
+    }
+  }
+}

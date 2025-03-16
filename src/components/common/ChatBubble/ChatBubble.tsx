@@ -384,8 +384,12 @@ const ChatBubble: React.FC = () => {
       const unreadCounts: Record<string, number> = {};
       for (const chat of chatsData) {
         try {
-          const unreadResponse = await axiosInstance.get(
-            `/chat/unread-count-by-chat/${userId}/${chat._id}`
+          const unreadResponse = await axiosInstance.post(
+            `/chat/unread-count-by-chat`,
+            {
+              userId,
+              chatId: chat._id,
+            }
           );
           if (unreadResponse.data.success && unreadResponse.data.data) {
             unreadCounts[chat._id] = unreadResponse.data.data.unreadCount;
@@ -586,8 +590,12 @@ const ChatBubble: React.FC = () => {
 
           for (const chat of chats) {
             try {
-              const response = await axiosInstance.get(
-                `/chat/unread-count-by-chat/${userId}/${chat._id}`
+              const response = await axiosInstance.post(
+                `/chat/unread-count-by-chat`,
+                {
+                  userId,
+                  chatId: chat._id,
+                }
               );
               if (response.data.success && response.data.data) {
                 const newCount = response.data.data.unreadCount;
