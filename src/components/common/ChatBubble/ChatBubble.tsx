@@ -52,12 +52,10 @@ const ChatBubble: React.FC = () => {
 
     const unreadCounts: Record<string, number> = {};
 
-    // Initialize all chats with zero unread messages
     chats.forEach((chat) => {
       unreadCounts[chat._id] = 0;
     });
 
-    // Count unread messages for each chat
     messages.forEach((msg) => {
       if (
         msg.receiverId === userId &&
@@ -78,7 +76,6 @@ const ChatBubble: React.FC = () => {
       await axiosInstance.put(`/chat/mark-as-read`, {
         messageIds: unreadMessageIds,
       });
-      // Update local state to reflect that messages are read
       setMessages((prevMessages) =>
         prevMessages.map((msg) =>
           unreadMessageIds.includes(msg._id || "")
@@ -86,8 +83,6 @@ const ChatBubble: React.FC = () => {
             : msg
         )
       );
-
-      // Update unread counts after marking messages as read
       fetchUnreadMessageCount();
       calculateUnreadCountByChat();
     } catch (error) {
@@ -95,7 +90,6 @@ const ChatBubble: React.FC = () => {
     }
   };
 
-  // To make the chat go to the recent message.
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTop =
@@ -118,7 +112,7 @@ const ChatBubble: React.FC = () => {
         overlayRef.current.contains(event.target as Node)
       ) {
         setIsExpanded(false);
-        setActiveChat(null); // Reset activeChat when closing the chat
+        setActiveChat(null);
       }
       if (
         showPlaceholder &&
@@ -188,7 +182,6 @@ const ChatBubble: React.FC = () => {
       if (message.content && message.content.trim() !== "") {
         console.log("Received message:", message);
 
-        // Update messages state
         setMessages((prevMessages) => {
           const messageExists = prevMessages.some(
             (msg) =>
@@ -204,20 +197,14 @@ const ChatBubble: React.FC = () => {
           if (!messageExists) {
             setTimeout(() => scrollToBottom(), 100);
 
-            // If message is for current user and not from current user
             if (message.receiverId === userId && message.senderId !== userId) {
-              // If chat is not active or a different chat is active, increment unread count
               if (!activeChat || activeChat._id !== message.chatId) {
-                // Update total unread count
                 setTotalUnreadCount((prev) => prev + 1);
-
-                // Update unread count for specific chat
                 setUnreadCountByChat((prev) => ({
                   ...prev,
                   [message.chatId]: (prev[message.chatId] || 0) + 1,
                 }));
               } else {
-                // If chat is active, mark as read immediately
                 if (message._id) {
                   markMessagesAsRead([message._id]);
                   return [...prevMessages, { ...message, isRead: true }];
@@ -230,11 +217,8 @@ const ChatBubble: React.FC = () => {
           return prevMessages;
         });
 
-        // Update chat list with new message
         if (chats.some((chat) => chat._id === message.chatId)) {
           updateChatWithMessage(message);
-
-          // Fetch updated unread counts
           fetchUnreadMessageCount();
         }
       }
@@ -317,8 +301,6 @@ const ChatBubble: React.FC = () => {
 
   useEffect(() => {
     calculateUnreadCountByChat();
-
-    // Update total unread count if not looking at active chat
     if (!isExpanded) {
       fetchUnreadMessageCount();
     }
@@ -362,25 +344,12 @@ const ChatBubble: React.FC = () => {
   };
 
   // Populate chat list.
-  // const fetchChats = async () => {
-  //   try {
-  //     if (!userId) return;
-  //     const response = await axiosInstance.get(API.CHAT_LIST + userId);
-  //     const chatsData: IChat[] = response.data.data || [];
-  //     setChats(chatsData);
-  //   } catch (error) {
-  //     console.error(comments.CHAT_FETCH_FAIL, error);
-  //   }
-  // };
-
   const fetchChats = async () => {
     try {
       if (!userId) return;
       const response = await axiosInstance.get(API.CHAT_LIST + userId);
       const chatsData: IChat[] = response.data.data || [];
       setChats(chatsData);
-
-      // Initialize unread counts for each chat
       const unreadCounts: Record<string, number> = {};
       for (const chat of chatsData) {
         try {
@@ -409,35 +378,7 @@ const ChatBubble: React.FC = () => {
     }
   };
 
-  // Populate messages of a chat..
-  // const fetchMessages = async (chatId: string) => {
-  //   try {
-  //     if (!userId) return;
-  //     setIsLoading(true);
-  //     const response = await axiosInstance.get(API.CHAT_MESSAGES + chatId);
-  //     let messagesArray: IMessage[] = [];
-  //     if (
-  //       response.data.success &&
-  //       response.data.data &&
-  //       response.data.data.messages
-  //     ) {
-  //       messagesArray = response.data.data.messages;
-  //     } else if (response.data.messages) {
-  //       messagesArray = response.data.messages;
-  //     }
-  //     setMessages(
-  //       messagesArray.map((msg: IMessage) => ({
-  //         ...msg,
-  //         isRead: msg.isRead || false,
-  //       }))
-  //     );
-  //   } catch (error) {
-  //     console.error(comments.MSG_FETCH_FAIL, error);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
+  // Populate messages of a chat.
   const fetchMessages = async (chatId: string) => {
     try {
       if (!userId) return;
@@ -454,7 +395,6 @@ const ChatBubble: React.FC = () => {
         messagesArray = response.data.messages;
       }
 
-      // Set messages in state
       setMessages(
         messagesArray.map((msg: IMessage) => ({
           ...msg,
@@ -462,12 +402,10 @@ const ChatBubble: React.FC = () => {
         }))
       );
 
-      // Filter unread messages not sent by the current user
       const unreadMessageIds = messagesArray
         .filter((msg) => !msg.isRead && msg.senderId !== userId && msg._id)
         .map((msg) => msg._id as string);
 
-      // Mark unread messages as read
       if (unreadMessageIds.length > 0) {
         await markMessagesAsRead(unreadMessageIds);
       }
@@ -496,30 +434,22 @@ const ChatBubble: React.FC = () => {
       setShowPlaceholder(true);
     } else {
       if (isExpanded) {
-        setActiveChat(null); // Reset activeChat when minimizing
+        setActiveChat(null);
       }
       setIsExpanded(!isExpanded);
     }
   };
-
-  // const handleChatClick = (chat: IChat) => {
-  //   setActiveChat(chat);
-  //   fetchMessages(chat._id).then(() => setTimeout(() => scrollToBottom(), 100));
-  //   socket.emit("joinRoom", chat._id);
-  // };
 
   const handleChatClick = (chat: IChat) => {
     setActiveChat(chat);
     fetchMessages(chat._id).then(() => {
       setTimeout(() => scrollToBottom(), 100);
 
-      // Reset unread count for this chat
       setUnreadCountByChat((prev) => ({
         ...prev,
         [chat._id]: 0,
       }));
 
-      // Update total unread count
       fetchUnreadMessageCount();
     });
     socket.emit("joinRoom", chat._id);
@@ -575,14 +505,13 @@ const ChatBubble: React.FC = () => {
     return <p>{message.content}</p>;
   };
 
-  // Periodically update unread counts
+  // to update unread counts
   useEffect(() => {
     if (!userId) return;
 
     const intervalId = setInterval(() => {
       fetchUnreadMessageCount();
 
-      // Update unread counts for each chat if not in expanded view
       if (!isExpanded) {
         const updateChatUnreadCounts = async () => {
           const updatedCounts = { ...unreadCountByChat };
