@@ -39,6 +39,7 @@ const CourseForm = () => {
     totalLessons: 0,
     enrollmentCount: 0,
     isActive: false,
+    createdAt: Date.now(),
   };
   const [formData, setFormData] = useState<ICourse>(initialCourseData);
 

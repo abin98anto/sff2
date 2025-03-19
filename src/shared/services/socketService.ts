@@ -34,7 +34,6 @@ class SocketService {
 
     socket.on("receive_message", (message: MessageNotification) => {
       console.log("Message received:", message);
-      // Add logic here if you want to update chat UI in real-time
     });
 
     socket.on("connect_error", (error) => {

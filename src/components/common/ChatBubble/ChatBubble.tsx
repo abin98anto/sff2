@@ -343,11 +343,12 @@ const ChatBubble: React.FC = () => {
     }
   };
 
-  // Populate chat list.
+  // Populate chat list - a sperarate route that gets the count by going through all the chats in the chat list.
   const fetchChats = async () => {
     try {
       if (!userId) return;
       const response = await axiosInstance.get(API.CHAT_LIST + userId);
+      // console.log("the chat list : ", response.data.data);
       const chatsData: IChat[] = response.data.data || [];
       setChats(chatsData);
       const unreadCounts: Record<string, number> = {};
@@ -555,6 +556,12 @@ const ChatBubble: React.FC = () => {
 
   return (
     <>
+      {isExpanded && userId && isLoading && (
+        <div>
+          <Loading />
+        </div>
+      )}
+
       <div className="chat-bubble-minimized" onClick={handleBubbleClick}>
         <span className="chat-icon">💬</span>
         {totalUnreadCount > 0 && (
@@ -604,6 +611,14 @@ const ChatBubble: React.FC = () => {
                             ? chat.courseId
                             : (chat.courseId as ICourse).title}
                           )
+                        </span>
+                        <span>
+                          {/* to display the last message */}
+                          {chat?.lastMessage && (
+                            <div className="chat-last-message">
+                              {chat.lastMessage.content}
+                            </div>
+                          )}
                         </span>
                       </div>
                       {unreadCountByChat[chat._id] > 0 && (

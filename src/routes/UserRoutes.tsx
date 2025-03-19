@@ -11,6 +11,7 @@ import ChatBubble from "../components/common/ChatBubble/ChatBubble";
 import VideoCallPage from "../components/common/VideoCallPage/VideoCallPage";
 import UserProfile from "../pages/user/UserProfile/UserProfile";
 import ProtectedRoute from "../components/common/ProtectedRoutes/ProtectedRoutes";
+import ChatBubble2 from "../components/common/ChatBubble/ChatBubble2";
 
 const UserRoutes = () => {
   return (
@@ -34,7 +35,8 @@ const UserRoutes = () => {
         <Route path="*" element={<PageNotFound />} />
       </Routes>
 
-      <ChatBubble />
+      <ChatBubble2 />
+      {/* <ChatBubble /> */}
     </>
   );
 };
