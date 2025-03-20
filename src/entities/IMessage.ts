@@ -1,6 +1,8 @@
 import { IUser } from "./IUser";
 
 export default interface IMessage {
+  updatedAt?: Date;
+  createdAt?: Date;
   _id?: string;
   chatId: string;
   senderId: string | IUser;
@@ -8,5 +10,5 @@ export default interface IMessage {
   content: string;
   contentType: string;
   isRead: boolean;
-  timestamp: Date;
+  // timestamp: Date;
 }

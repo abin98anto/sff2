@@ -226,6 +226,7 @@ const ChatBubble: React.FC = () => {
 
     // to display notification.
     socket.on(comments.IO_MSG_NOTIFICATION, (notification) => {
+      console.log("new notification")
       if (
         notification.senderId !== userId &&
         notification.receiverId === userId &&
@@ -480,7 +481,7 @@ const ChatBubble: React.FC = () => {
         content: newMessage,
         contentType: "text",
         isRead: false,
-        timestamp: new Date(),
+        // timestamp: new Date(),
       };
 
       try {

@@ -7,6 +7,7 @@ import ChatBubble from "../components/common/ChatBubble/ChatBubble";
 import VideoCallPage from "../components/common/VideoCallPage/VideoCallPage";
 import MyStudents from "../pages/tutor/MyStudents/MyStudents";
 import ProtectedRoute from "../components/common/ProtectedRoutes/ProtectedRoutes";
+import ChatBubble2 from "../components/common/ChatBubble/ChatBubble2";
 
 const TutorRoutes = () => {
   return (
@@ -22,7 +23,8 @@ const TutorRoutes = () => {
           <Route path="/video-call" element={<VideoCallPage />} />
         </Route>
       </Routes>
-      <ChatBubble />
+      <ChatBubble2 />
+      {/* <ChatBubble /> */}
     </>
   );
 };
