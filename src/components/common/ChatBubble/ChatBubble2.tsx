@@ -104,7 +104,6 @@ const ChatBubble2 = () => {
       if (!userId) return [];
 
       const response = await axiosInstance.get(API.CHAT_MESSAGES + chatId);
-      // console.log("messages in chat", response.data.data);
       setMessages(response.data.data);
       return response.data.data;
     } catch (error) {
@@ -119,7 +118,6 @@ const ChatBubble2 = () => {
   const handleChatClick = async (chat: IChat) => {
     setActiveChat(chat);
     const fetchedMessages = await fetchMessages(chat._id);
-    // fetchMessages(chat._id).then(() => {
     console.log("the messages ssss", fetchMessages);
     if (fetchedMessages) {
       const unReadMessageIds = fetchedMessages
@@ -134,7 +132,6 @@ const ChatBubble2 = () => {
         setTotalUnreadCount((prev) => prev - unReadMessageIds.length);
         markMessagesAsRead(unReadMessageIds);
       }
-      // });
 
       scrollToBottom();
     }
@@ -214,7 +211,6 @@ const ChatBubble2 = () => {
 
     // get the new message.
     socket.on(comments.IO_RECIEVE_MSG, (message: IMessage) => {
-      // console.log("first message", message);
       setMessages((prevMessages) => {
         const messageExists = prevMessages.some(
           (msg) => msg._id === message._id
@@ -329,7 +325,7 @@ const ChatBubble2 = () => {
         return "";
       } else {
         const msgPrefix = chat.lastMessage.senderId === userId ? "You: " : "";
-        return msgPrefix + chat.lastMessage.content.substring(0, 20);
+        return msgPrefix + chat.lastMessage.content.substring(0, 10);
       }
     } catch (error) {
       console.log("error fetching last message", error);
@@ -385,7 +381,7 @@ const ChatBubble2 = () => {
                         <span>
                           {chat?.lastMessage && (
                             <div className="chat-last-message">
-                              <div className="msg">{getLastMessage(chat)}</div>
+                              <div className="msg">{`${getLastMessage(chat)}..`}</div>
                               <div className="time">
                                 {formatDate(chat.lastMessage.createdAt!)}
                               </div>
