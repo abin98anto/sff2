@@ -7,7 +7,7 @@ import CourseListPage from "../pages/user/CourseListPage/CourseListPage";
 import CourseDetailsPage from "../pages/user/CourseDetailsPage/CourseDetailsPage";
 import EnrolledPage from "../pages/user/EnrolledPage/EnrolledPage";
 import MyLearningPage from "../pages/user/MyLearningPage/MyLearningPage";
-import ChatBubble from "../components/common/ChatBubble/ChatBubble";
+// import ChatBubble from "../components/common/ChatBubble/ChatBubble";
 import VideoCallPage from "../components/common/VideoCallPage/VideoCallPage";
 import UserProfile from "../pages/user/UserProfile/UserProfile";
 import ProtectedRoute from "../components/common/ProtectedRoutes/ProtectedRoutes";

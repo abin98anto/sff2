@@ -81,7 +81,6 @@ const ChatBubble2 = () => {
   // fetching chats when the chat bubble expands.
   const fetchChats = async () => {
     try {
-      setIsLoading(true);
       if (!userId) return;
 
       const response = await axiosInstance.get(API.CHAT_LIST + userId);
@@ -89,8 +88,6 @@ const ChatBubble2 = () => {
       setAllChats(response.data.data);
     } catch (error) {
       console.error(`Failed to fetch unread count for chat`, error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -217,7 +214,9 @@ const ChatBubble2 = () => {
               );
             } else {
               if (message._id) {
+                console.log("marking alfkaslalsf");
                 // mark the new messages as read.
+                markMessagesAsRead([message._id]);
                 return [...prevMessages, { ...message, isRead: true }];
               }
             }
@@ -267,8 +266,28 @@ const ChatBubble2 = () => {
       }
     });
 
+    fetchChats();
     scrollToBottom();
-  }, [messages, activeChat]);
+  }, [messages, showNotifications, activeChat]);
+
+  // mark message as read function
+  const markMessagesAsRead = async (messageIds: string[]) => {
+    try {
+      // console.log("mark read", messageIds);
+      if (messageIds.length) return;
+
+      await axiosInstance.put("/chat/mark-as-read", { messageIds });
+      setMessages((prevMessage) =>
+        prevMessage.map((msg) =>
+          messageIds.includes(msg._id as string)
+            ? { ...msg, isRead: true }
+            : msg
+        )
+      );
+    } catch (error) {
+      console.log("error marking message as read", error);
+    }
+  };
 
   return (
     <>

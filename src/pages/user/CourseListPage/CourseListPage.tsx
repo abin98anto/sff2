@@ -24,7 +24,7 @@ const CourseListPage = () => {
   const [_, setTotalCourses] = useState(0);
   const [loading, setLoading] = useState(true);
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
-  const coursesPerPage = 8;
+  const coursesPerPage = 5;
   const [appliedSearchTerm, setAppliedSearchTerm] = useState("");
 
   useEffect(() => {
