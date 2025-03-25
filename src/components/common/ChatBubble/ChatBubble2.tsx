@@ -98,26 +98,46 @@ const ChatBubble2 = () => {
   };
 
   // fetch messages for a specific chat
-  const fetchMessages = async (chatId: string) => {
+  const fetchMessages = async (chatId: string): Promise<IMessage[]> => {
     try {
       setIsLoading(true);
-      if (!userId) return;
+      if (!userId) return [];
 
       const response = await axiosInstance.get(API.CHAT_MESSAGES + chatId);
       // console.log("messages in chat", response.data.data);
       setMessages(response.data.data);
+      return response.data.data;
     } catch (error) {
       console.log(comments.MSG_FETCH_FAIL, error);
+      return [];
     } finally {
       setIsLoading(false);
     }
   };
 
   // Selecting a specific chat.
-  const handleChatClick = (chat: IChat) => {
+  const handleChatClick = async (chat: IChat) => {
     setActiveChat(chat);
-    fetchMessages(chat._id);
-    scrollToBottom();
+    const fetchedMessages = await fetchMessages(chat._id);
+    // fetchMessages(chat._id).then(() => {
+    console.log("the messages ssss", fetchMessages);
+    if (fetchedMessages) {
+      const unReadMessageIds = fetchedMessages
+        .filter(
+          (msg: IMessage) =>
+            msg.receiverId === userId && msg.senderId !== userId && !msg.isRead
+        )
+        .map((msg: IMessage) => msg._id as string);
+
+      console.log("unread msg", unReadMessageIds);
+      if (unReadMessageIds.length > 0) {
+        setTotalUnreadCount((prev) => prev - unReadMessageIds.length);
+        markMessagesAsRead(unReadMessageIds);
+      }
+      // });
+
+      scrollToBottom();
+    }
   };
 
   // format date.
@@ -194,40 +214,45 @@ const ChatBubble2 = () => {
 
     // get the new message.
     socket.on(comments.IO_RECIEVE_MSG, (message: IMessage) => {
+      // console.log("first message", message);
       setMessages((prevMessages) => {
         const messageExists = prevMessages.some(
           (msg) => msg._id === message._id
         );
 
-        if (!messageExists) {
-          setTimeout(() => scrollToBottom(), 100);
+        if (
+          message.receiverId === userId &&
+          message.senderId !== userId &&
+          activeChat &&
+          activeChat._id === message.chatId
+        ) {
+          console.log("the message is in active chat.");
+          markMessagesAsRead([message._id as string]);
+        }
 
-          if (message.receiverId === userId && message.senderId !== userId) {
-            if (!activeChat || activeChat._id !== message.chatId) {
-              setTotalUnreadCount((prev) => prev + 1);
-              // need to increament the unread count of the chat.
-              setAllChats((prevChats) =>
-                prevChats.map((chat) => {
-                  if (chat._id === message.chatId) {
-                    return {
-                      ...chat,
-                      unreadMessageCount: (chat.unreadMessageCount || 0) + 1,
-                      lastMessage: message,
-                    };
-                  }
-                  return chat;
-                })
-              );
-            } else {
-              if (message._id) {
-                console.log("marking alfkaslalsf");
-                // mark the new messages as read.
-                markMessagesAsRead([message._id]);
-                return [...prevMessages, { ...message, isRead: true }];
-              }
-            }
+        if (!messageExists) {
+          // If not in active chat, increment unread counts
+          if (!(activeChat && activeChat._id === message.chatId)) {
+            setTotalUnreadCount((prev) => prev + 1);
+            setAllChats((prevChats) =>
+              prevChats.map((chat) => {
+                if (chat._id === message.chatId) {
+                  return {
+                    ...chat,
+                    unreadMessageCount: (chat.unreadMessageCount || 0) + 1,
+                  };
+                }
+                return chat;
+              })
+            );
           }
-          return [...prevMessages, message];
+
+          return [
+            ...prevMessages,
+            activeChat && activeChat._id === message.chatId
+              ? { ...message, isRead: true }
+              : message,
+          ];
         }
         return prevMessages;
       });
@@ -279,10 +304,13 @@ const ChatBubble2 = () => {
   // mark message as read function
   const markMessagesAsRead = async (messageIds: string[]) => {
     try {
-      // console.log("mark read", messageIds);
-      if (messageIds.length) return;
+      console.log("mark read", messageIds);
+      if (messageIds.length === 0) return;
 
-      await axiosInstance.put("/chat/mark-as-read", { messageIds });
+      const response = await axiosInstance.put("/chat/mark-as-read", {
+        messageIds,
+      });
+      console.log("the respsonenso", response);
       setMessages((prevMessage) =>
         prevMessage.map((msg) =>
           messageIds.includes(msg._id as string)
