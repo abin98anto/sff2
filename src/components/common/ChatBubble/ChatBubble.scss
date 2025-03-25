@@ -143,6 +143,7 @@
           .chat-info {
             display: flex;
             flex-direction: column;
+            width: 100%;
           }
 
           .chat-name {
@@ -167,6 +168,18 @@
             font-size: 12px;
             font-weight: bold;
             margin-left: 5px;
+          }
+
+          .chat-last-message {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8em;
+            color: #505050;
+            max-width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 2px;
           }
         }
 
@@ -267,7 +280,7 @@
       }
     }
   }
-  
+
   @media (max-width: 768px) {
     position: absolute;
     top: 0;

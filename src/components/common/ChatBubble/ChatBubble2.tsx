@@ -295,6 +295,20 @@ const ChatBubble2 = () => {
     }
   };
 
+  const getLastMessage = (chat: IChat) => {
+    try {
+      if (!chat || !chat.lastMessage) {
+        return "";
+      } else {
+        const msgPrefix = chat.lastMessage.senderId === userId ? "You: " : "";
+        return msgPrefix + chat.lastMessage.content.substring(0, 20);
+      }
+    } catch (error) {
+      console.log("error fetching last message", error);
+      return "";
+    }
+  };
+
   return (
     <>
       <div className="chat-bubble-minimized" onClick={handleBubbleClick}>
@@ -343,14 +357,19 @@ const ChatBubble2 = () => {
                         <span>
                           {chat?.lastMessage && (
                             <div className="chat-last-message">
-                              {chat.lastMessage.content}
+                              <div className="msg">{getLastMessage(chat)}</div>
+                              <div className="time">
+                                {formatDate(chat.lastMessage.createdAt!)}
+                              </div>
                             </div>
                           )}
                         </span>
                       </div>
                       {chat.unreadMessageCount! > 0 && (
-                        <div className="chat-unread-count">
-                          {chat.unreadMessageCount}
+                        <div className="chat-unread">
+                          <div className="chat-unread-count">
+                            {chat.unreadMessageCount}
+                          </div>
                         </div>
                       )}
                     </div>
