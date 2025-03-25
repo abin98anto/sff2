@@ -43,7 +43,9 @@ const ChatBubble2 = () => {
   // expanding chat bubble.
   const handleBubbleClick = () => {
     setIsLoading(true);
-    // if (!userId || allChats.length === 0) {}
+    if (!userId || allChats.length === 0) {
+      setShowPlaceholder(true);
+    }
     const newExpandedState = !isExpanded;
     if (newExpandedState) {
       fetchChats();
@@ -59,15 +61,19 @@ const ChatBubble2 = () => {
     if (!isExpanded) return;
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        chatRef.current &&
-        !chatRef.current.contains(event.target as Node) &&
-        !document
-          .querySelector(".chat-bubble-minimized")
-          ?.contains(event.target as Node)
-      ) {
+      const clickedOutside =
+        (chatRef.current &&
+          !chatRef.current.contains(event.target as Node) &&
+          !document
+            .querySelector(".chat-bubble-minimized")
+            ?.contains(event.target as Node)) ||
+        (placeholderRef.current &&
+          !placeholderRef.current.contains(event.target as Node));
+
+      if (clickedOutside) {
         setIsExpanded(false);
         setActiveChat(null);
+        setShowPlaceholder(false);
       }
     };
 
@@ -127,7 +133,7 @@ const ChatBubble2 = () => {
     }
   };
 
-  // Video call design
+  // Video call history design
   const renderMessageContent = (message: IMessage) => {
     if (message.contentType === "video-call") {
       return (
@@ -298,10 +304,13 @@ const ChatBubble2 = () => {
         )}
       </div>
 
-      {showPlaceholder && !userId && (
-        <div className="chat-placeholder" ref={placeholderRef}>
-          <span>There are no chats to see</span>
-        </div>
+      {showPlaceholder && (!userId || allChats.length === 0) && (
+        <>
+          <div className="chat-overlay" ref={overlayRef}></div>
+          <div className="chat-placeholder" ref={placeholderRef}>
+            <span>There are no chats to see</span>
+          </div>
+        </>
       )}
 
       {isExpanded && userId && allChats.length > 0 && (
