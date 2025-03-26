@@ -90,7 +90,7 @@ const ChatBubble2 = () => {
       if (!userId) return;
 
       const response = await axiosInstance.get(API.CHAT_LIST + userId);
-      console.log("chat list : ", response.data.data);
+      // console.log("chat list : ", response.data.data);
       setAllChats(response.data.data);
     } catch (error) {
       console.error(`Failed to fetch unread count for chat`, error);
@@ -118,7 +118,7 @@ const ChatBubble2 = () => {
   const handleChatClick = async (chat: IChat) => {
     setActiveChat(chat);
     const fetchedMessages = await fetchMessages(chat._id);
-    console.log("the messages ssss", fetchMessages);
+    // console.log("the messages ssss", fetchMessages);
     if (fetchedMessages) {
       const unReadMessageIds = fetchedMessages
         .filter(
@@ -127,7 +127,7 @@ const ChatBubble2 = () => {
         )
         .map((msg: IMessage) => msg._id as string);
 
-      console.log("unread msg", unReadMessageIds);
+      // console.log("unread msg", unReadMessageIds);
       if (unReadMessageIds.length > 0) {
         setTotalUnreadCount((prev) => prev - unReadMessageIds.length);
         markMessagesAsRead(unReadMessageIds);
@@ -184,6 +184,8 @@ const ChatBubble2 = () => {
           isRead: false,
           createdAt: new Date(),
         };
+
+        socket.emit("send-message", messageToSent);
         await axiosInstance.post(API.MSG_SENT, messageToSent);
         setNewMessage("");
         setTimeout(() => scrollToBottom(), 100);
@@ -201,97 +203,6 @@ const ChatBubble2 = () => {
     }
   };
 
-  // socket listeners
-  useEffect(() => {
-    if (!userId) return;
-
-    if (!socket.connected) socket.connect();
-
-    if (activeChat) socket.emit("joinRoom", activeChat._id);
-
-    // get the new message.
-    socket.on(comments.IO_RECIEVE_MSG, (message: IMessage) => {
-      setMessages((prevMessages) => {
-        const messageExists = prevMessages.some(
-          (msg) => msg._id === message._id
-        );
-
-        if (
-          message.receiverId === userId &&
-          message.senderId !== userId &&
-          activeChat &&
-          activeChat._id === message.chatId
-        ) {
-          markMessagesAsRead([message._id as string]);
-        }
-
-        if (!messageExists) {
-          if (!(activeChat && activeChat._id === message.chatId)) {
-            setTotalUnreadCount((prev) => prev + 1);
-            setAllChats((prevChats) =>
-              prevChats.map((chat) => {
-                if (chat._id === message.chatId) {
-                  return {
-                    ...chat,
-                    unreadMessageCount: (chat.unreadMessageCount || 0) + 1,
-                  };
-                }
-                return chat;
-              })
-            );
-          }
-
-          return [
-            ...prevMessages,
-            activeChat && activeChat._id === message.chatId
-              ? { ...message, isRead: true }
-              : message,
-          ];
-        }
-        return prevMessages;
-      });
-
-      if (message.chatId) {
-        setAllChats((prevChats) =>
-          prevChats.map((chat) => {
-            if (chat._id === message.chatId) {
-              return {
-                ...chat,
-                lastMessage: message,
-              };
-            }
-            return chat;
-          })
-        );
-      }
-    });
-
-    // display message notification
-    socket.on(comments.IO_MSG_NOTIFICATION, (noti: IMessage) => {
-      console.log("new notification", noti);
-      if (
-        noti.senderId !== userId &&
-        noti.receiverId === userId &&
-        showNotifications
-      ) {
-        Swal.fire({
-          toast: true,
-          position: "top-right",
-          icon: "info",
-          title: "New Message",
-          text: `${noti.senderId}: ${noti.content}`,
-          showConfirmButton: false,
-          timer: 6000,
-          timerProgressBar: true,
-        });
-      }
-    });
-
-    fetchChats();
-    scrollToBottom();
-  }, [messages, showNotifications, activeChat]);
-
-  // mark message as read function
   const markMessagesAsRead = async (messageIds: string[]) => {
     try {
       if (messageIds.length === 0) return;
@@ -325,6 +236,76 @@ const ChatBubble2 = () => {
       return "";
     }
   };
+
+  const handleNewMessage = (message: IMessage) => {
+    setAllChats((prevChats) => {
+      const chatToUpdate = prevChats.find(
+        (chat) => chat._id === message.chatId
+      );
+
+      if (chatToUpdate) {
+        const otherChats = prevChats.filter(
+          (chat) => chat._id !== message.chatId
+        );
+
+        if (chatToUpdate.lastMessage) {
+          chatToUpdate.unreadMessageCount =
+            (chatToUpdate.unreadMessageCount || 0) + 1;
+          chatToUpdate.lastMessage = message;
+
+          return [...otherChats, chatToUpdate].sort(
+            (a, b) =>
+              new Date(b.lastMessage?.createdAt || 0).getTime() -
+              new Date(a.lastMessage?.createdAt || 0).getTime()
+          );
+        }
+      }
+
+      return prevChats;
+    });
+
+    if (activeChat?._id === message.chatId) {
+      setMessages((prev) => [...prev, message]);
+    }
+  };
+
+  // To receive messages.
+  useEffect(() => {
+    if (!socket.connected) socket.connect();
+    socket.emit("joinRoom", userId);
+
+    socket.on(comments.IO_RECIEVE_MSG, handleNewMessage);
+
+    scrollToBottom();
+    return () => {
+      socket.off(comments.IO_RECIEVE_MSG, handleNewMessage);
+    };
+  }, [userId, activeChat]);
+
+  // To scroll to bottom.
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // To display last message and unread count.
+  useEffect(() => {
+    socket.on(comments.IO_RECIEVE_MSG, (message: IMessage) => {
+      console.log("new message to display", message);
+      if (activeChat?._id === message.chatId) {
+        const updatedChats = allChats.map((chat) => {
+          if (chat._id === message.chatId) {
+            return {
+              ...chat,
+              unreadMessageCount: (chat?.unreadMessageCount || 0) + 1,
+              lastMessage: message,
+            };
+          }
+          return chat;
+        });
+        setAllChats(updatedChats);
+      }
+    });
+  }, []);
 
   return (
     <>
@@ -412,9 +393,9 @@ const ChatBubble2 = () => {
               {activeChat && (
                 <>
                   <div className="chat-messages" ref={messagesContainerRef}>
-                    {messages.map((msg: IMessage) => (
+                    {messages.map((msg: IMessage, index) => (
                       <div
-                        key={msg._id}
+                        key={`${msg._id || "message"}-${index}`}
                         className={`message ${
                           msg.senderId === userId ? "sent" : "received"
                         } ${
