@@ -707,78 +707,119 @@
 
 // export default ChatBubble;
 
-
-
-
 // from the new chat bubbble:
-  // socket listeners
-  // useEffect(() => {
-  //   if (!userId) return;
+// socket listeners
+// useEffect(() => {
+//   if (!userId) return;
 
-  //   if (!socket.connected) socket.connect();
+//   if (!socket.connected) socket.connect();
 
-  //   // if (activeChat) socket.emit("joinRoom", activeChat._id);
-  //   if (activeChat) socket.emit("joinRoom", userId);
+//   // if (activeChat) socket.emit("joinRoom", activeChat._id);
+//   if (activeChat) socket.emit("joinRoom", userId);
 
-  //   // receive new message.
-  //   socket.on(comments.IO_RECIEVE_MSG, (message: IMessage) => {
-  //     console.log("new message arrived", message);
-  //     setMessages((prevMessages) => {
-  //       const messageExists = prevMessages.some(
-  //         (msg) => msg._id === message._id
-  //       );
+//   // receive new message.
+//   socket.on(comments.IO_RECIEVE_MSG, (message: IMessage) => {
+//     console.log("new message arrived", message);
+//     setMessages((prevMessages) => {
+//       const messageExists = prevMessages.some(
+//         (msg) => msg._id === message._id
+//       );
 
-  //       if (
-  //         message.receiverId === userId &&
-  //         message.senderId !== userId &&
-  //         activeChat &&
-  //         activeChat._id === message.chatId
-  //       ) {
-  //         markMessagesAsRead([message._id as string]);
-  //       }
+//       if (
+//         message.receiverId === userId &&
+//         message.senderId !== userId &&
+//         activeChat &&
+//         activeChat._id === message.chatId
+//       ) {
+//         markMessagesAsRead([message._id as string]);
+//       }
 
-  //       if (!messageExists) {
-  //         if (!(activeChat && activeChat._id === message.chatId)) {
-  //           setTotalUnreadCount((prev) => prev + 1);
-  //           setAllChats((prevChats) =>
-  //             prevChats.map((chat) => {
-  //               if (chat._id === message.chatId) {
-  //                 return {
-  //                   ...chat,
-  //                   unreadMessageCount: (chat.unreadMessageCount || 0) + 1,
-  //                 };
-  //               }
-  //               return chat;
-  //             })
-  //           );
-  //         }
+//       if (!messageExists) {
+//         if (!(activeChat && activeChat._id === message.chatId)) {
+//           setTotalUnreadCount((prev) => prev + 1);
+//           setAllChats((prevChats) =>
+//             prevChats.map((chat) => {
+//               if (chat._id === message.chatId) {
+//                 return {
+//                   ...chat,
+//                   unreadMessageCount: (chat.unreadMessageCount || 0) + 1,
+//                 };
+//               }
+//               return chat;
+//             })
+//           );
+//         }
 
-  //         return [
-  //           ...prevMessages,
-  //           activeChat && activeChat._id === message.chatId
-  //             ? { ...message, isRead: true }
-  //             : message,
-  //         ];
-  //       }
-  //       return prevMessages;
-  //     });
+//         return [
+//           ...prevMessages,
+//           activeChat && activeChat._id === message.chatId
+//             ? { ...message, isRead: true }
+//             : message,
+//         ];
+//       }
+//       return prevMessages;
+//     });
 
-  //     if (message.chatId) {
-  //       setAllChats((prevChats) =>
-  //         prevChats.map((chat) => {
-  //           if (chat._id === message.chatId) {
-  //             return {
-  //               ...chat,
-  //               lastMessage: message,
-  //             };
-  //           }
-  //           return chat;
-  //         })
-  //       );
-  //     }
-  //   });
+//     if (message.chatId) {
+//       setAllChats((prevChats) =>
+//         prevChats.map((chat) => {
+//           if (chat._id === message.chatId) {
+//             return {
+//               ...chat,
+//               lastMessage: message,
+//             };
+//           }
+//           return chat;
+//         })
+//       );
+//     }
+//   });
 
-  //   fetchChats();
-  //   scrollToBottom();
-  // }, [messages, showNotifications, activeChat]);
+//   fetchChats();
+//   scrollToBottom();
+// }, [messages, showNotifications, activeChat]);
 
+// To display last message and unread count.
+// useEffect(() => {
+//   socket.on(comments.IO_RECIEVE_MSG, (message: IMessage) => {
+//     // console.log("new message to display", message);
+//     if (activeChat?._id === message.chatId) {
+//       const updatedChats = allChats.map((chat) => {
+//         if (chat._id === message.chatId) {
+//           return {
+//             ...chat,
+//             unreadMessageCount: (chat?.unreadMessageCount || 0) + 1,
+//             lastMessage: message,
+//           };
+//         }
+//         return chat;
+//       });
+//       setAllChats(updatedChats);
+//     }
+//   });
+// }, []);
+
+// const getUnreadMessageCount = (userid: string): ReactNode => {
+//   try {
+//     const selectedChat = allChats.find((chat) =>
+//       [chat.studentId._id, chat.tutorId._id].includes(userid)
+//     );
+
+//     if (
+//       selectedChat &&
+//       selectedChat.unreadMessageCount &&
+//       selectedChat.lastMessage?.senderId !== userid
+//     ) {
+//       return (
+//         <div className="chat-unread-count">
+//           {selectedChat.unreadMessageCount}
+//         </div>
+//       );
+//     } else {
+//       return null;
+//     }
+//   } catch (error) {
+//     console.log("error getting the unread message count for the user", error);
+//     return null;
+//   }
+// };

@@ -10,7 +10,7 @@ import axiosInstance from "../../../shared/config/axiosConfig";
 import API from "../../../shared/constants/API";
 import comments from "../../../shared/constants/comments";
 import { socket } from "../../../shared/config/socketConfig";
-import Swal from "sweetalert2";
+// import Swal from "sweetalert2";
 
 interface IChat {
   _id: string;
@@ -33,7 +33,7 @@ const ChatBubble2 = () => {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [newMessage, setNewMessage] = useState<string>("");
   const [totalUnreadCount, setTotalUnreadCount] = useState<number>(0);
-  const [showNotifications, setShowNotifications] = useState<boolean>(true);
+  // const [showNotifications, setShowNotifications] = useState<boolean>(true);
 
   const placeholderRef = useRef<HTMLDivElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
@@ -118,7 +118,7 @@ const ChatBubble2 = () => {
   const handleChatClick = async (chat: IChat) => {
     setActiveChat(chat);
     const fetchedMessages = await fetchMessages(chat._id);
-    // console.log("the messages ssss", fetchMessages);
+
     if (fetchedMessages) {
       const unReadMessageIds = fetchedMessages
         .filter(
@@ -127,10 +127,10 @@ const ChatBubble2 = () => {
         )
         .map((msg: IMessage) => msg._id as string);
 
-      // console.log("unread msg", unReadMessageIds);
       if (unReadMessageIds.length > 0) {
         setTotalUnreadCount((prev) => prev - unReadMessageIds.length);
         markMessagesAsRead(unReadMessageIds);
+        clearUnreadMessageCount(chat._id);
       }
 
       scrollToBottom();
@@ -151,17 +151,17 @@ const ChatBubble2 = () => {
   };
 
   // Video call history design
-  const renderMessageContent = (message: IMessage) => {
-    if (message.contentType === "video-call") {
-      return (
-        <div className="video-call-message">
-          <span className="phone-icon">📞</span>
-          <span>{message.content}</span>
-        </div>
-      );
-    }
-    return <p>{message.content}</p>;
-  };
+  // const renderMessageContent = (message: IMessage) => {
+  //   if (message.contentType === "video-call") {
+  //     return (
+  //       <div className="video-call-message">
+  //         <span className="phone-icon">📞</span>
+  //         <span>{message.content}</span>
+  //       </div>
+  //     );
+  //   }
+  //   return <p>{message.content}</p>;
+  // };
 
   // send messages.
   const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -238,35 +238,75 @@ const ChatBubble2 = () => {
   };
 
   const handleNewMessage = (message: IMessage) => {
-    setAllChats((prevChats) => {
-      const chatToUpdate = prevChats.find(
-        (chat) => chat._id === message.chatId
-      );
-
-      if (chatToUpdate) {
-        const otherChats = prevChats.filter(
-          (chat) => chat._id !== message.chatId
+    try {
+      setAllChats((prevChats) => {
+        const chatToUpdate = prevChats.find(
+          (chat) => chat._id === message.chatId
         );
 
-        if (chatToUpdate.lastMessage) {
-          chatToUpdate.unreadMessageCount =
-            (chatToUpdate.unreadMessageCount || 0) + 1;
-          chatToUpdate.lastMessage = message;
-
-          return [...otherChats, chatToUpdate].sort(
-            (a, b) =>
-              new Date(b.lastMessage?.createdAt || 0).getTime() -
-              new Date(a.lastMessage?.createdAt || 0).getTime()
+        if (chatToUpdate) {
+          const otherChats = prevChats.filter(
+            (chat) => chat._id !== message.chatId
           );
+
+          if (chatToUpdate.lastMessage) {
+            chatToUpdate.unreadMessageCount =
+              (chatToUpdate.unreadMessageCount || 0) + 1;
+            chatToUpdate.lastMessage = message;
+
+            return [...otherChats, chatToUpdate].sort(
+              (a, b) =>
+                new Date(b.lastMessage?.createdAt || 0).getTime() -
+                new Date(a.lastMessage?.createdAt || 0).getTime()
+            );
+          }
         }
+
+        return prevChats;
+      });
+
+      if (activeChat?._id === message.chatId) {
+        setMessages((prev) => [...prev, message]);
       }
-
-      return prevChats;
-    });
-
-    if (activeChat?._id === message.chatId) {
-      setMessages((prev) => [...prev, message]);
+    } catch (error) {
+      console.log("error handling new message", error);
     }
+  };
+
+  const clearUnreadMessageCount = async (chatId: string) => {
+    try {
+      const response = await axiosInstance.post("/chat/clear-unread-count", {
+        chatId,
+      });
+
+      console.log("the clear unread count response", response);
+    } catch (error) {
+      console.log("error clearing unread message count", error);
+    }
+  };
+
+  const renderMessageContent = (message: IMessage) => {
+    if (message.contentType === "video-call") {
+      return (
+        <div className="video-call-message">
+          <span className="phone-icon">📞</span>
+          <span>{message.content}</span>
+        </div>
+      );
+    }
+    return (
+      <div className="message-content-wrapper">
+        <p>{message.content}</p>
+        <span className="timestamp">{formatDate(message.createdAt!)}</span>
+        {message.senderId === userId && (
+          <span
+            className={`message-status ${message.isRead ? "read" : "unread"}`}
+          >
+            ✓
+          </span>
+        )}
+      </div>
+    );
   };
 
   // To receive messages.
@@ -286,26 +326,6 @@ const ChatBubble2 = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  // To display last message and unread count.
-  useEffect(() => {
-    socket.on(comments.IO_RECIEVE_MSG, (message: IMessage) => {
-      console.log("new message to display", message);
-      if (activeChat?._id === message.chatId) {
-        const updatedChats = allChats.map((chat) => {
-          if (chat._id === message.chatId) {
-            return {
-              ...chat,
-              unreadMessageCount: (chat?.unreadMessageCount || 0) + 1,
-              lastMessage: message,
-            };
-          }
-          return chat;
-        });
-        setAllChats(updatedChats);
-      }
-    });
-  }, []);
 
   return (
     <>
@@ -366,11 +386,12 @@ const ChatBubble2 = () => {
                         </span>
                       </div>
                       {chat.unreadMessageCount! > 0 && (
-                        <div className="chat-unread">
-                          <div className="chat-unread-count">
-                            {chat.unreadMessageCount}
-                          </div>
+                        // <div className="chat-unread">
+                        <div className="chat-unread-count">
+                          {chat.unreadMessageCount}
+                          {/* <div>{getUnreadMessageCount(userId)}</div> */}
                         </div>
+                        // </div>
                       )}
                     </div>
                   </li>
@@ -403,9 +424,6 @@ const ChatBubble2 = () => {
                         }`}
                       >
                         {renderMessageContent(msg)}
-                        <span className="timestamp">
-                          {formatDate(msg.createdAt!)}
-                        </span>
                       </div>
                     ))}
                   </div>
