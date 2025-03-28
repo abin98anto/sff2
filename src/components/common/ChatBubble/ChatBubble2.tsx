@@ -22,6 +22,13 @@ interface IChat {
   unreadMessageCount?: number;
 }
 
+interface messageReadData {
+  messageIds: string[];
+  chatId: string;
+  receiverId: string;
+  senderId: string;
+}
+
 const ChatBubble2 = () => {
   const { userInfo } = useAppSelector((state) => state.user);
   const userId = userInfo?._id;
@@ -104,7 +111,12 @@ const ChatBubble2 = () => {
       if (!userId) return [];
 
       const response = await axiosInstance.get(API.CHAT_MESSAGES + chatId);
-      setMessages(response.data.data);
+      // setMessages(response.data.data);
+      setMessages((prevMessages) => {
+        // console.log("messages set", response.data.data);
+        return response.data.data;
+      });
+      console.log("messges set", messages);
       return response.data.data;
     } catch (error) {
       console.log(comments.MSG_FETCH_FAIL, error);
@@ -117,25 +129,35 @@ const ChatBubble2 = () => {
   // Selecting a specific chat.
   const handleChatClick = async (chat: IChat) => {
     setActiveChat(chat);
-    const fetchedMessages = await fetchMessages(chat._id);
-
-    if (fetchedMessages) {
-      const unReadMessageIds = fetchedMessages
-        .filter(
-          (msg: IMessage) =>
-            msg.receiverId === userId && msg.senderId !== userId && !msg.isRead
-        )
-        .map((msg: IMessage) => msg._id as string);
-
-      if (unReadMessageIds.length > 0) {
-        setTotalUnreadCount((prev) => prev - unReadMessageIds.length);
-        markMessagesAsRead(unReadMessageIds);
-        clearUnreadMessageCount(chat._id);
-      }
-
-      scrollToBottom();
-    }
   };
+  useEffect(() => {
+    const fetchChatData = async () => {
+      if (activeChat) {
+        const fetchedMessages = await fetchMessages(activeChat._id);
+
+        if (fetchedMessages) {
+          const unReadMessageIds = fetchedMessages
+            .filter(
+              (msg: IMessage) =>
+                msg.receiverId === userId &&
+                msg.senderId !== userId &&
+                !msg.isRead
+            )
+            .map((msg: IMessage) => msg._id as string);
+
+          if (unReadMessageIds.length > 0) {
+            setTotalUnreadCount((prev) => prev - unReadMessageIds.length);
+            markMessagesAsRead(unReadMessageIds);
+            clearUnreadMessageCount(activeChat._id);
+          }
+
+          scrollToBottom();
+        }
+      }
+    };
+
+    fetchChatData();
+  }, [activeChat]);
 
   // format date.
   const formatDate = (timestamp: Date) => {
@@ -218,6 +240,21 @@ const ChatBubble2 = () => {
             : msg
         )
       );
+
+      console.log("the active chat", activeChat);
+      let senderId =
+        activeChat?.tutorId._id === userId
+          ? activeChat?.studentId._id
+          : activeChat?.tutorId._id;
+      // console.log("sender id", senderId);
+      senderId !== undefined ? senderId : (senderId = "");
+
+      socket.emit("msg-read", {
+        messageIds,
+        chatId: activeChat?._id,
+        receiverId: userId,
+        senderId,
+      });
     } catch (error) {
       console.log("error marking message as read", error);
     }
@@ -268,6 +305,9 @@ const ChatBubble2 = () => {
       if (activeChat?._id === message.chatId) {
         setMessages((prev) => [...prev, message]);
       }
+
+      if (message.senderId !== userId)
+        markMessagesAsRead([message._id as string]);
     } catch (error) {
       console.log("error handling new message", error);
     }
@@ -275,11 +315,9 @@ const ChatBubble2 = () => {
 
   const clearUnreadMessageCount = async (chatId: string) => {
     try {
-      const response = await axiosInstance.post("/chat/clear-unread-count", {
+      await axiosInstance.post("/chat/clear-unread-count", {
         chatId,
       });
-
-      console.log("the clear unread count response", response);
     } catch (error) {
       console.log("error clearing unread message count", error);
     }
@@ -309,12 +347,41 @@ const ChatBubble2 = () => {
     );
   };
 
+  const messageRead = (data: messageReadData) => {
+    try {
+      console.log("msg read in fe", data);
+      if (data.chatId === activeChat?._id) {
+        console.log("the read message is in active chat");
+        setAllChats((prevChats) =>
+          prevChats.map((chat) =>
+            chat._id === data.chatId ? { ...chat, unreadMessageCount: 0 } : chat
+          )
+        );
+
+        console.log("before smss", messages);
+
+        setMessages((prevMessages) =>
+          prevMessages.map((message) => ({
+            ...message,
+            isRead: true,
+          }))
+        );
+      }
+
+      console.log("all chats", messages);
+    } catch (error) {
+      console.log("error marking message as read", error);
+    }
+  };
+
   // To receive messages.
   useEffect(() => {
     if (!socket.connected) socket.connect();
     socket.emit("joinRoom", userId);
 
     socket.on(comments.IO_RECIEVE_MSG, handleNewMessage);
+
+    socket.on("msg-read", messageRead);
 
     scrollToBottom();
     return () => {
