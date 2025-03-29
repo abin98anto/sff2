@@ -10,6 +10,7 @@ import axiosInstance from "../../../shared/config/axiosConfig";
 import API from "../../../shared/constants/API";
 import comments from "../../../shared/constants/comments";
 import { socket } from "../../../shared/config/socketConfig";
+import { set } from "date-fns";
 // import Swal from "sweetalert2";
 
 interface IChat {
@@ -97,6 +98,18 @@ const ChatBubble2 = () => {
       if (!userId) return;
       const response = await axiosInstance.get(API.CHAT_LIST + userId);
       setAllChats(response.data.data);
+      const totalCount = allChats.reduce((total, chat) => {
+        if (
+          chat.unreadMessageCount &&
+          chat.lastMessage &&
+          chat.lastMessage.receiverId === userId
+        ) {
+          return total + chat.unreadMessageCount;
+        }
+        return total;
+      }, 0);
+
+      setTotalUnreadCount(totalCount);
     } catch (error) {
       console.error(`Failed to fetch unread count for chat`, error);
     }
@@ -259,8 +272,53 @@ const ChatBubble2 = () => {
     }
   };
 
+  // const handleNewMessage = (message: IMessage) => {
+  //   try {
+  //     setAllChats((prevChats) => {
+  //       const chatToUpdate = prevChats.find(
+  //         (chat) => chat._id === message.chatId
+  //       );
+
+  //       if (chatToUpdate) {
+  //         const otherChats = prevChats.filter(
+  //           (chat) => chat._id !== message.chatId
+  //         );
+
+  //         if (chatToUpdate.lastMessage) {
+  //           chatToUpdate.unreadMessageCount =
+  //             (chatToUpdate.unreadMessageCount || 0) + 1;
+  //           chatToUpdate.lastMessage = message;
+
+  //           return [...otherChats, chatToUpdate].sort(
+  //             (a, b) =>
+  //               new Date(b.lastMessage?.createdAt || 0).getTime() -
+  //               new Date(a.lastMessage?.createdAt || 0).getTime()
+  //           );
+  //         }
+  //       }
+
+  //       return prevChats;
+  //     });
+  //     setTotalUnreadCount((prev) => prev + 1);
+
+  //     if (activeChat?._id === message.chatId) {
+  //       setMessages((prev) => [...prev, message]);
+  //       setTotalUnreadCount((prev) => prev - 1);
+  //     }
+
+  //     if (message.senderId !== userId) {
+  //       markMessagesAsRead([message._id as string]);
+  //       setTotalUnreadCount((prev) => prev - 1);
+  //     }
+  //   } catch (error) {
+  //     console.log("error handling new message", error);
+  //   }
+  // };
+
   const handleNewMessage = (message: IMessage) => {
     try {
+      const shouldIncrementCount = message.receiverId === userId;
+
       setAllChats((prevChats) => {
         const chatToUpdate = prevChats.find(
           (chat) => chat._id === message.chatId
@@ -272,8 +330,10 @@ const ChatBubble2 = () => {
           );
 
           if (chatToUpdate.lastMessage) {
-            chatToUpdate.unreadMessageCount =
-              (chatToUpdate.unreadMessageCount || 0) + 1;
+            if (shouldIncrementCount) {
+              chatToUpdate.unreadMessageCount =
+                (chatToUpdate.unreadMessageCount || 0) + 1;
+            }
             chatToUpdate.lastMessage = message;
 
             return [...otherChats, chatToUpdate].sort(
@@ -287,12 +347,22 @@ const ChatBubble2 = () => {
         return prevChats;
       });
 
-      if (activeChat?._id === message.chatId) {
-        setMessages((prev) => [...prev, message]);
+      if (shouldIncrementCount) {
+        setTotalUnreadCount((prev) => prev + 1);
       }
 
-      if (message.senderId !== userId)
-        markMessagesAsRead([message._id as string]);
+      if (activeChat?._id === message.chatId) {
+        setMessages((prev) => [...prev, message]);
+
+        if (message.senderId !== userId) {
+          markMessagesAsRead([message._id as string]);
+        }
+
+        if (shouldIncrementCount) {
+          markMessagesAsRead([message._id as string]);
+          setTotalUnreadCount((prev) => prev - 1);
+        }
+      }
     } catch (error) {
       console.log("error handling new message", error);
     }
@@ -303,6 +373,12 @@ const ChatBubble2 = () => {
       setAllChats((prevChats) =>
         prevChats.map((chat) => {
           if (chat._id === chatId) {
+            const unreadReceived =
+              chat.lastMessage && chat.lastMessage.receiverId === userId
+                ? chat.unreadMessageCount || 0
+                : 0;
+            setTotalUnreadCount((prev) => prev - unreadReceived);
+
             return {
               ...chat,
               unreadMessageCount: 0,
@@ -311,7 +387,7 @@ const ChatBubble2 = () => {
           return chat;
         })
       );
-      
+
       await axiosInstance.post("/chat/clear-unread-count", {
         chatId,
       });
@@ -348,9 +424,14 @@ const ChatBubble2 = () => {
     try {
       if (data.chatId === activeChat?._id) {
         setAllChats((prevChats) =>
-          prevChats.map((chat) =>
-            chat._id === data.chatId ? { ...chat, unreadMessageCount: 0 } : chat
-          )
+          prevChats.map((chat) => {
+            if (chat._id === data.chatId) {
+              const oldUnreadCount = chat.unreadMessageCount || 0;
+              setTotalUnreadCount((prev) => prev - oldUnreadCount);
+              return { ...chat, unreadMessageCount: 0 };
+            }
+            return chat;
+          })
         );
 
         setMessages((prevMessages) =>
@@ -365,11 +446,36 @@ const ChatBubble2 = () => {
     }
   };
 
-  // Function to determine if unread count should be shown
   const shouldShowUnreadCount = (chat: IChat) => {
     if (!chat.lastMessage || !chat.unreadMessageCount) return false;
     return chat.lastMessage.receiverId === userId;
   };
+
+  const fetchInitialUnreadCount = async () => {
+    try {
+      if (!userId) return;
+      const response = await axiosInstance.get(API.CHAT_LIST + userId);
+      const chats = response.data.data;
+
+      const initialUnreadCount = chats.reduce((total: number, chat: IChat) => {
+        if (
+          chat.unreadMessageCount &&
+          chat.lastMessage &&
+          chat.lastMessage.receiverId === userId
+        ) {
+          return total + chat.unreadMessageCount;
+        }
+        return total;
+      }, 0);
+
+      setTotalUnreadCount(initialUnreadCount);
+    } catch (error) {
+      console.error(`Failed to fetch initial unread count`, error);
+    }
+  };
+  useEffect(() => {
+    fetchInitialUnreadCount();
+  }, [userId]);
 
   // To receive messages.
   useEffect(() => {
