@@ -39,7 +39,6 @@ const ChatBubble2 = () => {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [newMessage, setNewMessage] = useState<string>("");
   const [totalUnreadCount, setTotalUnreadCount] = useState<number>(0);
-  const [showNotifications, setShowNotifications] = useState<boolean>(true);
 
   const placeholderRef = useRef<HTMLDivElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
@@ -121,6 +120,7 @@ const ChatBubble2 = () => {
 
       const response = await axiosInstance.get(API.CHAT_MESSAGES + chatId);
       setMessages((prevMessages) => {
+        console.log("simply log", prevMessages);
         return response.data.data;
       });
       return response.data.data;
@@ -270,55 +270,43 @@ const ChatBubble2 = () => {
     }
   };
 
-  // const handleNewMessage = (message: IMessage) => {
-  //   try {
-  //     setAllChats((prevChats) => {
-  //       const chatToUpdate = prevChats.find(
-  //         (chat) => chat._id === message.chatId
-  //       );
-
-  //       if (chatToUpdate) {
-  //         const otherChats = prevChats.filter(
-  //           (chat) => chat._id !== message.chatId
-  //         );
-
-  //         if (chatToUpdate.lastMessage) {
-  //           chatToUpdate.unreadMessageCount =
-  //             (chatToUpdate.unreadMessageCount || 0) + 1;
-  //           chatToUpdate.lastMessage = message;
-
-  //           return [...otherChats, chatToUpdate].sort(
-  //             (a, b) =>
-  //               new Date(b.lastMessage?.createdAt || 0).getTime() -
-  //               new Date(a.lastMessage?.createdAt || 0).getTime()
-  //           );
-  //         }
-  //       }
-
-  //       return prevChats;
-  //     });
-  //     setTotalUnreadCount((prev) => prev + 1);
-
-  //     if (activeChat?._id === message.chatId) {
-  //       setMessages((prev) => [...prev, message]);
-  //       setTotalUnreadCount((prev) => prev - 1);
-  //     }
-
-  //     if (message.senderId !== userId) {
-  //       markMessagesAsRead([message._id as string]);
-  //       setTotalUnreadCount((prev) => prev - 1);
-  //     }
-  //   } catch (error) {
-  //     console.log("error handling new message", error);
-  //   }
-  // };
-
-  const handleNewMessage = (message: IMessage) => {
+  const handleNewMessage = async (message: IMessage) => {
     try {
       const shouldIncrementCount = message.receiverId === userId;
-
       const shouldShowNotification =
         !isExpanded && message.receiverId === userId;
+
+      setAllChats((prevChats) => {
+        const chatToUpdate = prevChats.find(
+          (chat) => chat._id === message.chatId
+        );
+
+        if (chatToUpdate) {
+          const otherChats = prevChats.filter(
+            (chat) => chat._id !== message.chatId
+          );
+
+          const updatedChat = { ...chatToUpdate };
+
+          if (shouldIncrementCount) {
+            updatedChat.unreadMessageCount =
+              (updatedChat.unreadMessageCount || 0) + 1;
+          }
+
+          updatedChat.lastMessage = message;
+
+          return [...otherChats, updatedChat].sort(
+            (a, b) =>
+              new Date(b.lastMessage?.createdAt || 0).getTime() -
+              new Date(a.lastMessage?.createdAt || 0).getTime()
+          );
+        }
+        return prevChats;
+      });
+
+      if (shouldIncrementCount) {
+        setTotalUnreadCount((prev) => prev + 1);
+      }
 
       if (shouldShowNotification) {
         let senderName = "New message";
@@ -356,54 +344,6 @@ const ChatBubble2 = () => {
         });
       }
 
-      setAllChats((prevChats) => {
-        const chatToUpdate = prevChats.find(
-          (chat) => chat._id === message.chatId
-        );
-
-        if (chatToUpdate) {
-          const otherChats = prevChats.filter(
-            (chat) => chat._id !== message.chatId
-          );
-
-          if (chatToUpdate.lastMessage) {
-            if (shouldIncrementCount) {
-              chatToUpdate.unreadMessageCount =
-                (chatToUpdate.unreadMessageCount || 0) + 1;
-            }
-            chatToUpdate.lastMessage = message;
-
-            return [...otherChats, chatToUpdate].sort(
-              (a, b) =>
-                new Date(b.lastMessage?.createdAt || 0).getTime() -
-                new Date(a.lastMessage?.createdAt || 0).getTime()
-            );
-          } else {
-            console.log("showing notification");
-            Swal.fire({
-              toast: true,
-              position: "top-end",
-              icon: "info",
-              title: "New Message",
-              text: `${message.senderId}: ${message.content}`,
-              showConfirmButton: false,
-              timer: 6000,
-              timerProgressBar: true,
-              didOpen: (toast) => {
-                toast.addEventListener("mouseenter", () => Swal.stopTimer());
-                toast.addEventListener("mouseleave", () => Swal.resumeTimer());
-              },
-            });
-          }
-        }
-
-        return prevChats;
-      });
-
-      if (shouldIncrementCount) {
-        setTotalUnreadCount((prev) => prev + 1);
-      }
-
       if (activeChat?._id === message.chatId) {
         setMessages((prev) => [...prev, message]);
 
@@ -420,6 +360,11 @@ const ChatBubble2 = () => {
       console.log("error handling new message", error);
     }
   };
+  useEffect(() => {
+    if (!isExpanded) {
+      fetchInitialUnreadCount();
+    }
+  }, [isExpanded]);
 
   const clearUnreadMessageCount = async (chatId: string) => {
     try {
