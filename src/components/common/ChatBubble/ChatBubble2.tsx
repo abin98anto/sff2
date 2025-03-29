@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "./ChatBubble.scss";
 import { useAppSelector } from "../../../hooks/reduxHooks";
-// import IChat from "../../../entities/IChat";
 import { IUser } from "../../../entities/IUser";
 import ICourse from "../../../entities/ICourse";
 import Loading from "../Loading/Loading";
@@ -10,8 +9,7 @@ import axiosInstance from "../../../shared/config/axiosConfig";
 import API from "../../../shared/constants/API";
 import comments from "../../../shared/constants/comments";
 import { socket } from "../../../shared/config/socketConfig";
-import { set } from "date-fns";
-// import Swal from "sweetalert2";
+import Swal from "sweetalert2";
 
 interface IChat {
   _id: string;
@@ -41,7 +39,7 @@ const ChatBubble2 = () => {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [newMessage, setNewMessage] = useState<string>("");
   const [totalUnreadCount, setTotalUnreadCount] = useState<number>(0);
-  // const [showNotifications, setShowNotifications] = useState<boolean>(true);
+  const [showNotifications, setShowNotifications] = useState<boolean>(true);
 
   const placeholderRef = useRef<HTMLDivElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
@@ -319,6 +317,45 @@ const ChatBubble2 = () => {
     try {
       const shouldIncrementCount = message.receiverId === userId;
 
+      const shouldShowNotification =
+        !isExpanded && message.receiverId === userId;
+
+      if (shouldShowNotification) {
+        let senderName = "New message";
+        const chat = allChats.find((chat) => chat._id === message.chatId);
+        if (chat) {
+          senderName =
+            message.senderId === chat.tutorId._id
+              ? chat.tutorId.name
+              : chat.studentId.name;
+        }
+
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "info",
+          title: senderName,
+          text: message.content,
+          showConfirmButton: false,
+          timer: 6000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.addEventListener("mouseenter", () => Swal.stopTimer());
+            toast.addEventListener("mouseleave", () => Swal.resumeTimer());
+            toast.addEventListener("click", () => {
+              Swal.close();
+              setIsExpanded(true);
+              const relevantChat = allChats.find(
+                (chat) => chat._id === message.chatId
+              );
+              if (relevantChat) {
+                handleChatClick(relevantChat);
+              }
+            });
+          },
+        });
+      }
+
       setAllChats((prevChats) => {
         const chatToUpdate = prevChats.find(
           (chat) => chat._id === message.chatId
@@ -341,6 +378,22 @@ const ChatBubble2 = () => {
                 new Date(b.lastMessage?.createdAt || 0).getTime() -
                 new Date(a.lastMessage?.createdAt || 0).getTime()
             );
+          } else {
+            console.log("showing notification");
+            Swal.fire({
+              toast: true,
+              position: "top-end",
+              icon: "info",
+              title: "New Message",
+              text: `${message.senderId}: ${message.content}`,
+              showConfirmButton: false,
+              timer: 6000,
+              timerProgressBar: true,
+              didOpen: (toast) => {
+                toast.addEventListener("mouseenter", () => Swal.stopTimer());
+                toast.addEventListener("mouseleave", () => Swal.resumeTimer());
+              },
+            });
           }
         }
 
