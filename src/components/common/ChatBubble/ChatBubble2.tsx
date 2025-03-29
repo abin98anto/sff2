@@ -28,6 +28,12 @@ interface messageReadData {
   senderId: string;
 }
 
+interface videCallData {
+  roomID: string;
+  userId: string;
+  studentId: string;
+}
+
 const ChatBubble2 = () => {
   const { userInfo } = useAppSelector((state) => state.user);
   const userId = userInfo?._id;
@@ -45,7 +51,6 @@ const ChatBubble2 = () => {
   const overlayRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  // expanding chat bubble.
   const handleBubbleClick = () => {
     setIsLoading(true);
     if (!userId || allChats.length === 0) {
@@ -89,7 +94,6 @@ const ChatBubble2 = () => {
     };
   }, [isExpanded]);
 
-  // fetching chats when the chat bubble expands.
   const fetchChats = async () => {
     try {
       if (!userId) return;
@@ -112,7 +116,6 @@ const ChatBubble2 = () => {
     }
   };
 
-  // fetch messages for a specific chat
   const fetchMessages = async (chatId: string): Promise<IMessage[]> => {
     try {
       setIsLoading(true);
@@ -120,7 +123,7 @@ const ChatBubble2 = () => {
 
       const response = await axiosInstance.get(API.CHAT_MESSAGES + chatId);
       setMessages((prevMessages) => {
-        console.log("simply log", prevMessages);
+        console.log("simply log in fetch messages", prevMessages[0]?.senderId);
         return response.data.data;
       });
       return response.data.data;
@@ -132,7 +135,6 @@ const ChatBubble2 = () => {
     }
   };
 
-  // Selecting a specific chat.
   const handleChatClick = async (chat: IChat) => {
     setActiveChat(chat);
   };
@@ -165,7 +167,6 @@ const ChatBubble2 = () => {
     fetchChatData();
   }, [activeChat]);
 
-  // format date.
   const formatDate = (timestamp: Date) => {
     try {
       const date = new Date(timestamp);
@@ -178,7 +179,6 @@ const ChatBubble2 = () => {
     }
   };
 
-  // send messages.
   const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     try {
       e.preventDefault();
@@ -210,7 +210,6 @@ const ChatBubble2 = () => {
     }
   };
 
-  // scroll to bottom of messages.
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTop =
@@ -400,6 +399,7 @@ const ChatBubble2 = () => {
         <div className="video-call-message">
           <span className="phone-icon">📞</span>
           <span>{message.content}</span>
+          <span className="timestamp">{formatDate(message.createdAt!)}</span>
         </div>
       );
     }
@@ -449,6 +449,74 @@ const ChatBubble2 = () => {
     return chat.lastMessage.receiverId === userId;
   };
 
+  const initiateVideoCall = async () => {
+    try {
+      if (activeChat && userId) {
+        const receiverId = activeChat.studentId._id;
+        const roomID = `room_${userId}_${receiverId}`;
+        const videoCallUrl = `/video-call?userId=${userInfo.name}&studentId=${receiverId}&roomID=${roomID}`;
+
+        const videoCallMessage: IMessage = {
+          chatId: activeChat._id,
+          senderId: userId,
+          receiverId: receiverId as string,
+          content: "Video call",
+          contentType: "video-call",
+          isRead: false,
+        };
+
+        await axiosInstance.post(API.MSG_SENT, videoCallMessage);
+        window.open(videoCallUrl, "_blank");
+      }
+    } catch (error) {
+      console.log("error sending video call invitation", error);
+    }
+  };
+
+  const handleVideoCallInvite = async (data: videCallData) => {
+    try {
+      if (data.studentId === userId) {
+        Swal.fire({
+          title: "Incoming Video Call",
+          html: `
+            <p>You have an incoming video call.</p>
+          `,
+          icon: "info",
+          showCancelButton: true,
+          confirmButtonText: "Join Call",
+          cancelButtonText: "Decline",
+          timer: 30000,
+          timerProgressBar: true,
+          didOpen: () => {
+            const countdownEl = document.getElementById("countdown");
+            let remainingTime = 30;
+
+            const countdownInterval = setInterval(() => {
+              remainingTime--;
+              if (countdownEl) {
+                countdownEl.textContent = remainingTime.toString();
+              }
+
+              if (remainingTime <= 0) {
+                clearInterval(countdownInterval);
+              }
+            }, 1000);
+          },
+          willClose: () => {},
+        }).then((result) => {
+          if (result.isConfirmed) {
+            const videoCallUrl = API.VIDEO_CALL + data.roomID;
+            window.open(videoCallUrl, "_blank");
+          } else if (result.dismiss === Swal.DismissReason.timer) {
+            console.log(comments.CALL_AUTO_END);
+          }
+        });
+      }
+    } catch (error) {
+      console.log("error handling video call invite", error);
+    }
+  };
+
   const fetchInitialUnreadCount = async () => {
     try {
       if (!userId) return;
@@ -475,7 +543,6 @@ const ChatBubble2 = () => {
     fetchInitialUnreadCount();
   }, [userId]);
 
-  // To receive messages.
   useEffect(() => {
     if (!socket.connected) socket.connect();
     socket.emit("joinRoom", userId);
@@ -483,6 +550,8 @@ const ChatBubble2 = () => {
     socket.on(comments.IO_RECIEVE_MSG, handleNewMessage);
 
     socket.on("msg-read", messageRead);
+
+    socket.on(comments.IO_CALL_INVITE, handleVideoCallInvite);
 
     scrollToBottom();
     return () => {
@@ -602,7 +671,7 @@ const ChatBubble2 = () => {
                       <button
                         type="button"
                         className="video-call-btn"
-                        // onClick={handleVideoCallInvitation}
+                        onClick={initiateVideoCall}
                       >
                         Video Call
                       </button>
