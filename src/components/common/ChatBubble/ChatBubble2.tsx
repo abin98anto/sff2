@@ -95,9 +95,7 @@ const ChatBubble2 = () => {
   const fetchChats = async () => {
     try {
       if (!userId) return;
-
       const response = await axiosInstance.get(API.CHAT_LIST + userId);
-      // console.log("chat list : ", response.data.data);
       setAllChats(response.data.data);
     } catch (error) {
       console.error(`Failed to fetch unread count for chat`, error);
@@ -111,12 +109,9 @@ const ChatBubble2 = () => {
       if (!userId) return [];
 
       const response = await axiosInstance.get(API.CHAT_MESSAGES + chatId);
-      // setMessages(response.data.data);
       setMessages((prevMessages) => {
-        // console.log("messages set", response.data.data);
         return response.data.data;
       });
-      console.log("messges set", messages);
       return response.data.data;
     } catch (error) {
       console.log(comments.MSG_FETCH_FAIL, error);
@@ -172,19 +167,6 @@ const ChatBubble2 = () => {
     }
   };
 
-  // Video call history design
-  // const renderMessageContent = (message: IMessage) => {
-  //   if (message.contentType === "video-call") {
-  //     return (
-  //       <div className="video-call-message">
-  //         <span className="phone-icon">📞</span>
-  //         <span>{message.content}</span>
-  //       </div>
-  //     );
-  //   }
-  //   return <p>{message.content}</p>;
-  // };
-
   // send messages.
   const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     try {
@@ -224,6 +206,9 @@ const ChatBubble2 = () => {
         messagesContainerRef.current.scrollHeight;
     }
   };
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const markMessagesAsRead = async (messageIds: string[]) => {
     try {
@@ -241,12 +226,10 @@ const ChatBubble2 = () => {
         )
       );
 
-      console.log("the active chat", activeChat);
       let senderId =
         activeChat?.tutorId._id === userId
           ? activeChat?.studentId._id
           : activeChat?.tutorId._id;
-      // console.log("sender id", senderId);
       senderId !== undefined ? senderId : (senderId = "");
 
       socket.emit("msg-read", {
@@ -255,6 +238,8 @@ const ChatBubble2 = () => {
         receiverId: userId,
         senderId,
       });
+
+      clearUnreadMessageCount(activeChat?._id as string);
     } catch (error) {
       console.log("error marking message as read", error);
     }
@@ -315,6 +300,18 @@ const ChatBubble2 = () => {
 
   const clearUnreadMessageCount = async (chatId: string) => {
     try {
+      setAllChats((prevChats) =>
+        prevChats.map((chat) => {
+          if (chat._id === chatId) {
+            return {
+              ...chat,
+              unreadMessageCount: 0,
+            };
+          }
+          return chat;
+        })
+      );
+      
       await axiosInstance.post("/chat/clear-unread-count", {
         chatId,
       });
@@ -349,16 +346,12 @@ const ChatBubble2 = () => {
 
   const messageRead = (data: messageReadData) => {
     try {
-      console.log("msg read in fe", data);
       if (data.chatId === activeChat?._id) {
-        console.log("the read message is in active chat");
         setAllChats((prevChats) =>
           prevChats.map((chat) =>
             chat._id === data.chatId ? { ...chat, unreadMessageCount: 0 } : chat
           )
         );
-
-        console.log("before smss", messages);
 
         setMessages((prevMessages) =>
           prevMessages.map((message) => ({
@@ -367,11 +360,15 @@ const ChatBubble2 = () => {
           }))
         );
       }
-
-      console.log("all chats", messages);
     } catch (error) {
       console.log("error marking message as read", error);
     }
+  };
+
+  // Function to determine if unread count should be shown
+  const shouldShowUnreadCount = (chat: IChat) => {
+    if (!chat.lastMessage || !chat.unreadMessageCount) return false;
+    return chat.lastMessage.receiverId === userId;
   };
 
   // To receive messages.
@@ -388,11 +385,6 @@ const ChatBubble2 = () => {
       socket.off(comments.IO_RECIEVE_MSG, handleNewMessage);
     };
   }, [userId, activeChat]);
-
-  // To scroll to bottom.
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
 
   return (
     <>
@@ -452,14 +444,12 @@ const ChatBubble2 = () => {
                           )}
                         </span>
                       </div>
-                      {chat.unreadMessageCount! > 0 && (
-                        // <div className="chat-unread">
-                        <div className="chat-unread-count">
-                          {chat.unreadMessageCount}
-                          {/* <div>{getUnreadMessageCount(userId)}</div> */}
-                        </div>
-                        // </div>
-                      )}
+                      {chat.unreadMessageCount! > 0 &&
+                        shouldShowUnreadCount(chat) && (
+                          <div className="chat-unread-count">
+                            {chat.unreadMessageCount}
+                          </div>
+                        )}
                     </div>
                   </li>
                 ))}
