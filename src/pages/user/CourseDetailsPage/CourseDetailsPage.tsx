@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ChevronDown, ChevronUp, Play, FileText } from "lucide-react";
+import { ChevronDown, ChevronUp, Play, FileText, Star } from "lucide-react";
 
 import "./CourseDetailsPage.scss";
 import ICourse from "../../../entities/ICourse";
@@ -12,12 +12,26 @@ import { useAppSelector } from "../../../hooks/reduxHooks";
 import IEnrollment from "../../../entities/IEnrollment";
 import { EnrollStatus } from "../../../entities/misc/enrollStatus";
 
+interface IReview {
+  _id?: string;
+  userId: {
+    _id: string;
+    name: string;
+    picture?: string;
+  };
+  ratings: number;
+  comments: string;
+  createdAt: string;
+}
+
 const CourseDetailsPage: React.FC = () => {
   const [course, setCourse] = useState<ICourse | null>(null);
   const [loading, setLoading] = useState(true);
   const [expandedSections, setExpandedSections] = useState<{
     [key: string]: boolean;
   }>({});
+  const [reviews, setReviews] = useState<IReview[]>([]);
+  const [showAllReviews, setShowAllReviews] = useState(false);
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
 
   const formatDurationToHours = (seconds: number): string => {
@@ -43,6 +57,7 @@ const CourseDetailsPage: React.FC = () => {
   };
 
   useEffect(() => {
+    fetchReviews();
     fetchCourse();
   }, [courseId]);
 
@@ -87,7 +102,6 @@ const CourseDetailsPage: React.FC = () => {
   };
   const { sections, lessons, totalDuration } = getTotalStats();
 
-  // Enrolling process
   const { userInfo } = useAppSelector((state) => state.user);
   const navigate = useNavigate();
 
@@ -108,7 +122,6 @@ const CourseDetailsPage: React.FC = () => {
         return;
       }
 
-      // Check subscription status
       const hasSubscription = await checkSubscriptionStatus();
       if (!hasSubscription) {
         showSnackbar(
@@ -133,6 +146,49 @@ const CourseDetailsPage: React.FC = () => {
       showSnackbar("Error enrolling in the course", "error");
       setLoading(false);
     }
+  };
+
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const fetchReviews = async () => {
+    try {
+      const response = await axiosInstance.get(`/review/${courseId}`);
+      setReviews(response.data.data || []);
+    } catch (err) {
+      console.error("Error fetching course reviews:", err);
+    }
+  };
+
+  // Render star rating
+  const renderStarRating = (rating: number) => {
+    const stars = [];
+    for (let i = 0; i < 5; i++) {
+      stars.push(
+        <Star
+          key={i}
+          size={16}
+          fill={i < rating ? "#FFD700" : "none"}
+          color={i < rating ? "#FFD700" : "#6b7280"}
+        />
+      );
+    }
+    return <div className="star-rating">{stars}</div>;
+  };
+
+  const calculateAverageRating = (): number => {
+    if (reviews.length === 0) return 0;
+    const totalRating = reviews.reduce(
+      (sum, review) => sum + review.ratings,
+      0
+    );
+    return parseFloat((totalRating / reviews.length).toFixed(1));
   };
 
   if (loading) return <Loading />;
@@ -239,6 +295,74 @@ const CourseDetailsPage: React.FC = () => {
             )}
           </div>
         ))}
+      </div>
+
+      {/* Course Reviews Section */}
+      <div className="course-reviews">
+        <h2>Student Reviews</h2>
+
+        {reviews.length > 0 ? (
+          <>
+            <div className="reviews-summary">
+              <div className="average-rating">
+                <span className="rating-number">
+                  {calculateAverageRating()}
+                </span>
+                {renderStarRating(calculateAverageRating())}
+                <span className="review-count">({reviews.length} reviews)</span>
+              </div>
+            </div>
+
+            <div className="reviews-list">
+              {(showAllReviews ? reviews : reviews.slice(0, 2)).map(
+                (review) => (
+                  <div className="review-item" key={review._id}>
+                    <div className="review-header">
+                      <div className="reviewer-info">
+                        {review.userId.picture ? (
+                          <img
+                            src={review.userId.picture}
+                            alt={review.userId.name}
+                            className="reviewer-avatar"
+                          />
+                        ) : (
+                          <div className="reviewer-avatar-placeholder">
+                            {review.userId.name.charAt(0)}
+                          </div>
+                        )}
+                        <div className="reviewer-details">
+                          <div className="reviewer-name">
+                            {review.userId.name}
+                          </div>
+                          <div className="review-date">
+                            {formatDate(review.createdAt)}
+                          </div>
+                        </div>
+                      </div>
+                      {renderStarRating(review.ratings)}
+                    </div>
+                    <div className="review-comment">{review.comments}</div>
+                  </div>
+                )
+              )}
+            </div>
+
+            {reviews.length > 2 && (
+              <button
+                className="show-more-reviews"
+                onClick={() => setShowAllReviews(!showAllReviews)}
+              >
+                {showAllReviews
+                  ? "Show less"
+                  : `Show all ${reviews.length} reviews`}
+              </button>
+            )}
+          </>
+        ) : (
+          <div className="no-reviews">
+            <p>There are no reviews yet for this course.</p>
+          </div>
+        )}
       </div>
 
       <CustomSnackbar
