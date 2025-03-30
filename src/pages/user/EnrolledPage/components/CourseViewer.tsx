@@ -76,6 +76,7 @@ const CourseViewer: React.FC<CourseViewerProps> = ({ course }) => {
             onLectureComplete={handleLectureComplete}
             currentLesson={currentLesson}
             courseName={course?.title || ""}
+            courseId={course?._id || ""}
             courseDescription={course?.description || ""}
           />
         </div>
