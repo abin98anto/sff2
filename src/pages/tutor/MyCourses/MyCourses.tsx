@@ -6,7 +6,7 @@ import axiosInstance from "../../../shared/config/axiosConfig";
 import API from "../../../shared/constants/API";
 import comments from "../../../shared/constants/comments";
 import Loading from "../../../components/common/Loading/Loading";
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 import CustomSnackbar from "../../../components/common/CustomSnackbar";
 import { useAppSelector } from "../../../hooks/reduxHooks";
 import { IUser } from "../../../entities/IUser";
@@ -89,23 +89,23 @@ const MyCourses = () => {
           {courses.length > 0 ? (
             courses.map((course) => (
               <div key={course._id} className="course-card">
-                <Link
-                  to={`/course/${course._id}`}
+                {/* <Link
+                  to={`/tutor/my-learning/${course._id}`}
                   key={course._id}
                   className="course-card-link"
-                >
-                  <img src={course.thumbnail} alt={course.title} />
+                > */}
+                <img src={course.thumbnail} alt={course.title} />
 
-                  <div className="course-info">
-                    <h2>{course.title}</h2>
-                    <p>Language: {course.language}</p>
-                    <p className="subtitle">{course.subtitle}</p>
-                    <p className="category">
-                      Category:{" "}
-                      {getCategoryName(course.category as string | ICategory)}
-                    </p>
-                  </div>
-                </Link>
+                <div className="course-info">
+                  <h2>{course.title}</h2>
+                  <p>Language: {course.language}</p>
+                  <p className="subtitle">{course.subtitle}</p>
+                  <p className="category">
+                    Category:{" "}
+                    {getCategoryName(course.category as string | ICategory)}
+                  </p>
+                </div>
+                {/* </Link> */}
               </div>
             ))
           ) : (
