@@ -300,3 +300,68 @@
     }
   }
 }
+
+/* Course Tutors Styles */
+.course-tutors {
+  margin-bottom: 30px;
+
+  h2 {
+    margin-bottom: 20px;
+  }
+}
+
+.tutors-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tutor-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background-color: #ffffff;
+}
+
+.tutor-avatar {
+  flex-shrink: 0;
+}
+
+.tutor-image,
+.tutor-avatar-placeholder {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.tutor-avatar-placeholder {
+  background-color: #6366f1;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.tutor-info {
+  flex: 1;
+}
+
+.tutor-name {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.tutor-bio {
+  margin: 0;
+  font-size: 14px;
+  color: #4b5563;
+  line-height: 1.5;
+}

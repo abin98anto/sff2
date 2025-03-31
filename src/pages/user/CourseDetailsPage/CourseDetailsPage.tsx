@@ -11,6 +11,8 @@ import Loading from "../../../components/common/Loading/Loading";
 import { useAppSelector } from "../../../hooks/reduxHooks";
 import IEnrollment from "../../../entities/IEnrollment";
 import { EnrollStatus } from "../../../entities/misc/enrollStatus";
+import API from "../../../shared/constants/API";
+import { IUser } from "../../../entities/IUser";
 
 interface IReview {
   _id?: string;
@@ -31,6 +33,7 @@ const CourseDetailsPage: React.FC = () => {
     [key: string]: boolean;
   }>({});
   const [reviews, setReviews] = useState<IReview[]>([]);
+  const [tutors, setTutors] = useState<any[]>([]);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
 
@@ -46,6 +49,17 @@ const CourseDetailsPage: React.FC = () => {
     try {
       setLoading(true);
       const response = await axiosInstance.get(`/course/${courseId}`);
+      // console.log("first", response.data.data);
+
+      const tutors = await axiosInstance.get(API.TUTORS_GET);
+      // console.log("tutus", tutors.data);
+
+      const filteredTutors = tutors.data.filter((tutor: IUser) => {
+        return response.data.data.tutors.includes(tutor._id);
+      });
+      setTutors(filteredTutors);
+      // console.log("fild tuts", filteredTutors);
+
       setCourse(response.data.data);
       setLoading(false);
     } catch (err) {
@@ -223,6 +237,38 @@ const CourseDetailsPage: React.FC = () => {
       <div className="course-description">
         <h2>About this course</h2>
         <p>{course?.description}</p>
+
+        <div className="course-tutors">
+          <h2>Course Tutors</h2>
+          <div className="tutors-list">
+            {tutors.length > 0 ? (
+              tutors.map((tutor) => (
+                <div className="tutor-item" key={tutor._id}>
+                  <div className="tutor-avatar">
+                    {tutor.picture ? (
+                      <img
+                        src={tutor.picture}
+                        alt={tutor.name}
+                        className="tutor-image"
+                      />
+                    ) : (
+                      <div className="tutor-avatar-placeholder">
+                        {tutor.name.charAt(0)}
+                      </div>
+                    )}
+                  </div>
+                  <div className="tutor-info">
+                    <h3 className="tutor-name">{tutor.name}</h3>
+                    <h3 className="tutor-name">{tutor.email}</h3>
+                    {tutor.bio && <p className="tutor-bio">{tutor.bio}</p>}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p>No tutors assigned to this course.</p>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="course-curriculum">
