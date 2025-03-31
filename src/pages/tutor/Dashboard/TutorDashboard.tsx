@@ -12,7 +12,7 @@ import enrollStatus, {
 } from "../../../entities/misc/enrollStatus";
 import IEnrollment from "../../../entities/IEnrollment";
 
-interface ICourseNew {
+export interface ICourseNew {
   createdAt: string | number | Date;
   _id?: string;
   title: string;
@@ -116,7 +116,7 @@ const TutorDashboard = () => {
           };
         }
       );
-      
+
       setCompletedStudents(updatedEnrollments);
     } catch (error) {
       console.log("error fetching course completed students", error);

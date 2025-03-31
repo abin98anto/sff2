@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BarChart2, Users, CircleUserRound } from "lucide-react";
+import { BarChart2, Users, CircleUserRound, BookOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import "./TutorSidebar.scss";
@@ -23,6 +23,11 @@ const menuItems = [
     title: "Profile",
     icon: CircleUserRound,
     path: API.TUTOR_PROFILE,
+  },
+  {
+    title: "My Courses",
+    icon: BookOpen,
+    path: "/tutor/my-courses",
   },
 ];
 
