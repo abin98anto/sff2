@@ -14,8 +14,15 @@ import useSnackbar from "../../../hooks/useSnackbar";
 import CustomSnackbar from "../../../components/common/CustomSnackbar";
 import Pagination from "../../../components/common/Pagination/Pagination";
 
+interface EnrolledCourseData {
+  courseInfo: ICourse;
+  enrollmentInfo: IEnrollment;
+}
+
 const MyLearningPage = () => {
-  const [enrolledCourses, setEnrolledCourses] = useState<ICourse[]>([]);
+  const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourseData[]>(
+    []
+  );
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(true);
 
@@ -39,9 +46,43 @@ const MyLearningPage = () => {
         (enrollment: IEnrollment) => enrollment.status === "pending"
       );
 
-      setEnrolledCourses(
-        pendingEnrollments.map((enrollment: IEnrollment) => enrollment.courseId)
-      );
+      if (
+        pendingEnrollments.length > 0 &&
+        typeof pendingEnrollments[0].courseId === "object"
+      ) {
+        setEnrolledCourses(
+          pendingEnrollments.map((enrollment: IEnrollment) => ({
+            courseInfo: enrollment.courseId as unknown as ICourse,
+            enrollmentInfo: enrollment,
+          }))
+        );
+      } else {
+        const coursesWithEnrollments = await Promise.all(
+          pendingEnrollments.map(async (enrollment: IEnrollment) => {
+            try {
+              const courseResponse = await axiosInstance.get(
+                `/courses/${enrollment.courseId}`
+              );
+              const courseInfo = courseResponse.data.data;
+
+              return {
+                courseInfo,
+                enrollmentInfo: enrollment,
+              };
+            } catch (error) {
+              console.error(
+                `Failed to fetch course ${enrollment.courseId}`,
+                error
+              );
+              return null;
+            }
+          })
+        );
+
+        setEnrolledCourses(
+          coursesWithEnrollments.filter((course) => course !== null)
+        );
+      }
 
       setTotalPages(response.data.totalPages || 1);
       setLoading(false);
@@ -60,9 +101,22 @@ const MyLearningPage = () => {
     setCurrentPage(page);
   };
 
+  const calculateCompletionPercentage = (course: EnrolledCourseData) => {
+    if (!course.enrollmentInfo || !course.courseInfo.totalLessons) {
+      return 0;
+    }
+
+    const completedLessons =
+      course.enrollmentInfo.completedLessons?.length || 0;
+    const totalLessons = course.courseInfo.totalLessons || 0;
+
+    if (totalLessons === 0) return 0;
+
+    return Math.round((completedLessons / totalLessons) * 100);
+  };
+
   if (loading) return <Loading />;
 
-  // Handle both string IDs and populated category objects
   const getCategoryName = (category: ICategory | string): string => {
     if (!category) return "Uncategorized";
     return typeof category === "object" ? category.name : "unknown";
@@ -82,26 +136,40 @@ const MyLearningPage = () => {
 
         <div className="course-grid">
           {enrolledCourses.map((course) => (
-            <div key={course._id} className="course-card">
+            <div key={course.courseInfo._id} className="course-card">
               <img
-                src={course.thumbnail || "/placeholder.svg"}
-                alt={course.title}
+                src={course.courseInfo.thumbnail || "/placeholder.svg"}
+                alt={course.courseInfo.title}
               />
 
               <div className="course-info">
                 <Link
-                  to={`/study/${course._id}`}
-                  key={course._id}
+                  to={`/study/${course.courseInfo._id}`}
+                  key={course.courseInfo._id}
                   className="course-card-link"
                 >
-                  <h2>{course.title}</h2>
-                  <p>Language: {course.language}</p>
-                  <p className="subtitle">{course.subtitle}</p>
+                  <h2>{course.courseInfo.title}</h2>
+                  <p>Language: {course.courseInfo.language}</p>
+                  <p className="subtitle">{course.courseInfo.subtitle}</p>
                   <p className="category">
                     Category:{" "}
-                    {getCategoryName(course.category as string | ICategory)}
+                    {getCategoryName(
+                      course.courseInfo.category as string | ICategory
+                    )}
                   </p>
-                  <p>Duration: {course.totalDuration}</p>
+                  <p>Duration: {course.courseInfo.totalDuration}</p>
+
+                  <div className="completion-progress">
+                    <div className="progress-bar">
+                      <div
+                        className="progress-fill"
+                        style={{
+                          width: `${calculateCompletionPercentage(course)}%`,
+                        }}
+                      ></div>
+                    </div>
+                    <span>{calculateCompletionPercentage(course)}%</span>
+                  </div>
                 </Link>
               </div>
             </div>
