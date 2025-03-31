@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { SearchIcon, FilterIcon, CalendarIcon } from "lucide-react";
+import { SearchIcon, FilterIcon, CalendarIcon, StarIcon } from "lucide-react";
 
 import "./CourseListPage.scss";
 import ICourse from "../../../entities/ICourse";
@@ -13,12 +13,30 @@ import Pagination from "../../../components/common/Pagination/Pagination";
 import CustomSnackbar from "../../../components/common/CustomSnackbar";
 import useSnackbar from "../../../hooks/useSnackbar";
 
+interface IReview {
+  _id?: string;
+  ratings: number;
+  comments: string;
+  userId: string;
+  courseId: string;
+}
+
+interface ICourseWithReview extends ICourse {
+  averageRating?: number;
+}
+
+interface ReviewResult {
+  courseId: string;
+  avgRating: number;
+}
+
 const CourseListPage = () => {
-  const [courses, setCourses] = useState<ICourse[]>([]);
+  const [courses, setCourses] = useState<ICourseWithReview[]>([]);
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [dateFilter, setDateFilter] = useState("all");
+  const [reviewFilter, setReviewFilter] = useState("none");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [_, setTotalCourses] = useState(0);
@@ -26,6 +44,9 @@ const CourseListPage = () => {
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
   const coursesPerPage = 5;
   const [appliedSearchTerm, setAppliedSearchTerm] = useState("");
+  const [courseReviews, setCourseReviews] = useState<{ [key: string]: number }>(
+    {}
+  );
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -47,6 +68,81 @@ const CourseListPage = () => {
     fetchCategories();
   }, []);
 
+  const fetchCourseReviews = async (courseId: string): Promise<number> => {
+    try {
+      const response = await axiosInstance.get(`/review/${courseId}`);
+      const reviewsData = response.data;
+
+      if (reviewsData && Array.isArray(reviewsData.data)) {
+        const reviews: IReview[] = reviewsData.data;
+        const ratings = reviews.map((review) => review.ratings);
+
+        const average =
+          ratings.length > 0
+            ? ratings.reduce((a: number, b: number) => a + b, 0) /
+              ratings.length
+            : 0;
+
+        return average;
+      }
+      return 0;
+    } catch (error) {
+      console.error(`Error fetching reviews for course ${courseId}:`, error);
+      return 0;
+    }
+  };
+
+  const fetchAllCourseReviews = async (coursesData: ICourse[]) => {
+    const reviewsObj: { [key: string]: number } = {};
+
+    try {
+      const reviewPromises = coursesData.map(async (course) => {
+        if (course._id) {
+          const avgRating = await fetchCourseReviews(course._id);
+          return { courseId: course._id, avgRating } as ReviewResult;
+        }
+        return { courseId: "", avgRating: 0 } as ReviewResult;
+      });
+
+      const reviewResults = await Promise.all(reviewPromises);
+
+      reviewResults.forEach((result) => {
+        if (result.courseId) {
+          reviewsObj[result.courseId] = result.avgRating;
+        }
+      });
+
+      setCourseReviews(reviewsObj);
+      console.log("simpley log in fetxh all xourse reviwe", courseReviews);
+      const coursesWithReviews = coursesData.map((course) => {
+        const courseId = course._id || "";
+        const averageRating = courseId ? reviewsObj[courseId] || 0 : 0;
+
+        return {
+          ...course,
+          averageRating,
+        };
+      });
+
+      let sortedCourses = [...coursesWithReviews];
+
+      if (reviewFilter === "highest") {
+        sortedCourses.sort(
+          (a, b) => (b.averageRating || 0) - (a.averageRating || 0)
+        );
+      } else if (reviewFilter === "lowest") {
+        sortedCourses.sort(
+          (a, b) => (a.averageRating || 0) - (b.averageRating || 0)
+        );
+      }
+
+      setCourses(sortedCourses);
+    } catch (error) {
+      showSnackbar("Failed to fetch course reviews", "error");
+      console.error("Error fetching course reviews:", error);
+    }
+  };
+
   useEffect(() => {
     const fetchCourses = async () => {
       try {
@@ -63,7 +159,7 @@ const CourseListPage = () => {
           params.append("category", selectedCategory);
         }
 
-        if (dateFilter !== "all") {
+        if (dateFilter !== "all" && reviewFilter === "none") {
           params.append("sort", dateFilter);
         }
 
@@ -72,7 +168,12 @@ const CourseListPage = () => {
         );
         const { data, totalPages: pages, total } = response.data.data;
 
-        setCourses(data);
+        if (reviewFilter !== "none") {
+          await fetchAllCourseReviews(data);
+        } else {
+          setCourses(data);
+        }
+
         setTotalPages(pages);
         setTotalCourses(total);
         setLoading(false);
@@ -84,7 +185,13 @@ const CourseListPage = () => {
     };
 
     fetchCourses();
-  }, [currentPage, appliedSearchTerm, selectedCategory, dateFilter]);
+  }, [
+    currentPage,
+    appliedSearchTerm,
+    selectedCategory,
+    dateFilter,
+    reviewFilter,
+  ]);
 
   const handleSearch = () => {
     setAppliedSearchTerm(searchTerm);
@@ -98,12 +205,24 @@ const CourseListPage = () => {
 
   const handleDateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setDateFilter(e.target.value);
+    if (e.target.value !== "all") {
+      setReviewFilter("none");
+    }
+    setCurrentPage(1);
+  };
+
+  const handleReviewChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setReviewFilter(e.target.value);
+    if (e.target.value !== "none") {
+      setDateFilter("all");
+    }
     setCurrentPage(1);
   };
 
   const resetFilters = () => {
     setSelectedCategory("All");
     setDateFilter("all");
+    setReviewFilter("none");
     setSearchTerm("");
     setAppliedSearchTerm("");
     setCurrentPage(1);
@@ -120,7 +239,10 @@ const CourseListPage = () => {
 
   const hasActiveFilters = () => {
     return (
-      selectedCategory !== "All" || dateFilter !== "all" || searchTerm !== ""
+      selectedCategory !== "All" ||
+      dateFilter !== "all" ||
+      reviewFilter !== "none" ||
+      searchTerm !== ""
     );
   };
 
@@ -169,10 +291,30 @@ const CourseListPage = () => {
                 <CalendarIcon size={16} />
                 Date
               </label>
-              <select value={dateFilter} onChange={handleDateChange}>
+              <select
+                value={dateFilter}
+                onChange={handleDateChange}
+                disabled={reviewFilter !== "none"}
+              >
                 <option value="all">All Time</option>
                 <option value="newest">Newest First</option>
                 <option value="oldest">Oldest First</option>
+              </select>
+            </div>
+
+            <div className="filter">
+              <label>
+                <StarIcon size={16} />
+                Rating
+              </label>
+              <select
+                value={reviewFilter}
+                onChange={handleReviewChange}
+                disabled={dateFilter !== "all"}
+              >
+                <option value="none">No Rating Filter</option>
+                <option value="highest">Highest Rated</option>
+                <option value="lowest">Lowest Rated</option>
               </select>
             </div>
 
@@ -209,6 +351,12 @@ const CourseListPage = () => {
                       Category:{" "}
                       {getCategoryName(course.category as string | ICategory)}
                     </p>
+                    {course.averageRating !== undefined && (
+                      <p className="rating">
+                        Rating: {course.averageRating.toFixed(1)}
+                        <StarIcon size={16} className="star-icon" />
+                      </p>
+                    )}
                   </div>
                 </Link>
               </div>
