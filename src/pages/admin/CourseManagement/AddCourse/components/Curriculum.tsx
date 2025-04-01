@@ -66,7 +66,7 @@ const Curriculum = ({
   const [publishing, setPublishing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const [lessonNames, setLessonNames] = useState<string[]>([]);
+  // const [lessonNames, setLessonNames] = useState<string[]>([]);
 
   useEffect(() => {
     setSections(data || []);

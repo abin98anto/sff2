@@ -49,7 +49,7 @@ const CourseDetailsPage: React.FC = () => {
     try {
       setLoading(true);
       const response = await axiosInstance.get(`/course/${courseId}`);
-      // console.log("first", response.data.data);
+      console.log("first", response.data.data);
 
       const tutors = await axiosInstance.get(API.TUTORS_GET);
       // console.log("tutus", tutors.data);
@@ -61,6 +61,7 @@ const CourseDetailsPage: React.FC = () => {
       // console.log("fild tuts", filteredTutors);
 
       setCourse(response.data.data);
+      console.log(course);
       setLoading(false);
     } catch (err) {
       const errorMessage = "Error fetching course details";

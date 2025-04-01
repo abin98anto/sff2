@@ -18,7 +18,7 @@ interface SortConfig {
 interface QueryParams {
   page: number;
   limit: number;
-  search: string;
+  // search: string;
   sortField?: string;
   sortOrder?: "asc" | "desc";
   filters?: Record<string, string>;
@@ -46,8 +46,8 @@ const DataTable = <T extends Record<string, any>>({
   initialFilters = {},
   refetchRef,
 }: ReusableTableProps<T>) => {
-  const [searchInput, setSearchInput] = useState<string>("");
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  // const [searchInput, setSearchInput] = useState<string>("");
+  // const [searchTerm, setSearchTerm] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [sortConfig, setSortConfig] = useState<SortConfig | null>(initialSort);
   const [filters] = useState<Record<string, string>>(initialFilters);
@@ -62,7 +62,7 @@ const DataTable = <T extends Record<string, any>>({
         const queryParams: QueryParams = {
           page: params.page || currentPage,
           limit: pageSize,
-          search: params.search || searchTerm,
+          // search: params.search || searchTerm,
           sortField: params.sortField || sortConfig?.field,
           sortOrder: params.sortOrder || sortConfig?.order,
           filters: params.filters || filters,
@@ -77,7 +77,8 @@ const DataTable = <T extends Record<string, any>>({
         setLoading(false);
       }
     },
-    [currentPage, pageSize, searchTerm, sortConfig, filters, fetchData]
+    [currentPage, pageSize, sortConfig, filters, fetchData]
+    // [currentPage, pageSize, searchTerm, sortConfig, filters, fetchData]
   );
 
   const totalPages = useMemo(
@@ -111,11 +112,11 @@ const DataTable = <T extends Record<string, any>>({
     });
   };
 
-  const handleSearch = async () => {
-    setSearchTerm(searchInput);
-    setCurrentPage(1);
-    await loadData({ search: searchInput, page: 1 });
-  };
+  // const handleSearch = async () => {
+  //   setSearchTerm(searchInput);
+  //   setCurrentPage(1);
+  //   await loadData({ search: searchInput, page: 1 });
+  // };
 
   const refetchFunction = useMemo(() => () => loadData({}), [loadData]);
 
