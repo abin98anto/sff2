@@ -61,6 +61,7 @@ export const logout = createAsyncThunk(
   "user/logout",
   async (_, { rejectWithValue }) => {
     try {
+      console.log("logout in fe")
       const result = await axiosInstance.post(API.USER_LOGOUT);
       const { persistor } = await import("../../store");
       persistor.purge();
