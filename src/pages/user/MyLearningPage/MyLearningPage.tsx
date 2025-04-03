@@ -35,12 +35,15 @@ const MyLearningPage = () => {
   const fetchData = async (page = 1) => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get("/enrollment/user-enrollments", {
-        params: {
-          page,
-          limit: coursesPerPage,
-        },
-      });
+      const response = await axiosInstance.get(
+        "/enrollment/user-enrollments/" + userInfo?._id,
+        {
+          params: {
+            page,
+            limit: coursesPerPage,
+          },
+        }
+      );
 
       const pendingEnrollments = response.data.data.filter(
         (enrollment: IEnrollment) => enrollment.status === "pending"
