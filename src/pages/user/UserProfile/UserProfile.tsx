@@ -139,7 +139,7 @@ const UserProfile: React.FC = () => {
   const fetchUserCourses = async (): Promise<TableData<IEnrollment>> => {
     try {
       // const { page, limit, search, sortField, sortOrder } = params;
-      let url = `/enrollment/user-enrollments`;
+      let url = `/enrollment/user-enrollments/${userInfo?._id}`;
 
       // if (search) {
       //   url += `&search=${search}`;
