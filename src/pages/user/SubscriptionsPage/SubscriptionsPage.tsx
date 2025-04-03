@@ -30,7 +30,9 @@ const SubscriptionPage = () => {
     if (!isAuthenticated || !userInfo?.email) return;
 
     try {
-      const response = await axiosInstance.get("/order/sub-check");
+      const response = await axiosInstance.get(
+        "/order/sub-check/" + userInfo?.email
+      );
       const subscription = response.data.data;
       setUserActivePlan(subscription?.name || null);
     } catch (error) {
