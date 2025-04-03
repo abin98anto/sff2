@@ -191,11 +191,11 @@ const UserProfile: React.FC = () => {
         enrollmentId,
       });
 
-      const generateCertificateId = (enrollmentId: string): string => {
+      const generateCertificateId = (mongoId: string): string => {
         const prefix = "CERT";
-        const shortId = enrollmentId.slice(-6); // Use the last 6 characters of the MongoDB _id
-        const randomNumber = Math.floor(100000 + Math.random() * 900000); // 6-digit random number
-        return `${prefix}-${shortId}-${randomNumber}`;
+        const shortId = mongoId.slice(-6).toUpperCase(); // Use last 6 characters for uniqueness
+        const hash = parseInt(mongoId.slice(0, 8), 16) % 1000000; // Convert part of _id to a 6-digit number
+        return `${prefix}-${shortId}-${hash.toString().padStart(6, "0")}`;
       };
 
       const certificteId = generateCertificateId(enrollmentData._id);
