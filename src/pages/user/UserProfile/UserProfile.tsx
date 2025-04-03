@@ -191,12 +191,21 @@ const UserProfile: React.FC = () => {
         enrollmentId,
       });
 
+      const generateCertificateId = (enrollmentId: string): string => {
+        const prefix = "CERT";
+        const shortId = enrollmentId.slice(-6); // Use the last 6 characters of the MongoDB _id
+        const randomNumber = Math.floor(100000 + Math.random() * 900000); // 6-digit random number
+        return `${prefix}-${shortId}-${randomNumber}`;
+      };
+
+      const certificteId = generateCertificateId(enrollmentData._id);
+
       // Prepare the certificate data
       const certificateData = {
         userName: userInfo?.name || "Student",
         courseName: courseName,
         completionDate: completionDate,
-        enrollmentId: enrollmentId,
+        enrollmentId: certificteId,
       };
 
       // Generate and download the certificate
