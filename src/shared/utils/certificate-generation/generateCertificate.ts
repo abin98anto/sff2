@@ -12,6 +12,15 @@ const generateCertificate = async (
   certificateData: CertificateData
 ): Promise<void> => {
   try {
+    const generateCertificateId = (enrollmentId: string): string => {
+      const prefix = "CERT";
+      const shortId = enrollmentId.slice(-6); // Use the last 6 characters of the MongoDB _id
+      const randomNumber = Math.floor(100000 + Math.random() * 900000); // 6-digit random number
+      return `${prefix}-${shortId}-${randomNumber}`;
+    };
+
+    const certificteId = generateCertificateId(certificateData.enrollmentId);
+
     // First, load the Kalam font if it's not already in the document
     const loadKalamFont = async () => {
       // Check if Kalam font is already loaded in the document
@@ -78,7 +87,7 @@ const generateCertificate = async (
             </div>
           </div>
           <div style="font-size: 14px; margin-top: 40px; color: #787878;">
-            Certificate ID: ${certificateData.enrollmentId}
+            Certificate ID: ${certificteId}
           </div>
         </div>
       </div>
