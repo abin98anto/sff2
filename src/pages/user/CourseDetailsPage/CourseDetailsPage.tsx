@@ -123,7 +123,7 @@ const CourseDetailsPage: React.FC = () => {
   const checkSubscriptionStatus = async (): Promise<boolean> => {
     try {
       const response = await axiosInstance.get(
-        "/order/sub-check" + userInfo?.email
+        "/order/sub-check/" + userInfo?.email
       );
       return !!response.data.data;
     } catch (error) {
