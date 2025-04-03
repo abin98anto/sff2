@@ -122,7 +122,9 @@ const CourseDetailsPage: React.FC = () => {
 
   const checkSubscriptionStatus = async (): Promise<boolean> => {
     try {
-      const response = await axiosInstance.get("/order/sub-check");
+      const response = await axiosInstance.get(
+        "/order/sub-check" + userInfo?.email
+      );
       return !!response.data.data;
     } catch (error) {
       console.error("Error checking subscription status:", error);
