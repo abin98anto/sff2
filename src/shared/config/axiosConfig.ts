@@ -11,7 +11,7 @@ import axios, {
 // }
 
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_BASE_URL,
+  baseURL: 'https://watchcompany.xyz',
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
