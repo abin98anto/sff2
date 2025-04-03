@@ -53,6 +53,7 @@ interface TableData {
 }
 
 type StatusFilter = "all" | "pending" | "completed" | "passed";
+type GradeOption = "S" | "A" | "B" | "C" | "D";
 
 const MyStudents = () => {
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
@@ -62,6 +63,7 @@ const MyStudents = () => {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [selectedGrade, setSelectedGrade] = useState<GradeOption>("A");
 
   const refetchData = useRef<(() => void) | undefined>();
 
@@ -230,6 +232,7 @@ const MyStudents = () => {
 
   const handleReviewOpen = (student: IStudentData) => {
     setSelectedStudent(student);
+    setSelectedGrade("A"); // Reset grade to default when opening modal
     setIsReviewModalOpen(true);
   };
 
@@ -243,6 +246,7 @@ const MyStudents = () => {
         updates: {
           _id: selectedStudent.enrollment?._id,
           status: EnrollStatus.PASSED,
+          grade: selectedGrade, // Include the selected grade in the request
         },
       });
 
@@ -288,6 +292,10 @@ const MyStudents = () => {
     if (refetchData.current) {
       refetchData.current();
     }
+  };
+
+  const handleGradeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedGrade(event.target.value as GradeOption);
   };
 
   return (
@@ -345,6 +353,24 @@ const MyStudents = () => {
               {comments.STUDENT_REVIEW_PASSED}{" "}
               <strong>{selectedStudent?.courseId.title}</strong>?
             </p>
+
+            {/* Grade Selection */}
+            <div className="grade-selection">
+              <label htmlFor="gradeSelect">Select Grade:</label>
+              <select
+                id="gradeSelect"
+                value={selectedGrade}
+                onChange={handleGradeChange}
+                className="grade-dropdown"
+              >
+                <option value="S">S</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+              </select>
+            </div>
+
             {isLoading && (
               <div className="loading-indicator">
                 {comments.STUDENT_REVIEW_PROCESSING}

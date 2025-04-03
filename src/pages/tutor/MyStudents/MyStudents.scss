@@ -167,3 +167,21 @@
     color: #bdc3c7;
   }
 }
+
+.grade-selection {
+  margin-top: 16px;
+  margin-bottom: 16px;
+
+  label {
+    margin-right: 10px;
+    font-weight: 500;
+  }
+
+  .grade-dropdown {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    min-width: 100px;
+    font-size: 14px;
+  }
+}
