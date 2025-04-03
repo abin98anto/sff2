@@ -27,8 +27,8 @@ const SubscriptionPage = () => {
 
   // Check user's subscription status
   const checkSubStatus = async () => {
-    if (!isAuthenticated || !userInfo?.email) return;
     console.log("the email to sub check", userInfo?.email);
+    if (!isAuthenticated || !userInfo?.email) return;
 
     try {
       const response = await axiosInstance.get(
