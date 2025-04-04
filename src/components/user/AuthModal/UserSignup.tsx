@@ -75,7 +75,6 @@ const UserSignup: React.FC<UserSignupProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [googleInitialized, setGoogleInitialized] = useState(false);
-  const { userInfo } = useAppSelector((state: AppRootState) => state.user);
 
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
 
@@ -118,8 +117,7 @@ const UserSignup: React.FC<UserSignupProps> = ({
         return;
       }
 
-      // Always call onSignupSuccess to navigate to OTP verification for both users and tutors
-      if (userInfo?.role === userRoles.TUTOR) onSignupSuccess();
+      onSignupSuccess();
     } catch (err) {
       if (err instanceof Error && "inner" in err) {
         const yupError = err as any;
