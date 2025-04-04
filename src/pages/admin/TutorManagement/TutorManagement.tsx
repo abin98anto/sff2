@@ -287,6 +287,7 @@ const TutorManagement = () => {
       setCourses(response.data.data.data || []);
 
       tutorsAssignedCourses(selectedTutorForCourses?._id as string);
+      console.log("the selectd courses", selectedTutorForCourses);
     } catch (error) {
       showSnackbar("Error fetching courses", "error");
       console.log("error fetching courses", error);
@@ -313,6 +314,7 @@ const TutorManagement = () => {
         }
       });
 
+      console.log("assigned courses", assignedCourses);
       setSelectedCourses((prev) => prev.concat(assignedCourses));
     } catch (error) {
       showSnackbar("Error finding tutor's already assigned courses", "error");
