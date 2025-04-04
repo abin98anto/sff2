@@ -13,6 +13,12 @@ export const sendOTP = createAsyncThunk(
   async (userData: IUser, { rejectWithValue }) => {
     try {
       const result = await axiosInstance.post(API.OTP_SENT, userData);
+      if (
+        !result.data.success &&
+        result.data.message === comments.EMAIL_TAKEN
+      ) {
+        return rejectWithValue(comments.EMAIL_TAKEN);
+      }
       return result.data;
     } catch (error: any) {
       console.error(comments.SIGNUP_THNK_FAIL, error);
@@ -61,7 +67,7 @@ export const logout = createAsyncThunk(
   "user/logout",
   async (_, { rejectWithValue }) => {
     try {
-      console.log("logout in fe")
+      console.log("logout in fe");
       const result = await axiosInstance.post(API.USER_LOGOUT);
       const { persistor } = await import("../../store");
       persistor.purge();
