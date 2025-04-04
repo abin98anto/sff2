@@ -4,7 +4,7 @@ import axios, {
   // AxiosResponse,
   // InternalAxiosRequestConfig,
 } from "axios";
-import Cookies from "js-cookie";
+// import Cookies from "js-cookie";
 
 // interface QueueItem {
 //   resolve: (value?: unknown) => void;
@@ -35,7 +35,7 @@ axiosInstance.interceptors.response.use(
       try {
         // Call your refresh token endpoint
         await axiosInstance.post("/refresh-token");
-        await axiosInstance.post("/refresh-token");
+        // await axiosInstance.post("/refresh-token");
         // console.log("Refresh response:", refreshResponse.data);
         // Cookies.set("accessToken", refreshResponse.data, {
         //   secure: true,
