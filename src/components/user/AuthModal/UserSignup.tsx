@@ -108,7 +108,8 @@ const UserSignup: React.FC<UserSignupProps> = ({
         role: userRole === "tutor" ? userRoles.TUTOR : userRoles.USER,
         createdAt: "",
       };
-      await dispatch(sendOTP(userData));
+      const dispatchresult = await dispatch(sendOTP(userData));
+      console.log("the dispathc result", dispatchresult);
       onSignupSuccess();
     } catch (err) {
       if (err instanceof Error && "inner" in err) {
