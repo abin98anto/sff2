@@ -181,3 +181,43 @@
     font-weight: 500;
   }
 }
+.empty-courses-placeholder {
+  display: flex;
+  justify-content: center;
+  padding: 4rem 0;
+
+  .empty-state {
+    text-align: center;
+    max-width: 400px;
+
+    img {
+      width: 150px;
+      margin-bottom: 1.5rem;
+    }
+
+    h2 {
+      margin-bottom: 0.5rem;
+      color: #333;
+    }
+
+    p {
+      margin-bottom: 1.5rem;
+      color: #666;
+    }
+
+    .browse-courses-btn {
+      display: inline-block;
+      background-color: #4a6cf7;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: #3a5bd9;
+      }
+    }
+  }
+}
