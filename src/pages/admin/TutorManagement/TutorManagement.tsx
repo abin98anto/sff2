@@ -1,6 +1,10 @@
+"use client";
+
 import { Plus, Trash2 } from "lucide-react";
-import DataTable, { Column } from "../../../components/common/Table/DataTable";
-import { IUser } from "../../../entities/IUser";
+import DataTable, {
+  type Column,
+} from "../../../components/common/Table/DataTable";
+import type { IUser } from "../../../entities/IUser";
 import useSnackbar from "../../../hooks/useSnackbar";
 import { useCallback, useRef, useState } from "react";
 import axiosInstance from "../../../shared/config/axiosConfig";
@@ -30,6 +34,11 @@ const TutorManagement = () => {
   const [confirmDenialOpen, setConfirmDenialOpen] = useState(false);
   const [selectedTutor, setSelectedTutor] = useState<IUser | null>(null);
   const [denialReason, setDenialReason] = useState<string>("");
+  const [courses, setCourses] = useState<any[]>([]);
+  const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
+  const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
+  const [selectedTutorForCourses, setSelectedTutorForCourses] =
+    useState<IUser | null>(null);
 
   const columns: Column<IUser>[] = [
     {
@@ -74,6 +83,13 @@ const TutorManagement = () => {
       label: comments.TUTOR_COL_ACTIONS,
       render: (row: IUser) => (
         <div className="action-buttons">
+          <button
+            onClick={() => handleAssignCourses(row)}
+            className="action-button assign"
+            title="Assign Courses"
+          >
+            <Plus size={16} />
+          </button>
           <button
             onClick={() => handleBlockUser(row)}
             className="action-button delete"
@@ -236,6 +252,59 @@ const TutorManagement = () => {
     setConfirmDenialOpen(false);
     setSelectedTutor(null);
     setDenialReason("");
+  };
+
+  const fetchCourses = useCallback(async () => {
+    try {
+      const response = await axiosInstance.get("/courses/");
+      setCourses(response.data || []);
+    } catch (err) {
+      showSnackbar("Failed to fetch courses", "error");
+      console.error("Error fetching courses:", err);
+    }
+  }, [showSnackbar]);
+
+  const handleAssignCourses = (tutor: IUser) => {
+    setSelectedTutorForCourses(tutor);
+    setSelectedCourses([]);
+    fetchCourses();
+    setIsCourseModalOpen(true);
+  };
+
+  const handleCourseCheckboxChange = (courseId: string) => {
+    setSelectedCourses((prev) =>
+      prev.includes(courseId)
+        ? prev.filter((id) => id !== courseId)
+        : [...prev, courseId]
+    );
+  };
+
+  const handleConfirmCourseAssignment = async () => {
+    try {
+      if (!selectedTutorForCourses?._id) {
+        showSnackbar("No tutor selected", "error");
+        return;
+      }
+
+      await axiosInstance.post(
+        `${API.USERS_LIST}/tutor/${selectedTutorForCourses._id}/courses`,
+        {
+          courseIds: selectedCourses,
+        }
+      );
+
+      showSnackbar("Courses assigned successfully", "success");
+      setIsCourseModalOpen(false);
+      setSelectedTutorForCourses(null);
+      setSelectedCourses([]);
+
+      if (refetchData.current) {
+        refetchData.current();
+      }
+    } catch (err) {
+      showSnackbar("Failed to assign courses", "error");
+      console.error("Error assigning courses:", err);
+    }
   };
 
   return (
@@ -416,6 +485,49 @@ const TutorManagement = () => {
         severity={snackbar.severity}
         onClose={hideSnackbar}
       />
+      <CustomModal
+        isOpen={isCourseModalOpen}
+        onClose={() => {
+          setIsCourseModalOpen(false);
+          setSelectedTutorForCourses(null);
+          setSelectedCourses([]);
+        }}
+        header={`Assign Courses to ${selectedTutorForCourses?.name || "Tutor"}`}
+        buttons={[
+          {
+            text: "Assign",
+            onClick: handleConfirmCourseAssignment,
+            variant: "primary",
+          },
+          {
+            text: "Cancel",
+            onClick: () => {
+              setIsCourseModalOpen(false);
+              setSelectedTutorForCourses(null);
+              setSelectedCourses([]);
+            },
+            variant: "secondary",
+          },
+        ]}
+      >
+        <div className="course-checklist">
+          {courses.length === 0 ? (
+            <p>Loading courses...</p>
+          ) : (
+            courses.map((course) => (
+              <div key={course._id} className="course-item">
+                <input
+                  type="checkbox"
+                  id={`course-${course._id}`}
+                  checked={selectedCourses.includes(course._id)}
+                  onChange={() => handleCourseCheckboxChange(course._id)}
+                />
+                <label htmlFor={`course-${course._id}`}>{course.name}</label>
+              </div>
+            ))
+          )}
+        </div>
+      </CustomModal>
     </div>
   );
 };
