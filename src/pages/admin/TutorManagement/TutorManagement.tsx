@@ -13,6 +13,7 @@ import "./TutorManagement.scss";
 import ResumeModal from "../../../components/common/Modal/ResumeModal/ResumeModal";
 import comments from "../../../shared/constants/comments";
 import ICourse from "../../../entities/ICourse";
+import Loading from "../../../components/common/Loading/Loading";
 
 interface TableData {
   data: Partial<IUser>[];
@@ -540,7 +541,6 @@ const TutorManagement = () => {
                 />
                 <label htmlFor={`course-${course._id}`}>
                   <strong>{course.title}</strong>
-                  {course.subtitle && <span> - {course.subtitle}</span>}
                 </label>
               </div>
             ))
