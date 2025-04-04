@@ -260,6 +260,7 @@ const TutorManagement = () => {
 
       // Pre-select courses that the tutor is already assigned to
       if (selectedTutorForCourses?._id) {
+        console.log("the selected tutor", selectedTutorForCourses);
         const preSelectedCourses = response.data
           .filter((course: ICourse) =>
             course.tutors?.some((tutor: IUser) =>
