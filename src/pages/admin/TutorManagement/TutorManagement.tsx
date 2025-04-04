@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, CircleDollarSign } from "lucide-react";
 import DataTable, {
   type Column,
 } from "../../../components/common/Table/DataTable";
@@ -40,6 +40,10 @@ const TutorManagement = () => {
   const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
   const [selectedTutorForCourses, setSelectedTutorForCourses] =
     useState<IUser | null>(null);
+
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [tutorToPay, setTutorToPay] = useState<IUser | null>(null);
+  const [paymentAmount, setPaymentAmount] = useState<string>("");
 
   const columns: Column<IUser>[] = [
     {
@@ -97,10 +101,69 @@ const TutorManagement = () => {
           >
             <Trash2 size={16} />
           </button>
+          <button
+            onClick={() => handlePayTutor(row)}
+            className="action-button delete"
+          >
+            <CircleDollarSign size={16} />
+          </button>
         </div>
       ),
     },
   ];
+
+  const handlePayTutor = (user: IUser) => {
+    setTutorToPay(user);
+    setPaymentAmount("");
+    setIsPaymentModalOpen(true);
+  };
+
+  // New function to handle payment submission
+  const handleConfirmPayment = async () => {
+    try {
+      if (!tutorToPay || !tutorToPay._id) {
+        showSnackbar("No tutor selected", "error");
+        return;
+      }
+
+      // Validate input is a valid number
+      const amount = parseFloat(paymentAmount);
+      if (isNaN(amount) || amount <= 0) {
+        showSnackbar("Please enter a valid payment amount", "error");
+        return;
+      }
+
+      // Call API to update tutor's wallet
+      await axiosInstance.put(`/update/${tutorToPay._id}`, {
+        wallet: amount, // This will be added to the current wallet amount on the server
+      });
+
+      showSnackbar(
+        `Payment of ${amount} successfully added to ${tutorToPay.name}'s wallet`,
+        "success"
+      );
+      setIsPaymentModalOpen(false);
+      setTutorToPay(null);
+      setPaymentAmount("");
+
+      // Refresh the data
+      if (refetchData.current) {
+        refetchData.current();
+      }
+    } catch (err) {
+      showSnackbar("Failed to process payment", "error");
+      console.error("Payment processing error:", err);
+    }
+  };
+
+  // Function to handle numeric input only
+  const handlePaymentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow only numbers and decimal point
+    if (value === "" || /^\d*\.?\d{0,2}$/.test(value)) {
+      setPaymentAmount(value);
+    }
+  };
 
   const fetchVerifiedTutors = useCallback(
     async (queryParams: any): Promise<TableData> => {
@@ -660,6 +723,54 @@ const TutorManagement = () => {
               </div>
             ))
           )}
+        </div>
+      </CustomModal>
+
+      {/* Payment Modal */}
+      <CustomModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => {
+          setIsPaymentModalOpen(false);
+          setTutorToPay(null);
+          setPaymentAmount("");
+        }}
+        header="Pay Tutor"
+        buttons={[
+          {
+            text: "Pay Tutor",
+            onClick: handleConfirmPayment,
+            variant: "primary",
+          },
+          {
+            text: "Cancel",
+            onClick: () => {
+              setIsPaymentModalOpen(false);
+              setTutorToPay(null);
+              setPaymentAmount("");
+            },
+            variant: "secondary",
+          },
+        ]}
+      >
+        <div className="payment-form">
+          <p>Enter the amount to add to {tutorToPay?.name}'s wallet:</p>
+          <div className="input-group" style={{ marginTop: "15px" }}>
+            <label htmlFor="paymentAmount">Amount:</label>
+            <input
+              type="text"
+              id="paymentAmount"
+              value={paymentAmount}
+              onChange={handlePaymentInputChange}
+              placeholder="0.00"
+              style={{
+                width: "100%",
+                padding: "8px",
+                marginTop: "5px",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+            />
+          </div>
         </div>
       </CustomModal>
     </div>
