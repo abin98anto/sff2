@@ -307,6 +307,7 @@ const TutorManagement = () => {
           ? course.tutors.map((tutor: IUser) => tutor._id ?? "")
           : [],
       }));
+      console.log("transformed ocurses", transformCourses);
 
       const assignedCourses = transformCourses.filter((course) => {
         if (course.tutors?.includes(tutorId)) {
