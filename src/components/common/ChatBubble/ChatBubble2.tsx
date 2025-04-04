@@ -466,6 +466,8 @@ const ChatBubble2 = () => {
           isRead: false,
         };
 
+        handleNewMessage(videoCallMessage);
+
         await axiosInstance.post(API.MSG_SENT, videoCallMessage);
         window.open(videoCallUrl, "_blank");
       }
