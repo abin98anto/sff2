@@ -33,7 +33,7 @@ const TutorManagement = () => {
   const [confirmDenialOpen, setConfirmDenialOpen] = useState(false);
   const [selectedTutor, setSelectedTutor] = useState<IUser | null>(null);
   const [denialReason, setDenialReason] = useState<string>("");
-  const [courses, setCourses] = useState<ICourse[]>([]);
+  const [courses, setCourses] = useState<any[]>([]);
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
   const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
   const [selectedTutorForCourses, setSelectedTutorForCourses] =
@@ -255,14 +255,28 @@ const TutorManagement = () => {
 
   const fetchCourses = useCallback(async () => {
     try {
-      const response = await axiosInstance.get("/course/");
-      console.log("the erspesns", response.data.data.data);
-      setCourses(response.data.data.data || []);
+      const response = await axiosInstance.get("/courses/");
+      setCourses(response.data || []);
+
+      // Pre-select courses that the tutor is already assigned to
+      if (selectedTutorForCourses?._id) {
+        const preSelectedCourses = response.data
+          .filter((course: ICourse) =>
+            course.tutors?.some((tutor: IUser) =>
+              typeof tutor === "string"
+                ? tutor === selectedTutorForCourses._id
+                : tutor._id === selectedTutorForCourses._id
+            )
+          )
+          .map((course: ICourse) => course._id);
+
+        setSelectedCourses(preSelectedCourses || []);
+      }
     } catch (err) {
       showSnackbar("Failed to fetch courses", "error");
       console.error("Error fetching courses:", err);
     }
-  }, [showSnackbar]);
+  }, [showSnackbar, selectedTutorForCourses]);
 
   const handleAssignCourses = (tutor: IUser) => {
     setSelectedTutorForCourses(tutor);
@@ -514,7 +528,7 @@ const TutorManagement = () => {
           {courses.length === 0 ? (
             <p>Loading courses...</p>
           ) : (
-            courses.map((course) => (
+            courses.map((course: ICourse) => (
               <div key={course._id} className="course-item">
                 <input
                   type="checkbox"
@@ -524,7 +538,10 @@ const TutorManagement = () => {
                     handleCourseCheckboxChange(course._id as string)
                   }
                 />
-                <label htmlFor={`course-${course._id}`}>{course.title}</label>
+                <label htmlFor={`course-${course._id}`}>
+                  <strong>{course.title}</strong>
+                  {course.subtitle && <span> - {course.subtitle}</span>}
+                </label>
               </div>
             ))
           )}
