@@ -256,7 +256,7 @@ const TutorManagement = () => {
 
   const fetchCourses = useCallback(async () => {
     try {
-      const response = await axiosInstance.get("/courses/");
+      const response = await axiosInstance.get("/course/");
       setCourses(response.data || []);
     } catch (err) {
       showSnackbar("Failed to fetch courses", "error");
