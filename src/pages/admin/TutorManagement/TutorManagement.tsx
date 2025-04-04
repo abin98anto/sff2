@@ -33,6 +33,7 @@ const TutorManagement = () => {
   const [confirmDenialOpen, setConfirmDenialOpen] = useState(false);
   const [selectedTutor, setSelectedTutor] = useState<IUser | null>(null);
   const [denialReason, setDenialReason] = useState<string>("");
+
   const [courses, setCourses] = useState<any[]>([]);
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
   const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
@@ -83,7 +84,7 @@ const TutorManagement = () => {
       render: (row: IUser) => (
         <div className="action-buttons">
           <button
-            onClick={() => handleAssignCourses(row)}
+            onClick={() => selectCoursesForTutor(row)}
             className="action-button assign"
             title="Assign Courses"
           >
@@ -253,34 +254,73 @@ const TutorManagement = () => {
     setDenialReason("");
   };
 
-  const fetchCourses = useCallback(async () => {
+  // const fetchCourses = useCallback(async () => {
+  //   try {
+  //     const response = await axiosInstance.get("/course/");
+  //     setCourses(response.data.data.data || []);
+
+  //     console.log("courses fetched.");
+  //     // Pre-select courses that the tutor is already assigned to
+  //     if (selectedTutorForCourses?._id) {
+  //       console.log("the selected tutor", selectedTutorForCourses);
+  //       const preSelectedCourses = response.data.data.data
+  //         .filter((course: ICourse) =>
+  //           course.tutors?.some((tutor: IUser) =>
+  //             typeof tutor === "string"
+  //               ? tutor === selectedTutorForCourses._id
+  //               : tutor._id === selectedTutorForCourses._id
+  //           )
+  //         )
+  //         .map((course: ICourse) => course._id);
+
+  //       setSelectedCourses(preSelectedCourses || []);
+  //     }
+  //   } catch (err) {
+  //     showSnackbar("Failed to fetch courses", "error");
+  //     console.error("Error fetching courses:", err);
+  //   }
+  // }, [showSnackbar, selectedTutorForCourses]);
+
+  const fetchCourses = async () => {
     try {
       const response = await axiosInstance.get("/course/");
       setCourses(response.data.data.data || []);
 
-      console.log("courses fetched.");
-      // Pre-select courses that the tutor is already assigned to
-      if (selectedTutorForCourses?._id) {
-        console.log("the selected tutor", selectedTutorForCourses);
-        const preSelectedCourses = response.data.data.data
-          .filter((course: ICourse) =>
-            course.tutors?.some((tutor: IUser) =>
-              typeof tutor === "string"
-                ? tutor === selectedTutorForCourses._id
-                : tutor._id === selectedTutorForCourses._id
-            )
-          )
-          .map((course: ICourse) => course._id);
-
-        setSelectedCourses(preSelectedCourses || []);
-      }
-    } catch (err) {
-      showSnackbar("Failed to fetch courses", "error");
-      console.error("Error fetching courses:", err);
+      tutorsAssignedCourses(selectedTutorForCourses?._id as string);
+    } catch (error) {
+      showSnackbar("Error fetching courses", "error");
+      console.log("error fetching courses", error);
     }
-  }, [showSnackbar, selectedTutorForCourses]);
+  };
 
-  const handleAssignCourses = (tutor: IUser) => {
+  const tutorsAssignedCourses = async (tutorId: string) => {
+    try {
+      if (!courses) {
+        showSnackbar("no courses fetched!", "error");
+        return;
+      }
+
+      const transformCourses = courses.map((course) => ({
+        ...course,
+        tutors: course.tutors
+          ? course.tutors.map((tutor: IUser) => tutor._id ?? "")
+          : [],
+      }));
+
+      const assignedCourses = transformCourses.filter((course) => {
+        if (course.tutors?.includes(tutorId)) {
+          return course._id;
+        }
+      });
+
+      setSelectedCourses((prev) => prev.concat(assignedCourses));
+    } catch (error) {
+      showSnackbar("Error finding tutor's already assigned courses", "error");
+      console.log("error finding tutor's already assigned courses", error);
+    }
+  };
+
+  const selectCoursesForTutor = (tutor: IUser) => {
     setSelectedTutorForCourses(tutor);
     setSelectedCourses([]);
     fetchCourses();
