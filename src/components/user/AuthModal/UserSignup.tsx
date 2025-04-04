@@ -236,7 +236,7 @@ const UserSignup: React.FC<UserSignupProps> = ({
     loadGoogleScript();
 
     return () => {};
-  }, [showSnackbar, googleInitialized, userRole]);
+  }, [googleInitialized]);
 
   return (
     <div className="auth-section">
