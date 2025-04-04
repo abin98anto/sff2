@@ -258,10 +258,11 @@ const TutorManagement = () => {
       const response = await axiosInstance.get("/course/");
       setCourses(response.data.data.data || []);
 
+      console.log("courses fetched.");
       // Pre-select courses that the tutor is already assigned to
       if (selectedTutorForCourses?._id) {
         console.log("the selected tutor", selectedTutorForCourses);
-        const preSelectedCourses = response.data
+        const preSelectedCourses = response.data.data.data
           .filter((course: ICourse) =>
             course.tutors?.some((tutor: IUser) =>
               typeof tutor === "string"
