@@ -132,37 +132,6 @@ const UserSignup: React.FC<UserSignupProps> = ({
     }
   };
 
-  // const handleGoogleSignIn = async (response: GoogleCredentialResponse) => {
-  //   try {
-  //     if (!response.credential) {
-  //       showSnackbar(comments.OAUTH_TOKEN_MISSING, "error");
-  //       return;
-  //     }
-
-  //     const decoded: any = jwtDecode(response.credential);
-
-  //     const user = {
-  //       name:
-  //         decoded.name ||
-  //         `${decoded.given_name} ${decoded.family_name || ""}`.trim(),
-  //       email: decoded.email,
-  //       profilePicture: decoded.picture,
-  //       role: userRole === "tutor" ? userRoles.TUTOR : userRoles.USER,
-  //     };
-
-  //     const result = await dispatch(googleSignIn(user)).unwrap();
-
-  //     if (result && result.user) {
-  //       onClose();
-  //     } else {
-  //       showSnackbar(comments.OAUTH_FAIL, "error");
-  //     }
-  //   } catch (error) {
-  //     console.error(comments.OAUTH_FAIL, error);
-  //     showSnackbar(comments.OAUTH_FAIL, "error");
-  //   }
-  // };
-
   const handleGoogleSignIn = async (response: GoogleCredentialResponse) => {
     try {
       if (!response.credential) {
@@ -184,13 +153,7 @@ const UserSignup: React.FC<UserSignupProps> = ({
       const result = await dispatch(googleSignIn(user)).unwrap();
 
       if (result && result.user) {
-        // Check if user is already verified
-        if (result.user.isVerified) {
-          onClose(); // Close modal only if already verified
-        } else {
-          // If not verified, move to OTP verification screen
-          onSignupSuccess();
-        }
+        onClose();
       } else {
         showSnackbar(comments.OAUTH_FAIL, "error");
       }
