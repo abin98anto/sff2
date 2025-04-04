@@ -35,14 +35,14 @@ axiosInstance.interceptors.response.use(
       try {
         // Call your refresh token endpoint
         await axiosInstance.post("/refresh-token");
-        const refreshResponse = await axiosInstance.post("/refresh-token");
-        console.log("Refresh response:", refreshResponse.data);
-        Cookies.set("accessToken", refreshResponse.data, {
-          secure: true,
-          sameSite: "none",
-          // maxAge: 24 * 60 * 60 * 1000,
-        });
-        console.log("cookiies", document.cookie);
+        await axiosInstance.post("/refresh-token");
+        // console.log("Refresh response:", refreshResponse.data);
+        // Cookies.set("accessToken", refreshResponse.data, {
+        //   secure: true,
+        //   sameSite: "none",
+        //   // maxAge: 24 * 60 * 60 * 1000,
+        // });
+        // console.log("cookiies", document.cookie);
 
         // After refreshing, retry the original request
         return axiosInstance(originalRequest);
