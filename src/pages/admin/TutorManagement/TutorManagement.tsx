@@ -13,6 +13,7 @@ import "./TutorManagement.scss";
 import ResumeModal from "../../../components/common/Modal/ResumeModal/ResumeModal";
 import comments from "../../../shared/constants/comments";
 import ICourse from "../../../entities/ICourse";
+import { ICourseNew } from "../../tutor/Dashboard/TutorDashboard";
 
 interface TableData {
   data: Partial<IUser>[];
@@ -294,28 +295,59 @@ const TutorManagement = () => {
   //   }
   // };
 
+  // const tutorsAssignedCourses = async (tutorId: string) => {
+  //   try {
+  //     console.log("the turtor", tutorId);
+
+  //     const response = await axiosInstance.get("/course/");
+  //     setCourses(response.data.data.data);
+  //     console.log("respnesss", response);
+  //     console.log("first", response.data.data.data);
+  //     console.log("coureses", courses);
+
+  //     const transformCourses = courses.map((course) => ({
+  //       ...course,
+  //       tutors: course.tutors
+  //         ? course.tutors.map((tutor: IUser) => tutor._id ?? "")
+  //         : [],
+  //     }));
+  //     console.log("transformed ocurses", transformCourses);
+
+  //     const assignedCourses = transformCourses.filter((course) => {
+  //       if (course.tutors?.includes(tutorId)) {
+  //         return course._id;
+  //       }
+  //     });
+
+  //     console.log("assigned courses", assignedCourses);
+  //     setSelectedCourses((prev) => prev.concat(assignedCourses));
+  //   } catch (error) {
+  //     showSnackbar("Error finding tutor's already assigned courses", "error");
+  //     console.log("error finding tutor's already assigned courses", error);
+  //   }
+  // };
+
   const tutorsAssignedCourses = async (tutorId: string) => {
     try {
-      console.log("the turtor", tutorId);
-      
       const response = await axiosInstance.get("/course/");
-      setCourses(response.data.data.data);
-      console.log("respnesss", response);
-      console.log("first", response.data.data.data);
-      console.log("coureses", courses);
+      const coursesData = response.data.data.data;
+      setCourses(coursesData);
 
-      const transformCourses = courses.map((course) => ({
+      // Use coursesData directly instead of courses state variable
+      const transformCourses = coursesData.map((course: ICourse) => ({
         ...course,
         tutors: course.tutors
           ? course.tutors.map((tutor: IUser) => tutor._id ?? "")
           : [],
       }));
-      console.log("transformed ocurses", transformCourses);
 
-      const assignedCourses = transformCourses.filter((course) => {
+      console.log("transformed courses", transformCourses);
+
+      const assignedCourses = transformCourses.filter((course: ICourseNew) => {
         if (course.tutors?.includes(tutorId)) {
           return course._id;
         }
+        return false;
       });
 
       console.log("assigned courses", assignedCourses);
