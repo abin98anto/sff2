@@ -13,10 +13,8 @@ export const sendOTP = createAsyncThunk(
   async (userData: IUser, { rejectWithValue }) => {
     try {
       const result = await axiosInstance.post(API.OTP_SENT, userData);
-      if (
-        !result.data.success &&
-        result.data.message === comments.EMAIL_TAKEN
-      ) {
+      console.log("result in thunk", result);
+      if (result.data.message === comments.EMAIL_TAKEN) {
         return rejectWithValue(comments.EMAIL_TAKEN);
       }
       return result.data;
