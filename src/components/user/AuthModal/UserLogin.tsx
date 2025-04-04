@@ -107,8 +107,7 @@ const UserLogin: React.FC<UserLoginProps> = ({
       // Check if the user is verified before redirecting to dashboard
       if (result && result.user && result.user.isVerified) {
         if (userRole === "tutor") {
-          console.log("it reached here");
-          // navigate(API.TUTOR_DASHBOARD);
+          navigate(API.TUTOR_DASHBOARD);
         } else if (userRole === "admin") {
           navigate(API.ADMIN_DASH);
         } else {
