@@ -38,10 +38,9 @@ axiosInstance.interceptors.response.use(
         const refreshResponse = await axiosInstance.post("/refresh-token");
         console.log("Refresh response:", refreshResponse.data);
         Cookies.set("accessToken", refreshResponse.data, {
-          httpOnly: true,
           secure: true,
           sameSite: "none",
-          maxAge: 24 * 60 * 60 * 1000,
+          // maxAge: 24 * 60 * 60 * 1000,
         });
         console.log("cookiies", document.cookie);
 
