@@ -298,6 +298,8 @@ const TutorManagement = () => {
     try {
       const response = await axiosInstance.get("/course/");
       setCourses(response.data.data.data || []);
+      console.log("respnesss", response);
+      console.log("first", response.data.data.data);
       console.log("coureses", courses);
 
       const transformCourses = courses.map((course) => ({
