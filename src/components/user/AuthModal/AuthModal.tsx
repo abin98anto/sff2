@@ -37,9 +37,11 @@ const AuthModal: React.FC<AuthModalProps> = ({
   const handleClose = async () => {
     if (currentSection === "otp") {
       try {
-        await axiosInstance.delete(
-          `${API.USER_DELETE}?email=${userInfo?.email}`
-        );
+        await axiosInstance.delete(`${API.USER_DELETE}`, {
+          params: {
+            emai: userInfo?.email,
+          },
+        });
         dispatch(resetUserInfo());
       } catch (error) {
         console.error(comments.USER_DEL_FAIL, error);
