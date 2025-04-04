@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { hourglass } from "ldrs";
+// import { useNavigate } from "react-router-dom";
 
 import axiosInstance from "../../../shared/config/axiosConfig";
 import comments from "../../../shared/constants/comments";
@@ -14,6 +15,7 @@ import {
 import { IUser } from "../../../entities/IUser";
 import useSnackbar from "../../../hooks/useSnackbar";
 import CustomSnackbar from "../../common/CustomSnackbar";
+import userRoles from "../../../entities/misc/userRole";
 
 interface OtpVerificationProps {
   onVerificationSuccess: () => void;
@@ -31,6 +33,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
 
   const { loading, userInfo } = useAppSelector((state) => state.user);
   const dispatch = useAppDispatch();
+  // const navigate = useNavigate();
   hourglass.register();
 
   useEffect(() => {
@@ -64,9 +67,22 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
       const result = await dispatch(
         verifyOTP({ email: userInfo?.email, otp: otp.join("") })
       ).unwrap();
+
       if (result.success) {
         showSnackbar(comments.USER_VERIFIED, "success");
-        onVerificationSuccess();
+
+        // Check if the user is a tutor and handle accordingly
+        if (userInfo?.role === userRoles.TUTOR) {
+          // Option 1: Navigate directly to tutor dashboard
+          // navigate(API.TUTOR_DASHBOARD);
+
+          // Option 2: Just call the verification success handler
+          // which will take them back to login screen
+          onVerificationSuccess();
+        } else {
+          // For regular users, just call the handler
+          onVerificationSuccess();
+        }
       } else {
         console.log(comments.VERIFY_OTP_FAIL, result);
         showSnackbar(result, "error");
