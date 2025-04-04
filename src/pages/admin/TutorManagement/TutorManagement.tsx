@@ -134,8 +134,9 @@ const TutorManagement = () => {
       }
 
       // Call API to update tutor's wallet
-      await axiosInstance.put(`/update/${tutorToPay._id}`, {
-        wallet: amount, // This will be added to the current wallet amount on the server
+      await axiosInstance.put(`/add-money`, {
+        userId: tutorToPay._id,
+        amount, // This will be added to the current wallet amount on the server
       });
 
       showSnackbar(
