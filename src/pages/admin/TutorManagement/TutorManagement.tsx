@@ -713,6 +713,7 @@ const TutorManagement = () => {
                 <input
                   type="checkbox"
                   id={`course-${course._id}`}
+                  style={{ width: "200px" }}
                   checked={selectedCourses.includes(course._id as string)}
                   onChange={() =>
                     handleCourseCheckboxChange(course._id as string)
