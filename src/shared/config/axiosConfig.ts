@@ -36,6 +36,7 @@ axiosInstance.interceptors.response.use(
         await axiosInstance.post("/refresh-token");
         const refreshResponse = await axiosInstance.post("/refresh-token");
         console.log("Refresh response:", refreshResponse.data);
+        console.log("cookiies", document.cookie);
         // After refreshing, retry the original request
         return axiosInstance(originalRequest);
       } catch (refreshError) {
