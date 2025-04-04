@@ -2,7 +2,7 @@ export interface IUser {
   createdAt: string | number | Date;
   name: string;
   email: string;
-  role: string;
+  role?: string;
   password?: string | null;
   picture?: string;
   wallet?: number;
