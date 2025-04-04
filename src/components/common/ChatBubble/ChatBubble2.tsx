@@ -66,26 +66,26 @@ const ChatBubble2 = () => {
     setIsLoading(false);
   };
 
+  const handleClickOutside = (event: MouseEvent) => {
+    const clickedOutside =
+      (chatRef.current &&
+        !chatRef.current.contains(event.target as Node) &&
+        !document
+          .querySelector(".chat-bubble-minimized")
+          ?.contains(event.target as Node)) ||
+      (placeholderRef.current &&
+        !placeholderRef.current.contains(event.target as Node));
+
+    if (clickedOutside) {
+      setIsExpanded(false);
+      setActiveChat(null);
+      setShowPlaceholder(false);
+    }
+  };
+
   // closing chat bubble.
   useEffect(() => {
     if (!isExpanded) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      const clickedOutside =
-        (chatRef.current &&
-          !chatRef.current.contains(event.target as Node) &&
-          !document
-            .querySelector(".chat-bubble-minimized")
-            ?.contains(event.target as Node)) ||
-        (placeholderRef.current &&
-          !placeholderRef.current.contains(event.target as Node));
-
-      if (clickedOutside) {
-        setIsExpanded(false);
-        setActiveChat(null);
-        setShowPlaceholder(false);
-      }
-    };
 
     document.addEventListener("mousedown", handleClickOutside);
 
@@ -452,7 +452,7 @@ const ChatBubble2 = () => {
   const initiateVideoCall = async () => {
     try {
       if (activeChat && userId) {
-        isExpanded && setIsExpanded(false);
+        setIsExpanded(false);
         const receiverId = activeChat.studentId._id;
         const roomID = `room_${userId}_${receiverId}`;
         const videoCallUrl = `/video-call?userId=${userInfo.name}&studentId=${receiverId}&roomID=${roomID}`;
