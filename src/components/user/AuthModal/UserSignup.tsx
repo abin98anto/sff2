@@ -175,7 +175,7 @@ const UserSignup: React.FC<UserSignupProps> = ({
   useEffect(() => {
     const loadGoogleScript = () => {
       if (document.querySelector(API.G_QUERY_SELECT)) {
-        initializeGoogleSignIn();
+        // initializeGoogleSignIn();
         return;
       }
 
