@@ -255,7 +255,7 @@ const TutorManagement = () => {
 
   const fetchCourses = useCallback(async () => {
     try {
-      const response = await axiosInstance.get("/courses/");
+      const response = await axiosInstance.get("/course/");
       setCourses(response.data || []);
 
       // Pre-select courses that the tutor is already assigned to
