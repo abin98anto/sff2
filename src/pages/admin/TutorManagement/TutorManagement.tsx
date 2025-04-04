@@ -296,6 +296,8 @@ const TutorManagement = () => {
 
   const tutorsAssignedCourses = async (tutorId: string) => {
     try {
+      console.log("the turtor", tutorId);
+      
       const response = await axiosInstance.get("/course/");
       setCourses(response.data.data.data);
       console.log("respnesss", response);
