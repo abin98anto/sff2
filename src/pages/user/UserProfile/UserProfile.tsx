@@ -206,6 +206,7 @@ const UserProfile: React.FC = () => {
         courseName: courseName,
         completionDate: completionDate,
         enrollmentId: certificteId,
+        grade: enrollmentData.grade,
       };
 
       // Generate and download the certificate

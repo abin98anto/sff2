@@ -6,6 +6,7 @@ interface CertificateData {
   courseName: string;
   completionDate: string;
   enrollmentId: string;
+  grade: string;
 }
 
 const generateCertificate = async (
@@ -68,6 +69,9 @@ const generateCertificate = async (
           <div style="font-size: 25px; margin: 30px 0;">has successfully completed the course</div>
           <div style="font-size: 30px; font-weight: bold; color: #4a86e8; margin: 20px 0;">
             ${certificateData.courseName}
+          </div>
+          <div style="font-size: 20px; margin: 20px 0;">
+            with ${certificateData.grade} grade
           </div>
           <div style="font-size: 20px; margin: 20px 0;">
             on ${certificateData.completionDate}
