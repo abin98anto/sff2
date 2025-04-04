@@ -185,10 +185,10 @@ const BasicInformation = ({
       setError(comments.THUMBNAIL_REQ);
       return false;
     }
-    if (!data.tutors || data.tutors.length === 0) {
-      setError(comments.TUTORS_REQ);
-      return false;
-    }
+    // if (!data.tutors || data.tutors.length === 0) {
+    //   setError(comments.TUTORS_REQ);
+    //   return false;
+    // }
     return true;
   };
 
