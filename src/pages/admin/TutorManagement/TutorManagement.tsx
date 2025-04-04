@@ -327,6 +327,37 @@ const TutorManagement = () => {
   //   }
   // };
 
+  // const tutorsAssignedCourses = async (tutorId: string) => {
+  //   try {
+  //     const response = await axiosInstance.get("/course/");
+  //     const coursesData = response.data.data.data;
+  //     setCourses(coursesData);
+
+  //     // Use coursesData directly instead of courses state variable
+  //     const transformCourses = coursesData.map((course: ICourse) => ({
+  //       ...course,
+  //       tutors: course.tutors
+  //         ? course.tutors.map((tutor: IUser) => tutor._id ?? "")
+  //         : [],
+  //     }));
+
+  //     console.log("transformed courses", transformCourses);
+
+  //     const assignedCourses = transformCourses.filter((course: ICourseNew) => {
+  //       if (course.tutors?.includes(tutorId)) {
+  //         return course._id;
+  //       }
+  //       return false;
+  //     });
+
+  //     console.log("assigned courses", assignedCourses);
+  //     setSelectedCourses((prev) => prev.concat(assignedCourses));
+  //   } catch (error) {
+  //     showSnackbar("Error finding tutor's already assigned courses", "error");
+  //     console.log("error finding tutor's already assigned courses", error);
+  //   }
+  // };
+
   const tutorsAssignedCourses = async (tutorId: string) => {
     try {
       const response = await axiosInstance.get("/course/");
@@ -337,21 +368,20 @@ const TutorManagement = () => {
       const transformCourses = coursesData.map((course: ICourse) => ({
         ...course,
         tutors: course.tutors
-          ? course.tutors.map((tutor: IUser) => tutor._id ?? "")
+          ? course.tutors.map((tutor: IUser) =>
+              typeof tutor === "string" ? tutor : tutor._id ?? ""
+            )
           : [],
       }));
 
       console.log("transformed courses", transformCourses);
 
-      const assignedCourses = transformCourses.filter((course: ICourseNew) => {
-        if (course.tutors?.includes(tutorId)) {
-          return course._id;
-        }
-        return false;
-      });
+      const assignedCourses = transformCourses
+        .filter((course: ICourseNew) => course.tutors?.includes(tutorId))
+        .map((course: ICourse) => course._id as string); // Extract just the course IDs
 
-      console.log("assigned courses", assignedCourses);
-      setSelectedCourses((prev) => prev.concat(assignedCourses));
+      console.log("assigned courses IDs", assignedCourses);
+      setSelectedCourses(assignedCourses);
     } catch (error) {
       showSnackbar("Error finding tutor's already assigned courses", "error");
       console.log("error finding tutor's already assigned courses", error);
@@ -420,6 +450,7 @@ const TutorManagement = () => {
         />
       </div>
 
+      {/* user block/unblock modal */}
       <CustomModal
         isOpen={isConfirmModalOpen}
         onClose={() => {
@@ -454,6 +485,7 @@ const TutorManagement = () => {
         </p>
       </CustomModal>
 
+      {/* approve tutor modal */}
       <CustomModal
         isOpen={isApproveModalOpen}
         onClose={() => setIsApproveModalOpen(false)}
@@ -516,6 +548,7 @@ const TutorManagement = () => {
         resumeUrl={resumeUrl || ""}
       />
 
+      {/* Aprove/Deny modal */}
       <CustomModal
         isOpen={confirmApprovalOpen}
         onClose={() => setConfirmApprovalOpen(false)}
@@ -539,6 +572,7 @@ const TutorManagement = () => {
         </p>
       </CustomModal>
 
+      {/* Deny message modal */}
       <CustomModal
         isOpen={confirmDenialOpen}
         onClose={() => setConfirmDenialOpen(false)}
@@ -573,6 +607,7 @@ const TutorManagement = () => {
         </div>
       </CustomModal>
 
+      {/* Assign tutor to course modal */}
       <CustomSnackbar
         open={snackbar.open}
         message={snackbar.message}
