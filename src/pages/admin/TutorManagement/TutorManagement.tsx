@@ -281,25 +281,24 @@ const TutorManagement = () => {
   //   }
   // }, [showSnackbar, selectedTutorForCourses]);
 
-  const fetchCourses = async () => {
-    try {
-      const response = await axiosInstance.get("/course/");
-      setCourses(response.data.data.data || []);
+  // const fetchCourses = async () => {
+  //   try {
+  //     const response = await axiosInstance.get("/course/");
+  //     setCourses(response.data.data.data || []);
 
-      tutorsAssignedCourses(selectedTutorForCourses?._id as string);
-      console.log("the selectd courses", selectedTutorForCourses);
-    } catch (error) {
-      showSnackbar("Error fetching courses", "error");
-      console.log("error fetching courses", error);
-    }
-  };
+  //     tutorsAssignedCourses(selectedTutorForCourses?._id as string);
+  //     console.log("the selectd courses", selectedTutorForCourses);
+  //   } catch (error) {
+  //     showSnackbar("Error fetching courses", "error");
+  //     console.log("error fetching courses", error);
+  //   }
+  // };
 
   const tutorsAssignedCourses = async (tutorId: string) => {
     try {
-      if (!courses) {
-        showSnackbar("no courses fetched!", "error");
-        return;
-      }
+      const response = await axiosInstance.get("/course/");
+      setCourses(response.data.data.data || []);
+      console.log("coureses", courses);
 
       const transformCourses = courses.map((course) => ({
         ...course,
@@ -326,7 +325,7 @@ const TutorManagement = () => {
   const selectCoursesForTutor = (tutor: IUser) => {
     setSelectedTutorForCourses(tutor);
     setSelectedCourses([]);
-    fetchCourses();
+    tutorsAssignedCourses(tutor._id as string);
     setIsCourseModalOpen(true);
   };
 
