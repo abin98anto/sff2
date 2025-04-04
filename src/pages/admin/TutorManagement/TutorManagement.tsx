@@ -46,8 +46,8 @@ const TutorManagement = () => {
       label: comments.TUTOR_COL_STUDENTS,
       render: (item: IUser) => item.students?.length || 0,
     },
-    { key: "reviewsTaken", label: comments.TUTOR_COL_REVIEWS },
-    { key: "sessionsTaken", label: comments.TUTOR_COL_SESSIONS },
+    // { key: "reviewsTaken", label: comments.TUTOR_COL_REVIEWS },
+    // { key: "sessionsTaken", label: comments.TUTOR_COL_SESSIONS },
     {
       key: "isActive",
       label: comments.TUTOR_COL_STATUS,
