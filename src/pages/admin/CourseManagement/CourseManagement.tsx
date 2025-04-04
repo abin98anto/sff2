@@ -142,6 +142,11 @@ const CourseManagement = () => {
   const handleToggle = async () => {
     try {
       if (!toggleId || !toggleCourse) return;
+      if (toggleCourse.tutors?.length === 0) {
+        showSnackbar("Cannot toggle course without tutors assigned", "error");
+        return;
+      }
+
       const updatedStatus = !toggleCourse.isActive;
 
       const response = await axiosInstance.put(API.COURSE_UPDATE, {
