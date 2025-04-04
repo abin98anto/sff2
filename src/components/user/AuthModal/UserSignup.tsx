@@ -110,6 +110,11 @@ const UserSignup: React.FC<UserSignupProps> = ({
       };
       const dispatchresult = await dispatch(sendOTP(userData));
       console.log("the dispathc result", dispatchresult);
+      if (dispatchresult.type !== "user/sendOTP/fulfilled") {
+        showSnackbar(dispatchresult.payload, "error");
+        return;
+      }
+
       onSignupSuccess();
     } catch (err) {
       if (err instanceof Error && "inner" in err) {
