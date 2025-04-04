@@ -39,7 +39,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
       try {
         await axiosInstance.delete(`${API.USER_DELETE}`, {
           params: {
-            emai: userInfo?.email,
+            email: userInfo?.email,
           },
         });
         dispatch(resetUserInfo());
