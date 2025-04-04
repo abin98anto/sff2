@@ -137,53 +137,70 @@ const MyLearningPage = () => {
           </div>
         </div>
 
-        <div className="course-grid">
-          {enrolledCourses.map((course) => (
-            <div key={course.courseInfo._id} className="course-card">
-              <img
-                src={course.courseInfo.thumbnail || "/placeholder.svg"}
-                alt={course.courseInfo.title}
-              />
+        {enrolledCourses.length > 0 ? (
+          <>
+            <div className="course-grid">
+              {enrolledCourses.map((course) => (
+                <div key={course.courseInfo._id} className="course-card">
+                  <img
+                    src={course.courseInfo.thumbnail || "/placeholder.svg"}
+                    alt={course.courseInfo.title}
+                  />
 
-              <div className="course-info">
-                <Link
-                  to={`/study/${course.courseInfo._id}`}
-                  key={course.courseInfo._id}
-                  className="course-card-link"
-                >
-                  <h2>{course.courseInfo.title}</h2>
-                  <p>Language: {course.courseInfo.language}</p>
-                  <p className="subtitle">{course.courseInfo.subtitle}</p>
-                  <p className="category">
-                    Category:{" "}
-                    {getCategoryName(
-                      course.courseInfo.category as string | ICategory
-                    )}
-                  </p>
-                  <p>Duration: {course.courseInfo.totalDuration}</p>
+                  <div className="course-info">
+                    <Link
+                      to={`/study/${course.courseInfo._id}`}
+                      key={course.courseInfo._id}
+                      className="course-card-link"
+                    >
+                      <h2>{course.courseInfo.title}</h2>
+                      <p>Language: {course.courseInfo.language}</p>
+                      <p className="subtitle">{course.courseInfo.subtitle}</p>
+                      <p className="category">
+                        Category:{" "}
+                        {getCategoryName(
+                          course.courseInfo.category as string | ICategory
+                        )}
+                      </p>
+                      <p>Duration: {course.courseInfo.totalDuration}</p>
 
-                  <div className="completion-progress">
-                    <div className="progress-bar">
-                      <div
-                        className="progress-fill"
-                        style={{
-                          width: `${calculateCompletionPercentage(course)}%`,
-                        }}
-                      ></div>
-                    </div>
-                    <span>{calculateCompletionPercentage(course)}%</span>
+                      <div className="completion-progress">
+                        <div className="progress-bar">
+                          <div
+                            className="progress-fill"
+                            style={{
+                              width: `${calculateCompletionPercentage(
+                                course
+                              )}%`,
+                            }}
+                          ></div>
+                        </div>
+                        <span>{calculateCompletionPercentage(course)}%</span>
+                      </div>
+                    </Link>
                   </div>
-                </Link>
-              </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          </>
+        ) : (
+          <div className="empty-courses-placeholder">
+            <div className="empty-state">
+              <img src="/empty-courses.svg" alt="No courses" />
+              <h2>No courses found</h2>
+              <p>You haven't enrolled in any courses yet.</p>
+              <Link to="/courses" className="browse-courses-btn">
+                Browse Courses
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
 
       <CustomSnackbar
