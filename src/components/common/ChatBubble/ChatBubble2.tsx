@@ -452,6 +452,7 @@ const ChatBubble2 = () => {
   const initiateVideoCall = async () => {
     try {
       if (activeChat && userId) {
+        isExpanded && setIsExpanded(false);
         const receiverId = activeChat.studentId._id;
         const roomID = `room_${userId}_${receiverId}`;
         const videoCallUrl = `/video-call?userId=${userInfo.name}&studentId=${receiverId}&roomID=${roomID}`;
