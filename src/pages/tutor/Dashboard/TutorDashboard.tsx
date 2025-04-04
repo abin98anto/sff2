@@ -50,6 +50,7 @@ const TutorDashboard = () => {
   const [completedStudents, setCompletedStudents] = useState<IEnrollmentNew[]>(
     []
   );
+  const [balance, setBalance] = useState(0);
 
   const getAssignedCoursesCount = async (userId: string) => {
     try {
@@ -132,6 +133,18 @@ const TutorDashboard = () => {
     });
   };
 
+  const updateWallet = async () => {
+    try {
+      const response = await axiosInstance.get(`/get-balance/${userInfo?._id}`);
+      setBalance(response.data.data.wallet);
+    } catch (error) {
+      console.log("error updating wallet", error);
+    }
+  };
+  useEffect(() => {
+    updateWallet();
+  }, []);
+
   useEffect(() => {
     getAssignedCoursesCount(userInfo?._id as string);
   }, [userInfo]);
@@ -174,7 +187,7 @@ const TutorDashboard = () => {
           </div>
           <div className="tutor-stat-box__content">
             <h3 className="tutor-stat-box__title">Total Earnings</h3>
-            <p className="tutor-stat-box__value">₹{userInfo?.wallet}</p>
+            <p className="tutor-stat-box__value">₹{balance}</p>
           </div>
         </div>
       </div>
