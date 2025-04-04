@@ -105,7 +105,7 @@ const UserSignup: React.FC<UserSignupProps> = ({
       const { confirmPassword, ...data } = formData;
       const userData: IUser = {
         ...data,
-        // role: userRole === "tutor" ? userRoles.TUTOR : userRoles.USER,
+        role: userRole === "tutor" ? userRoles.TUTOR : userRoles.USER,
         createdAt: "",
       };
 
