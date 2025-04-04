@@ -1,5 +1,3 @@
-"use client";
-
 import { Plus, Trash2 } from "lucide-react";
 import DataTable, {
   type Column,
@@ -14,6 +12,7 @@ import CustomModal from "../../../components/common/Modal/CustomModal/CustomModa
 import "./TutorManagement.scss";
 import ResumeModal from "../../../components/common/Modal/ResumeModal/ResumeModal";
 import comments from "../../../shared/constants/comments";
+import ICourse from "../../../entities/ICourse";
 
 interface TableData {
   data: Partial<IUser>[];
@@ -34,7 +33,7 @@ const TutorManagement = () => {
   const [confirmDenialOpen, setConfirmDenialOpen] = useState(false);
   const [selectedTutor, setSelectedTutor] = useState<IUser | null>(null);
   const [denialReason, setDenialReason] = useState<string>("");
-  const [courses, setCourses] = useState<any[]>([]);
+  const [courses, setCourses] = useState<ICourse[]>([]);
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
   const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
   const [selectedTutorForCourses, setSelectedTutorForCourses] =
@@ -520,10 +519,12 @@ const TutorManagement = () => {
                 <input
                   type="checkbox"
                   id={`course-${course._id}`}
-                  checked={selectedCourses.includes(course._id)}
-                  onChange={() => handleCourseCheckboxChange(course._id)}
+                  checked={selectedCourses.includes(course._id as string)}
+                  onChange={() =>
+                    handleCourseCheckboxChange(course._id as string)
+                  }
                 />
-                <label htmlFor={`course-${course._id}`}>{course.name}</label>
+                <label htmlFor={`course-${course._id}`}>{course.title}</label>
               </div>
             ))
           )}
