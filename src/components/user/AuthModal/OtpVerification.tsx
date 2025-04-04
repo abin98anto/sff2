@@ -79,7 +79,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
 
   const handleResendOtp = async () => {
     try {
-      await axiosInstance.delete(`${API.USER_DELETE}?email=${userInfo?.email}`);
+      await axiosInstance.delete(`${API.USER_DELETE}/${userInfo?.email}`);
       await dispatch(sendOTP(userInfo as IUser)).unwrap();
 
       setTimeLeft(60);
