@@ -15,7 +15,7 @@ import {
 import { IUser } from "../../../entities/IUser";
 import useSnackbar from "../../../hooks/useSnackbar";
 import CustomSnackbar from "../../common/CustomSnackbar";
-// import userRoles from "../../../entities/misc/userRole";
+import userRoles from "../../../entities/misc/userRole";
 
 interface OtpVerificationProps {
   onVerificationSuccess: () => void;
@@ -64,21 +64,26 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
     }
 
     try {
-      if (!userInfo?.email) {
-        showSnackbar("User information is missing", "error");
-        return;
-      }
-
       const result = await dispatch(
-        verifyOTP({ email: userInfo.email, otp: otp.join("") })
+        verifyOTP({ email: userInfo?.email, otp: otp.join("") })
       ).unwrap();
 
+      console.log("the result in otp page", result);
       if (result.success) {
         showSnackbar(comments.USER_VERIFIED, "success");
 
-        // Always call onVerificationSuccess for both user and tutor roles
-        // This will navigate them back to the login screen
-        onVerificationSuccess();
+        // Check if the user is a tutor and handle accordingly
+        if (userInfo?.role === userRoles.TUTOR) {
+          // Option 1: Navigate directly to tutor dashboard
+          // navigate(API.TUTOR_DASHBOARD);
+
+          // Option 2: Just call the verification success handler
+          // which will take them back to login screen
+          onVerificationSuccess();
+        } else {
+          // For regular users, just call the handler
+          onVerificationSuccess();
+        }
       } else {
         console.log(comments.VERIFY_OTP_FAIL, result);
         showSnackbar(result, "error");
@@ -91,12 +96,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
 
   const handleResendOtp = async () => {
     try {
-      if (!userInfo || !userInfo.email) {
-        showSnackbar("User information is missing", "error");
-        return;
-      }
-
-      await axiosInstance.delete(`${API.USER_DELETE}/${userInfo.email}`);
+      await axiosInstance.delete(`${API.USER_DELETE}/${userInfo?.email}`);
       await dispatch(sendOTP(userInfo as IUser)).unwrap();
 
       setTimeLeft(60);
