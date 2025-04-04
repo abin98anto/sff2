@@ -6,7 +6,7 @@ import OtpVerification from "./OtpVerification";
 import ForgotPassword from "./ForgotPassword";
 import "./AuthModal.scss";
 import axiosInstance from "../../../shared/config/axiosConfig";
-// import API from "../../../shared/constants/API";
+import API from "../../../shared/constants/API";
 import { resetUserInfo } from "../../../redux/slices/userSlice";
 import images from "../../../shared/constants/images";
 import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
@@ -37,7 +37,9 @@ const AuthModal: React.FC<AuthModalProps> = ({
   const handleClose = async () => {
     if (currentSection === "otp") {
       try {
-        await axiosInstance.delete(`/delete-user/${userInfo?.email}`);
+        await axiosInstance.delete(
+          `${API.USER_DELETE}?email=${userInfo?.email}`
+        );
         dispatch(resetUserInfo());
       } catch (error) {
         console.error(comments.USER_DEL_FAIL, error);

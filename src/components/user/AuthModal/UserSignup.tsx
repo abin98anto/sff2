@@ -108,15 +108,7 @@ const UserSignup: React.FC<UserSignupProps> = ({
         role: userRole === "tutor" ? userRoles.TUTOR : userRoles.USER,
         createdAt: "",
       };
-
-      const dispatchResult = await dispatch(sendOTP(userData));
-      console.log("the dispatch result", dispatchResult);
-
-      if (dispatchResult.type !== "user/sendOTP/fulfilled") {
-        showSnackbar(dispatchResult.payload as string, "error");
-        return;
-      }
-
+      await dispatch(sendOTP(userData));
       onSignupSuccess();
     } catch (err) {
       if (err instanceof Error && "inner" in err) {
@@ -155,13 +147,7 @@ const UserSignup: React.FC<UserSignupProps> = ({
       const result = await dispatch(googleSignIn(user)).unwrap();
 
       if (result && result.user) {
-        // Check if the user is verified before closing
-        if (result.user.isVerified) {
-          onClose();
-        } else {
-          // If not verified, navigate to OTP verification
-          onSignupSuccess();
-        }
+        onClose();
       } else {
         showSnackbar(comments.OAUTH_FAIL, "error");
       }
@@ -236,7 +222,7 @@ const UserSignup: React.FC<UserSignupProps> = ({
     loadGoogleScript();
 
     return () => {};
-  }, [googleInitialized]);
+  }, [showSnackbar, googleInitialized, userRole]);
 
   return (
     <div className="auth-section">

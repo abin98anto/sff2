@@ -102,22 +102,11 @@ const UserLogin: React.FC<UserLoginProps> = ({
         role: userRole,
       };
 
-      const result = await dispatch(login(userData)).unwrap();
-
-      // Check if the user is verified before redirecting to dashboard
-      if (result && result.user && result.user.isVerified) {
-        if (userRole === "tutor") {
-          navigate(API.TUTOR_DASHBOARD);
-        } else if (userRole === "admin") {
-          navigate(API.ADMIN_DASH);
-        } else {
-          onClose();
-        }
-      } else if (result && result.user && !result.user.isVerified) {
-        // If user is not verified, they need to complete OTP verification
-        showSnackbar("Please verify your account first", "error");
-        // You'll need to handle the transition to OTP screen here
-        // This might require additional state management or context
+      await dispatch(login(userData)).unwrap();
+      if (userRole === "tutor") {
+        navigate(API.TUTOR_DASHBOARD);
+      } else if (userRole === "admin") {
+        navigate(API.ADMIN_DASH);
       } else {
         onClose();
       }
@@ -148,18 +137,7 @@ const UserLogin: React.FC<UserLoginProps> = ({
       const result = await dispatch(googleSignIn(user)).unwrap();
 
       if (result && result.user) {
-        // Check if the user is verified before closing or redirecting
-        if (result.user.isVerified) {
-          if (userRole === "tutor") {
-            navigate(API.TUTOR_DASHBOARD);
-          } else {
-            onClose();
-          }
-        } else {
-          // Handle unverified user scenario
-          showSnackbar("Please verify your account", "error");
-          // Additional logic for OTP verification needed
-        }
+        onClose();
       } else {
         showSnackbar(comments.OAUTH_FAIL, "error");
       }
