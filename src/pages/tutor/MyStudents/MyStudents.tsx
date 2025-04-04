@@ -65,6 +65,8 @@ const MyStudents = () => {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [selectedGrade, setSelectedGrade] = useState<GradeOption>("A");
 
+  const [hasStudents, setHasStudents] = useState(true);
+
   const refetchData = useRef<(() => void) | undefined>();
 
   // Populate Table columns
@@ -214,6 +216,7 @@ const MyStudents = () => {
             });
           }
 
+          setHasStudents(filteredData.length > 0);
           return {
             data: filteredData,
             total: filteredData.length,
@@ -319,13 +322,27 @@ const MyStudents = () => {
           </div>
         </div>
 
-        <DataTable
-          columns={columns as Column<Record<string, any>>[]}
-          fetchData={fetchTableData}
-          pageSize={10}
-          initialSort={{ field: "createdAt", order: "desc" }}
-          refetchRef={refetchData}
-        />
+        {hasStudents ? (
+          <DataTable
+            columns={columns as Column<Record<string, any>>[]}
+            fetchData={fetchTableData}
+            pageSize={10}
+            initialSort={{ field: "createdAt", order: "desc" }}
+            refetchRef={refetchData}
+          />
+        ) : (
+          <div className="empty-students-placeholder">
+            <div className="empty-state">
+              <img src="/empty-students.svg" alt="No students" />
+              <h2>No students found</h2>
+              <p>
+                {statusFilter !== "all"
+                  ? `You don't have any students with "${statusFilter}" status.`
+                  : "You don't have any students yet."}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Review Confirmation Modal */}
         <CustomModal

@@ -192,7 +192,6 @@ const MyLearningPage = () => {
         ) : (
           <div className="empty-courses-placeholder">
             <div className="empty-state">
-              <img src="/empty-courses.svg" alt="No courses" />
               <h2>No courses found</h2>
               <p>You haven't enrolled in any courses yet.</p>
               <Link to="/courses" className="browse-courses-btn">
