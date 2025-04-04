@@ -134,7 +134,7 @@ const TutorManagement = () => {
       }
 
       // Call API to update tutor's wallet
-      await axiosInstance.put(`/add-money`, {
+      await axiosInstance.put(`/admin/add-money`, {
         userId: tutorToPay._id,
         amount, // This will be added to the current wallet amount on the server
       });
@@ -713,7 +713,6 @@ const TutorManagement = () => {
                 <input
                   type="checkbox"
                   id={`course-${course._id}`}
-                  style={{ width: "200px" }}
                   checked={selectedCourses.includes(course._id as string)}
                   onChange={() =>
                     handleCourseCheckboxChange(course._id as string)
