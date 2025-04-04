@@ -382,6 +382,7 @@ const TutorManagement = () => {
 
       console.log("assigned courses IDs", assignedCourses);
       setSelectedCourses(assignedCourses);
+      console.log("first", selectedCourses);
     } catch (error) {
       showSnackbar("Error finding tutor's already assigned courses", "error");
       console.log("error finding tutor's already assigned courses", error);
