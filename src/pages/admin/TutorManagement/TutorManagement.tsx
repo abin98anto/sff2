@@ -297,7 +297,7 @@ const TutorManagement = () => {
   const tutorsAssignedCourses = async (tutorId: string) => {
     try {
       const response = await axiosInstance.get("/course/");
-      setCourses(response.data.data.data || []);
+      setCourses(response.data.data.data);
       console.log("respnesss", response);
       console.log("first", response.data.data.data);
       console.log("coureses", courses);
