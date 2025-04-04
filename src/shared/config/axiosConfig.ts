@@ -18,6 +18,42 @@ const axiosInstance: AxiosInstance = axios.create({
   },
 });
 
+// Add a response interceptor
+axiosInstance.interceptors.response.use(
+  (response) => {
+    // Return successful responses as-is
+    return response;
+  },
+  async (error) => {
+    const originalRequest = error.config;
+    
+    // Check if the error is due to an expired token (401 error) and we haven't tried refreshing yet
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true; // Mark that we've tried refreshing for this request
+      
+      try {
+        // Call your refresh token endpoint
+        await axiosInstance.post('/refresh-token');
+        
+        // After refreshing, retry the original request
+        return axiosInstance(originalRequest);
+      } catch (refreshError) {
+        // If refresh token is also invalid, redirect to login or handle accordingly
+        // This could be due to both tokens being expired or invalid
+        console.error('Failed to refresh token:', refreshError);
+        
+        // Optionally, redirect to login
+        // window.location.href = '/login';
+        
+        return Promise.reject(refreshError);
+      }
+    }
+    
+    // For other errors, just pass them through
+    return Promise.reject(error);
+  }
+);
+
 // let isRefreshing: boolean = false;
 // let failedQueue: QueueItem[] = [];
 
