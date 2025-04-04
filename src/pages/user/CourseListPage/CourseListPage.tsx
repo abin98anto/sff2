@@ -42,7 +42,7 @@ const CourseListPage = () => {
   const [_, setTotalCourses] = useState(0);
   const [loading, setLoading] = useState(true);
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
-  const coursesPerPage = 4;
+  const coursesPerPage = 8;
   const [appliedSearchTerm, setAppliedSearchTerm] = useState("");
   const [courseReviews, setCourseReviews] = useState<{ [key: string]: number }>(
     {}
