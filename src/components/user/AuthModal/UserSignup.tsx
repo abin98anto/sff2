@@ -175,7 +175,7 @@ const UserSignup: React.FC<UserSignupProps> = ({
   useEffect(() => {
     const loadGoogleScript = () => {
       if (document.querySelector(API.G_QUERY_SELECT)) {
-        // initializeGoogleSignIn();
+        initializeGoogleSignIn();
         return;
       }
 
@@ -237,7 +237,8 @@ const UserSignup: React.FC<UserSignupProps> = ({
     loadGoogleScript();
 
     return () => {};
-  }, [showSnackbar, googleInitialized, userRole]);
+    // }, [showSnackbar, googleInitialized, userRole]);
+  }, [googleInitialized]);
 
   return (
     <div className="auth-section">
