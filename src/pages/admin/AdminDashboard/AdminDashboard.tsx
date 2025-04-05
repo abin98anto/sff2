@@ -15,6 +15,7 @@ import { useAppSelector } from "../../../hooks/reduxHooks";
 import axiosInstance from "../../../shared/config/axiosConfig";
 import API from "../../../shared/constants/API";
 import ISubscription from "../../../entities/ISubscription";
+import comments from "../../../shared/constants/comments";
 
 type TimeFilter = "daily" | "monthly" | "yearly";
 type DataPoint = { date: string; amount: number };
@@ -52,16 +53,20 @@ const AdminDashboard = () => {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("daily");
   const [chartData, setChartData] = useState<DataPoint[]>([]);
 
+  // input: component initial load.
+  // output: get tutor count to display.
   const getTutorsCount = async () => {
     try {
       const tutors = await axiosInstance.get(API.TUTORS_GET);
       setTutorCount(tutors.data.length);
     } catch (error) {
-      console.log("error getting tutors count", error);
+      console.log(comments.TUTOR_COUNT_FETCH_FAIL, error);
       setTutorCount(0);
     }
   };
 
+  // input: component initial load.
+  // output: get subscriber count to display.
   const getSubscribersCount = async () => {
     try {
       const subscribers = await axiosInstance.get("/subsciption");
@@ -74,11 +79,13 @@ const AdminDashboard = () => {
       );
       setSubscriberCount(count);
     } catch (error) {
-      console.log("error getting subscriber count", error);
+      console.log(comments.SUBS_COUNT_FETCH_FAIL, error);
       setSubscriberCount(0);
     }
   };
 
+  // input: component initial load.
+  // output: get order data to display.
   const getOrdersData = async () => {
     try {
       const orders = await axiosInstance.get("/order");
@@ -91,11 +98,13 @@ const AdminDashboard = () => {
 
       setOrderData(formattedOrders);
     } catch (error) {
-      console.error("Error fetching order data:", error);
+      console.error(comments.ORDER_FETCH_FAIL, error);
       setOrderData([]);
     }
   };
 
+  // input:order data, time filter.
+  // output: curated order data.
   const processOrderData = () => {
     if (!orderData.length) return;
 
@@ -219,6 +228,8 @@ const AdminDashboard = () => {
     processOrderData();
   }, [orderData, timeFilter]);
 
+  // input:processed order data.
+  // output: chart.
   const renderLineChart = () => (
     <ResponsiveContainer width="100%" height="100%">
       <LineChart width={600} height={300} data={chartData}>

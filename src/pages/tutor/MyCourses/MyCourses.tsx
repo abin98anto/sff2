@@ -6,7 +6,6 @@ import axiosInstance from "../../../shared/config/axiosConfig";
 import API from "../../../shared/constants/API";
 import comments from "../../../shared/constants/comments";
 import Loading from "../../../components/common/Loading/Loading";
-// import { Link } from "react-router-dom";
 import CustomSnackbar from "../../../components/common/CustomSnackbar";
 import { useAppSelector } from "../../../hooks/reduxHooks";
 import { IUser } from "../../../entities/IUser";
@@ -51,8 +50,6 @@ const MyCourses = () => {
           }
         })
         .filter((courses: string) => courses !== undefined);
-
-      //   console.log("tut's cours", tutorCourses);
       setCourses(tutorCourses);
     } catch (error) {
       console.log("error fetching tutors courses", error);
@@ -89,11 +86,6 @@ const MyCourses = () => {
           {courses.length > 0 ? (
             courses.map((course) => (
               <div key={course._id} className="course-card">
-                {/* <Link
-                  to={`/tutor/my-learning/${course._id}`}
-                  key={course._id}
-                  className="course-card-link"
-                > */}
                 <img src={course.thumbnail} alt={course.title} />
 
                 <div className="course-info">
@@ -105,7 +97,6 @@ const MyCourses = () => {
                     {getCategoryName(course.category as string | ICategory)}
                   </p>
                 </div>
-                {/* </Link> */}
               </div>
             ))
           ) : (

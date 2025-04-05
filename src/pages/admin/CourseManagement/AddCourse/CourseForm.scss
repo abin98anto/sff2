@@ -630,7 +630,7 @@ $transition-speed: 0.3s;
   .tutor-label {
     font-weight: bold;
     margin-bottom: 10px;
-    color: $text-color; // Use your theme's text color
+    color: $text-color;
   }
 
   .tutor-search {
@@ -642,38 +642,38 @@ $transition-speed: 0.3s;
     input {
       flex: 1;
       padding: 8px;
-      border: 2px solid $input-border; // Match your theme's input border
-      border-radius: 0.75rem; // Match your theme's border radius
-      background-color: $input-bg; // Match your theme's input background
-      color: $text-color; // Match your theme's text color
+      border: 2px solid $input-border;
+      border-radius: 0.75rem;
+      background-color: $input-bg;
+      color: $text-color;
       font-size: 1rem;
       transition: all $transition-speed ease;
 
       &:focus {
         outline: none;
-        border-color: $input-focus-border; // Match your theme's focus border
-        box-shadow: 0 0 0 4px $ring-color; // Match your theme's ring color
+        border-color: $input-focus-border;
+        box-shadow: 0 0 0 4px $ring-color;
       }
 
       &::placeholder {
-        color: rgba(255, 255, 255, 0.4); // Match your theme's placeholder color
+        color: rgba(255, 255, 255, 0.4);
       }
     }
   }
 
   .tutor-list-box {
     width: 50%;
-    height: 100px; // Adjust height as needed
-    border: 2px solid $input-border; // Match your theme's input border
-    border-radius: 0.75rem; // Match your theme's border radius
+    height: 100px;
+    border: 2px solid $input-border;
+    border-radius: 0.75rem;
     padding: 10px;
-    background-color: $input-bg; // Match your theme's input background
-    overflow-y: auto; // Enable vertical scrolling
-    scrollbar-width: none; // Hide scrollbar for Firefox
-    -ms-overflow-style: none; // Hide scrollbar for IE/Edge
+    background-color: $input-bg; 
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 
     &::-webkit-scrollbar {
-      display: none; // Hide scrollbar for WebKit browsers (Chrome, Safari)
+      display: none;
     }
 
     .tutor-item {
@@ -689,12 +689,12 @@ $transition-speed: 0.3s;
       .tutor-name {
         margin: 0;
         cursor: pointer;
-        color: $text-color; // Match your theme's text color
-        font-size: 1rem; // Match your theme's font size
+        color: $text-color;
+        font-size: 1rem;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 90%; // Ensure names fit within the box
+        max-width: 90%;
       }
     }
   }

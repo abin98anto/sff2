@@ -35,7 +35,6 @@ const CategoryManagement = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  // Populate Table.
   const columns: Column<ICategory>[] = [
     {
       key: "slNo",
@@ -92,6 +91,8 @@ const CategoryManagement = () => {
     },
   ];
 
+  // input:initial load.
+  // output: data to be displayed on table.
   const fetchTableData = useCallback(
     async (queryParams: any): Promise<TableData> => {
       try {
@@ -153,6 +154,8 @@ const CategoryManagement = () => {
     }
   };
 
+  // input: click on delete button.
+  // output: delete category api call.
   const handleDelete = async () => {
     if (deleteId) {
       try {
@@ -169,6 +172,8 @@ const CategoryManagement = () => {
     }
   };
 
+  // input: click on edit button.
+  // output: open edit modal.
   const handleEdit = (category: ICategory) => {
     setFormData({
       _id: category._id,
@@ -179,11 +184,15 @@ const CategoryManagement = () => {
     setIsAddModalOpen(true);
   };
 
+  // input: click on cancel button.
+  // output: close add/edit modal.
   const handleCloseAddModal = () => {
     setIsAddModalOpen(false);
     resetForm();
   };
 
+  // input: click on cancel button.
+  // output: close delete modal.
   const resetForm = () => {
     setFormData({
       name: "",

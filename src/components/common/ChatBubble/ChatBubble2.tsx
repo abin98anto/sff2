@@ -51,6 +51,8 @@ const ChatBubble2 = () => {
   const overlayRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
+  // input: click on chat bubble.
+  // output: open chat bubble.
   const handleBubbleClick = () => {
     setIsLoading(true);
     if (!userId || allChats.length === 0) {
@@ -66,6 +68,8 @@ const ChatBubble2 = () => {
     setIsLoading(false);
   };
 
+  // input: click outside chat component.
+  // output: close chat bubble.
   const handleClickOutside = (event: MouseEvent) => {
     const clickedOutside =
       (chatRef.current &&
@@ -82,8 +86,6 @@ const ChatBubble2 = () => {
       setShowPlaceholder(false);
     }
   };
-
-  // closing chat bubble.
   useEffect(() => {
     if (!isExpanded) return;
 
@@ -94,6 +96,8 @@ const ChatBubble2 = () => {
     };
   }, [isExpanded]);
 
+  // input: opening chat bubbble.
+  // output: fetches all chats.
   const fetchChats = async () => {
     try {
       if (!userId) return;
@@ -112,10 +116,12 @@ const ChatBubble2 = () => {
 
       setTotalUnreadCount(totalCount);
     } catch (error) {
-      console.error(`Failed to fetch unread count for chat`, error);
+      console.error(comments.UNREAD_COUNT_FETCH_FAIL, error);
     }
   };
 
+  // input:chat id.
+  // output: fetches messages of the chat.
   const fetchMessages = async (chatId: string): Promise<IMessage[]> => {
     try {
       setIsLoading(true);
@@ -123,7 +129,7 @@ const ChatBubble2 = () => {
 
       const response = await axiosInstance.get(API.CHAT_MESSAGES + chatId);
       setMessages((prevMessages) => {
-        console.log("simply log in fetch messages", prevMessages[0]?.senderId);
+        console.log(comments.S, prevMessages[0]?.senderId);
         return response.data.data;
       });
       return response.data.data;
@@ -167,6 +173,8 @@ const ChatBubble2 = () => {
     fetchChatData();
   }, [activeChat]);
 
+  // input:timestamp.
+  // output: human readable time.
   const formatDate = (timestamp: Date) => {
     try {
       const date = new Date(timestamp);
@@ -175,10 +183,12 @@ const ChatBubble2 = () => {
         minute: "2-digit",
       });
     } catch (error) {
-      console.log("error formatting date", error);
+      console.log(comments.DATE_FORMAT_FAIL, error);
     }
   };
 
+  // input: click on the send message button.
+  // output: sends message.
   const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     try {
       e.preventDefault();
@@ -206,10 +216,12 @@ const ChatBubble2 = () => {
         setTimeout(() => scrollToBottom(), 100);
       }
     } catch (error) {
-      console.log("error sending message", error);
+      console.log(comments.MSG_SNT_FAIL, error);
     }
   };
 
+  // input: new message arrival.
+  // ouput: goes down to the new message.
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTop =
@@ -220,6 +232,8 @@ const ChatBubble2 = () => {
     scrollToBottom();
   }, [messages]);
 
+  // input: array of message ids.
+  // output: marks messages as read.
   const markMessagesAsRead = async (messageIds: string[]) => {
     try {
       if (messageIds.length === 0) return;
@@ -251,10 +265,12 @@ const ChatBubble2 = () => {
 
       clearUnreadMessageCount(activeChat?._id as string);
     } catch (error) {
-      console.log("error marking message as read", error);
+      console.log(comments.MSG_MARK_AS_READ_FAIL, error);
     }
   };
 
+  // input: chat object.
+  // output: last message for placing in the chat list.
   const getLastMessage = (chat: IChat) => {
     try {
       if (!chat || !chat.lastMessage) {
@@ -264,11 +280,13 @@ const ChatBubble2 = () => {
         return msgPrefix + chat.lastMessage.content.substring(0, 10);
       }
     } catch (error) {
-      console.log("error fetching last message", error);
+      console.log(comments.MSG_LAST_FETCH_FAIL, error);
       return "";
     }
   };
 
+  // input: new message.
+  // output: adds new message to the chat messages.
   const handleNewMessage = async (message: IMessage) => {
     try {
       const shouldIncrementCount = message.receiverId === userId;
@@ -365,6 +383,8 @@ const ChatBubble2 = () => {
     }
   }, [isExpanded]);
 
+  // input: chat id.
+  // output: clears the unread message count for the chat.
   const clearUnreadMessageCount = async (chatId: string) => {
     try {
       setAllChats((prevChats) =>
@@ -389,10 +409,12 @@ const ChatBubble2 = () => {
         chatId,
       });
     } catch (error) {
-      console.log("error clearing unread message count", error);
+      console.log(comments.MSG_CLEAR_UNREAD_FAIL, error);
     }
   };
 
+  // input: message.
+  // output: shows the message content according to their message type.
   const renderMessageContent = (message: IMessage) => {
     if (message.contentType === "video-call") {
       return (
@@ -418,6 +440,8 @@ const ChatBubble2 = () => {
     );
   };
 
+  // input: message.
+  // output: marks the message as read.
   const messageRead = (data: messageReadData) => {
     try {
       if (data.chatId === activeChat?._id) {
@@ -440,15 +464,19 @@ const ChatBubble2 = () => {
         );
       }
     } catch (error) {
-      console.log("error marking message as read", error);
+      console.log(comments.MSG_MARK_AS_READ_FAIL, error);
     }
   };
 
+  // input: chat object.
+  // output: decides if this user is the sender or receiver to show the unread count.
   const shouldShowUnreadCount = (chat: IChat) => {
     if (!chat.lastMessage || !chat.unreadMessageCount) return false;
     return chat.lastMessage.receiverId === userId;
   };
 
+  // input: click on video call button.
+  // output: initiate video call.
   const initiateVideoCall = async () => {
     try {
       if (activeChat && userId) {
@@ -472,10 +500,12 @@ const ChatBubble2 = () => {
         window.open(videoCallUrl, "_blank");
       }
     } catch (error) {
-      console.log("error sending video call invitation", error);
+      console.log(comments.VIDEO_CALL_INVITE_FAIL, error);
     }
   };
 
+  // input: video call data.
+  // output: accepts video call.
   const handleVideoCallInvite = async (data: videCallData) => {
     try {
       if (data.studentId === userId) {
@@ -516,10 +546,12 @@ const ChatBubble2 = () => {
         });
       }
     } catch (error) {
-      console.log("error handling video call invite", error);
+      console.log(comments.VIDEO_CALL_HANDLE_FAIL, error);
     }
   };
 
+  // input: chat bubble opens.
+  // output: fetches total unread count for all chat.
   const fetchInitialUnreadCount = async () => {
     try {
       if (!userId) return;
@@ -539,7 +571,7 @@ const ChatBubble2 = () => {
 
       setTotalUnreadCount(initialUnreadCount);
     } catch (error) {
-      console.error(`Failed to fetch initial unread count`, error);
+      console.error(comments.UNREAD_COUNT_INITIAL_FAIL, error);
     }
   };
   useEffect(() => {
@@ -548,7 +580,7 @@ const ChatBubble2 = () => {
 
   useEffect(() => {
     if (!socket.connected) socket.connect();
-    socket.emit("joinRoom", userId);
+    socket.emit(comments.IO_JOINROOM, userId);
 
     socket.on(comments.IO_RECIEVE_MSG, handleNewMessage);
 

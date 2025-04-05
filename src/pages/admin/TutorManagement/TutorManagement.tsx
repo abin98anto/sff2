@@ -60,8 +60,6 @@ const TutorManagement = () => {
       label: comments.TUTOR_COL_STUDENTS,
       render: (item: IUser) => item.students?.length || 0,
     },
-    // { key: "reviewsTaken", label: comments.TUTOR_COL_REVIEWS },
-    // { key: "sessionsTaken", label: comments.TUTOR_COL_SESSIONS },
     {
       key: "isActive",
       label: comments.TUTOR_COL_STATUS,
@@ -112,6 +110,8 @@ const TutorManagement = () => {
     },
   ];
 
+  // input: click on money buton.
+  // output: open payment modal
   const handlePayTutor = (user: IUser) => {
     setTutorToPay(user);
     setPaymentAmount("");
@@ -319,116 +319,12 @@ const TutorManagement = () => {
     setDenialReason("");
   };
 
-  // const fetchCourses = useCallback(async () => {
-  //   try {
-  //     const response = await axiosInstance.get("/course/");
-  //     setCourses(response.data.data.data || []);
-
-  //     console.log("courses fetched.");
-  //     // Pre-select courses that the tutor is already assigned to
-  //     if (selectedTutorForCourses?._id) {
-  //       console.log("the selected tutor", selectedTutorForCourses);
-  //       const preSelectedCourses = response.data.data.data
-  //         .filter((course: ICourse) =>
-  //           course.tutors?.some((tutor: IUser) =>
-  //             typeof tutor === "string"
-  //               ? tutor === selectedTutorForCourses._id
-  //               : tutor._id === selectedTutorForCourses._id
-  //           )
-  //         )
-  //         .map((course: ICourse) => course._id);
-
-  //       setSelectedCourses(preSelectedCourses || []);
-  //     }
-  //   } catch (err) {
-  //     showSnackbar("Failed to fetch courses", "error");
-  //     console.error("Error fetching courses:", err);
-  //   }
-  // }, [showSnackbar, selectedTutorForCourses]);
-
-  // const fetchCourses = async () => {
-  //   try {
-  //     const response = await axiosInstance.get("/course/");
-  //     setCourses(response.data.data.data || []);
-
-  //     tutorsAssignedCourses(selectedTutorForCourses?._id as string);
-  //     console.log("the selectd courses", selectedTutorForCourses);
-  //   } catch (error) {
-  //     showSnackbar("Error fetching courses", "error");
-  //     console.log("error fetching courses", error);
-  //   }
-  // };
-
-  // const tutorsAssignedCourses = async (tutorId: string) => {
-  //   try {
-  //     console.log("the turtor", tutorId);
-
-  //     const response = await axiosInstance.get("/course/");
-  //     setCourses(response.data.data.data);
-  //     console.log("respnesss", response);
-  //     console.log("first", response.data.data.data);
-  //     console.log("coureses", courses);
-
-  //     const transformCourses = courses.map((course) => ({
-  //       ...course,
-  //       tutors: course.tutors
-  //         ? course.tutors.map((tutor: IUser) => tutor._id ?? "")
-  //         : [],
-  //     }));
-  //     console.log("transformed ocurses", transformCourses);
-
-  //     const assignedCourses = transformCourses.filter((course) => {
-  //       if (course.tutors?.includes(tutorId)) {
-  //         return course._id;
-  //       }
-  //     });
-
-  //     console.log("assigned courses", assignedCourses);
-  //     setSelectedCourses((prev) => prev.concat(assignedCourses));
-  //   } catch (error) {
-  //     showSnackbar("Error finding tutor's already assigned courses", "error");
-  //     console.log("error finding tutor's already assigned courses", error);
-  //   }
-  // };
-
-  // const tutorsAssignedCourses = async (tutorId: string) => {
-  //   try {
-  //     const response = await axiosInstance.get("/course/");
-  //     const coursesData = response.data.data.data;
-  //     setCourses(coursesData);
-
-  //     // Use coursesData directly instead of courses state variable
-  //     const transformCourses = coursesData.map((course: ICourse) => ({
-  //       ...course,
-  //       tutors: course.tutors
-  //         ? course.tutors.map((tutor: IUser) => tutor._id ?? "")
-  //         : [],
-  //     }));
-
-  //     console.log("transformed courses", transformCourses);
-
-  //     const assignedCourses = transformCourses.filter((course: ICourseNew) => {
-  //       if (course.tutors?.includes(tutorId)) {
-  //         return course._id;
-  //       }
-  //       return false;
-  //     });
-
-  //     console.log("assigned courses", assignedCourses);
-  //     setSelectedCourses((prev) => prev.concat(assignedCourses));
-  //   } catch (error) {
-  //     showSnackbar("Error finding tutor's already assigned courses", "error");
-  //     console.log("error finding tutor's already assigned courses", error);
-  //   }
-  // };
-
   const tutorsAssignedCourses = async (tutorId: string) => {
     try {
       const response = await axiosInstance.get("/course/");
       const coursesData = response.data.data.data;
       setCourses(coursesData);
 
-      // Use coursesData directly instead of courses state variable
       const transformCourses = coursesData.map((course: ICourse) => ({
         ...course,
         tutors: course.tutors
@@ -442,7 +338,7 @@ const TutorManagement = () => {
 
       const assignedCourses = transformCourses
         .filter((course: ICourseNew) => course.tutors?.includes(tutorId))
-        .map((course: ICourse) => course._id as string); // Extract just the course IDs
+        .map((course: ICourse) => course._id as string);
 
       console.log("assigned courses IDs", assignedCourses);
       setSelectedCourses(assignedCourses);

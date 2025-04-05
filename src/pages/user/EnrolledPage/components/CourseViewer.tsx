@@ -60,7 +60,6 @@ const CourseViewer: React.FC<CourseViewerProps> = ({ course }) => {
         handleVideoSelect(nextLesson.videoUrl, nextLesson);
       } else {
         console.log("This is the last lesson in the course.");
-        // You might want to show a message to the user or handle this case differently
       }
     }
   }, [course, currentLesson, findNextLesson, handleVideoSelect]);

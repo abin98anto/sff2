@@ -10,7 +10,6 @@ import { EnrollStatus } from "../../../entities/misc/enrollStatus";
 import comments from "../../../shared/constants/comments";
 import API from "../../../shared/constants/API";
 
-// Define your interfaces
 interface IStudent {
   _id: string;
   name: string;
@@ -69,7 +68,6 @@ const MyStudents = () => {
 
   const refetchData = useRef<(() => void) | undefined>();
 
-  // Populate Table columns
   const columns: Column<IStudentData>[] = [
     {
       key: "slNo",
@@ -163,7 +161,6 @@ const MyStudents = () => {
   const fetchTableData = useCallback(
     async (queryParams: any): Promise<TableData> => {
       try {
-        // First fetch the chat list
         const chatResponse = await axiosInstance.get(API.CHAT_STUDENT_LIST, {
           params: {
             page: queryParams.page,
@@ -177,7 +174,6 @@ const MyStudents = () => {
         if (chatResponse.data.success && chatResponse.data.data.length > 0) {
           const chatData = chatResponse.data.data;
 
-          // For each chat, fetch enrollment details
           const studentsWithEnrollments = await Promise.all(
             chatData.map(async (chat: any) => {
               try {
@@ -205,7 +201,6 @@ const MyStudents = () => {
             })
           );
 
-          // Apply status filter
           let filteredData = studentsWithEnrollments;
           if (statusFilter !== "all") {
             filteredData = studentsWithEnrollments.filter((student) => {
@@ -235,21 +230,21 @@ const MyStudents = () => {
 
   const handleReviewOpen = (student: IStudentData) => {
     setSelectedStudent(student);
-    setSelectedGrade("A"); // Reset grade to default when opening modal
+    setSelectedGrade("A");
     setIsReviewModalOpen(true);
   };
 
   const handleReviewSubmit = async (isPassed: boolean) => {
-    if (!selectedStudent) return;
-
-    setIsLoading(true);
-
     try {
+      if (!selectedStudent) return;
+
+      setIsLoading(true);
+
       const response = await axiosInstance.put(API.ENROLLMENT_UPDATE, {
         updates: {
           _id: selectedStudent.enrollment?._id,
           status: EnrollStatus.PASSED,
-          grade: selectedGrade, // Include the selected grade in the request
+          grade: selectedGrade,
         },
       });
 
@@ -290,8 +285,6 @@ const MyStudents = () => {
   ) => {
     const newFilter = event.target.value as StatusFilter;
     setStatusFilter(newFilter);
-
-    // Trigger refetch when filter changes
     if (refetchData.current) {
       refetchData.current();
     }

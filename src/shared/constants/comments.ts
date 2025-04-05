@@ -245,6 +245,21 @@ const comments = {
   STUDENT_REVIEW_SUCCESS: "Student successfully passed the review!",
   STUDENT_REVIEW_FAIL: "Student has not passed the review",
   STUDENT_REVIEW_ERROR: "Failed to submit review",
+
+  UNREAD_COUNT_FETCH_FAIL: "Failed to fetch unread count",
+  S: "s",
+  DATE_FORMAT_FAIL: "Error formating date",
+  MSG_SNT_FAIL: "Failed to send message",
+  MSG_MARK_AS_READ_FAIL: "Failed to mark message as read",
+  MSG_LAST_FETCH_FAIL: "Failed to fetch last message",
+  MSG_CLEAR_UNREAD_FAIL: "Failed to clear unread messages",
+  VIDEO_CALL_INVITE_FAIL: "Failed to send video call invite",
+  VIDEO_CALL_HANDLE_FAIL: "Failed to handle video call",
+  UNREAD_COUNT_INITIAL_FAIL: `Failed to fetch initial unread count`,
+  TUTOR_COUNT_FETCH_FAIL: "Failed to fetch tutor count",
+  SUBS_COUNT_FETCH_FAIL: "Failed to fetch subscription count",
+  ORDER_FETCH_FAIL: "Error fetching order data:",
+  LESSON_DURA_UPDATE_FAIL: "Error extracting video duration:",
 };
 
 export default comments;

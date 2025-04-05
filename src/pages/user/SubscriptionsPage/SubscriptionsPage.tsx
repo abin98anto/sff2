@@ -19,7 +19,7 @@ const SubscriptionPage = () => {
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
   const [plans, setPlans] = useState<ISubscription[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userActivePlan, setUserActivePlan] = useState<string | null>(null); // Store the active plan name
+  const [userActivePlan, setUserActivePlan] = useState<string | null>(null);
 
   const { userInfo, isAuthenticated } = useAppSelector(
     (state: AppRootState) => state.user
@@ -38,7 +38,6 @@ const SubscriptionPage = () => {
       setUserActivePlan(subscription?.name || null);
     } catch (error) {
       console.log("Error checking subscription status:", error);
-      // Don't show error to user since this is a background check
     }
   };
 
@@ -96,13 +95,11 @@ const SubscriptionPage = () => {
 
   const handlePayment = async (plan: ISubscription) => {
     try {
-      // Check if user is logged in
       if (!userInfo) {
         showSnackbar("Please log in to subscribe to a plan", "error");
         return;
       }
 
-      // Check if user already has an active subscription
       if (userActivePlan) {
         showSnackbar("You already have an active subscription.", "error");
         return;
@@ -119,7 +116,6 @@ const SubscriptionPage = () => {
           ? plan.discountPrice
           : plan.price;
 
-      // Razorpay backend
       const response = await axiosInstance.post(API.RAZORPAY_ADD, {
         amount: price! * 100,
         currency: "INR",
@@ -154,7 +150,6 @@ const SubscriptionPage = () => {
               }' plan`,
               "success"
             );
-            // Update the user's active plan after successful payment
             setUserActivePlan(plan.name);
           } catch (err) {
             console.log("Error Adding Order", err);

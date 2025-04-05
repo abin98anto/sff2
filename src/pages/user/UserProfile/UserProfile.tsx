@@ -13,14 +13,10 @@ import comments from "../../../shared/constants/comments";
 import { updateUser } from "../../../redux/thunks/user/userUpdateServices";
 import CustomModal from "../../../components/common/Modal/CustomModal/CustomModal";
 import axiosInstance from "../../../shared/config/axiosConfig";
-// import DataTable, {
-//   Column,
-// } from "../../../components/common/DataTable/DataTable";
 import { format } from "date-fns";
 import DataTable from "../../../components/common/Table/DataTable";
 import generateCertificate from "../../../shared/utils/certificate-generation/generateCertificate";
 
-// Interface for enrollment data
 interface CourseInfo {
   _id: string;
   name: string;
@@ -41,22 +37,12 @@ interface TableData<T = any> {
   total: number;
 }
 
-// interface QueryParams {
-//   page: number;
-//   limit: number;
-//   search: string;
-//   sortField?: string;
-//   sortOrder?: "asc" | "desc";
-//   filters?: Record<string, string>;
-// }
-
 const UserProfile: React.FC = () => {
   const { userInfo } = useAppSelector((state) => state.user);
   const [loading, setLoading] = useState(false);
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
   const [activeTab, setActiveTab] = useState<"account" | "courses">("account");
 
-  // Image upload.
   const dispatch = useAppDispatch();
   const [profileImage, setProfileImage] = useState(userInfo?.picture || "");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -135,19 +121,10 @@ const UserProfile: React.FC = () => {
     }
   };
 
-  // Fetch user courses - explicitly typed to match the DataTable's expected types
+  // Fetch user courses
   const fetchUserCourses = async (): Promise<TableData<IEnrollment>> => {
     try {
-      // const { page, limit, search, sortField, sortOrder } = params;
       let url = `/enrollment/user-enrollments/${userInfo?._id}`;
-
-      // if (search) {
-      //   url += `&search=${search}`;
-      // }
-
-      // if (sortField && sortOrder) {
-      //   url += `&sortField=${sortField}&sortOrder=${sortOrder}`;
-      // }
 
       const response = await axiosInstance.get(url);
       console.log("the response0", response.data.data);
@@ -168,10 +145,7 @@ const UserProfile: React.FC = () => {
     courseName: string
   ) => {
     try {
-      // Show a loading message
       showSnackbar("Generating certificate...", "success");
-
-      // First, try to fetch the certificate data from the server
       const response = await axiosInstance.get(`/enrollment/${enrollmentId}`);
       const enrollmentData = response.data.data;
 
@@ -179,7 +153,6 @@ const UserProfile: React.FC = () => {
         throw new Error("Could not retrieve enrollment data");
       }
 
-      // Format the completion date
       const completionDate = enrollmentData.completedDate
         ? format(new Date(enrollmentData.completedDate), "MMMM dd, yyyy")
         : format(new Date(), "MMMM dd, yyyy");
@@ -193,14 +166,13 @@ const UserProfile: React.FC = () => {
 
       const generateCertificateId = (mongoId: string): string => {
         const prefix = "CERT";
-        const shortId = mongoId.slice(-6).toUpperCase(); // Use last 6 characters for uniqueness
-        const hash = parseInt(mongoId.slice(0, 8), 16) % 1000000; // Convert part of _id to a 6-digit number
+        const shortId = mongoId.slice(-6).toUpperCase();
+        const hash = parseInt(mongoId.slice(0, 8), 16) % 1000000;
         return `${prefix}-${shortId}-${hash.toString().padStart(6, "0")}`;
       };
 
       const certificteId = generateCertificateId(enrollmentData._id);
 
-      // Prepare the certificate data
       const certificateData = {
         userName: userInfo?.name || "Student",
         courseName: courseName,
@@ -209,10 +181,8 @@ const UserProfile: React.FC = () => {
         grade: enrollmentData.grade,
       };
 
-      // Generate and download the certificate
       await generateCertificate(certificateData);
 
-      // Show success message after a slight delay to ensure download has started
       setTimeout(() => {
         showSnackbar("Certificate generated successfully", "success");
       }, 1000);
@@ -222,8 +192,6 @@ const UserProfile: React.FC = () => {
         "Failed to generate certificate. Please try again.",
         "error"
       );
-
-      // Add fallback server-side generation here if you have that functionality
     }
   };
 
@@ -347,7 +315,6 @@ const UserProfile: React.FC = () => {
         ) : (
           <div className="courses-container">
             <h1 className="page-title">My Courses</h1>
-            {/* Using the generic type parameter to specify IEnrollment */}
             <DataTable
               columns={[
                 {
@@ -365,16 +332,15 @@ const UserProfile: React.FC = () => {
                   label: "Start Date",
                   render: (row) => {
                     console.log("ene enee erow", row);
-                    // Check if startDate exists and is valid
                     if (!row.enrolledAt) {
-                      return "N/A"; // Return a fallback if no date
+                      return "N/A";
                     }
 
                     try {
                       return format(new Date(row.enrolledAt), "MMM dd, yyyy");
                     } catch (error) {
                       console.error("Invalid date:", row.enrolledAt);
-                      return "Invalid date"; // Return a fallback for invalid dates
+                      return "Invalid date";
                     }
                   },
                 },

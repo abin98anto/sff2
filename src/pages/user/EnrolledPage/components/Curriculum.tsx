@@ -50,14 +50,11 @@ const Curriculum: React.FC<CurriculumProps> = ({
       });
       setEnrollmentDetails(response.data.data);
 
-      // Instead of setting state directly from API response,
-      // we'll use this to initialize our local state if needed
       if (
         propCompletedLectures.length === 0 &&
         response.data.data.completedLessons?.length > 0
       ) {
         setLocalCompletedLectures(response.data.data.completedLessons || []);
-        // Sync with parent if we got data from API but parent doesn't have it
         response.data.data.completedLessons?.forEach((lectureId: string) => {
           onLectureComplete(lectureId);
         });
@@ -67,7 +64,6 @@ const Curriculum: React.FC<CurriculumProps> = ({
     }
   }, [courseId, onLectureComplete, propCompletedLectures.length]);
 
-  // Keep local state in sync with props
   useEffect(() => {
     setLocalCompletedLectures(propCompletedLectures);
   }, [propCompletedLectures]);
@@ -143,18 +139,10 @@ const Curriculum: React.FC<CurriculumProps> = ({
         } else {
           updatedCompletedLessons = [...localCompletedLectures, lessonId];
         }
-
-        // Remove duplicates (in case lessonId is already in the list)
         updatedCompletedLessons = [...new Set(updatedCompletedLessons)];
 
         await lessonUpdate(updatedCompletedLessons);
-        // We don't need this anymore as we're syncing with the parent
-        // setLocalCompletedLectures(updatedCompletedLessons);
-
-        // This will eventually update the prop and our local state via useEffect
         onLectureComplete(lessonId);
-
-        // Check if course is completed and update status
         if (isCourseCompleted(updatedCompletedLessons)) {
           await updateEnrollmentStatus();
         }
@@ -173,10 +161,6 @@ const Curriculum: React.FC<CurriculumProps> = ({
           (id) => id !== lessonId
         );
         await lessonUpdate(updatedCompletedLectures);
-        // We don't need this anymore as we're syncing with the parent
-        // setLocalCompletedLectures(updatedCompletedLectures);
-
-        // This will eventually update the prop and our local state via useEffect
         onLectureUncomplete(lessonId);
       } catch (error) {
         console.error("Error uncompleting lecture:", error);

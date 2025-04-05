@@ -4,7 +4,6 @@ import {
   DeleteIcon,
   EditIcon,
   ImageIcon,
-  // SearchIcon,
   UploadIcon,
 } from "lucide-react";
 
@@ -18,7 +17,6 @@ import API from "../../../../../shared/constants/API";
 import handleFileUpload, {
   validateImageFile,
 } from "../../../../../shared/utils/cloudinary/fileUpload";
-// import { IUser } from "../../../../../entities/IUser";
 
 interface BasicInformationProps {
   data: ICourse;
@@ -38,13 +36,9 @@ const BasicInformation = ({
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
-  // const [tutors, setTutors] = useState<IUser[]>([]);
-  // const [filteredTutors, setFilteredTutors] = useState<IUser[]>([]);
-  // const [tutorSearch, setTutorSearch] = useState("");
 
   useEffect(() => {
     fetchCategories();
-    // fetchTutors();
   }, []);
 
   // Fetching categories.
@@ -104,52 +98,10 @@ const BasicInformation = ({
     onUpdate({ thumbnail: "" });
   };
 
+  // Change thumbnail
   const handleEditThumbnail = () => {
     document.getElementById("thumbnailInput")?.click();
   };
-
-  // Fetching tutors
-  // const fetchTutors = async () => {
-  //   try {
-  //     setIsLoading(true);
-  //     const response = await axiosInstance.get(API.TUTORS_GET);
-  //     console.log("the response", response.data);
-  //     if (response.data && response.data) {
-  //       setTutors(response.data);
-  //       setFilteredTutors(response.data);
-  //     } else {
-  //       setError(comments.NO_TUTORS);
-  //       setTutors([]);
-  //       setFilteredTutors([]);
-  //     }
-  //   } catch (err) {
-  //     console.error(comments.NO_TUTORS, err);
-  //     setError(comments.NO_TUTORS);
-  //     setTutors([]);
-  //     setFilteredTutors([]);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
-  // Handle tutor search
-  // const handleTutorSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const searchTerm = e.target.value.toLowerCase();
-  //   setTutorSearch(searchTerm);
-  //   const filtered = tutors.filter((tutor) =>
-  //     tutor.name.toLowerCase().includes(searchTerm)
-  //   );
-  //   setFilteredTutors(filtered);
-  // };
-
-  // Handle tutor selection
-  // const handleTutorChange = (tutorId: string) => {
-  //   const currentTutors = data.tutors || [];
-  //   const updatedTutors = currentTutors.some((tutor) => tutor._id === tutorId)
-  //     ? currentTutors.filter((tutor) => tutor._id !== tutorId)
-  //     : [...currentTutors, tutors.find((t) => t._id === tutorId)!];
-  //   onUpdate({ tutors: updatedTutors });
-  // };
 
   // Form validation.
   const validateForm = () => {
@@ -185,10 +137,6 @@ const BasicInformation = ({
       setError(comments.THUMBNAIL_REQ);
       return false;
     }
-    // if (!data.tutors || data.tutors.length === 0) {
-    //   setError(comments.TUTORS_REQ);
-    //   return false;
-    // }
     return true;
   };
 
@@ -369,41 +317,6 @@ const BasicInformation = ({
               </div>
             )}
           </div>
-
-          {/* Tutors Section */}
-          {/* <div className="form-group tutors-section">
-            <div className="tutor-label">Tutors</div>
-            <div className="tutor-search">
-              <SearchIcon size={16} />
-              <input
-                type="text"
-                value={tutorSearch}
-                onChange={handleTutorSearch}
-                placeholder="Search tutors..."
-              />
-            </div>
-            <div className="tutor-list-box">
-              {isLoading ? (
-                <Loading />
-              ) : filteredTutors.length > 0 ? (
-                filteredTutors.map((tutor) => (
-                  <div key={tutor._id} className="tutor-item">
-                    <input
-                      type="checkbox"
-                      id={`tutor-${tutor._id}`}
-                      checked={data.tutors?.some((t) => t._id === tutor._id)}
-                      onChange={() => handleTutorChange(tutor._id!)}
-                    />
-                    <span className="tutor-name">
-                      {tutor.name || "No Name"}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <p>No tutors found.</p>
-              )}
-            </div>
-          </div> */}
         </div>
       </div>
       <div className="button-group">

@@ -52,13 +52,11 @@ const CourseDetailsPage: React.FC = () => {
       console.log("first", response.data.data);
 
       const tutors = await axiosInstance.get(API.TUTORS_GET);
-      // console.log("tutus", tutors.data);
 
       const filteredTutors = tutors.data.filter((tutor: IUser) => {
         return response.data.data.tutors.includes(tutor._id);
       });
       setTutors(filteredTutors);
-      // console.log("fild tuts", filteredTutors);
 
       setCourse(response.data.data);
       console.log(course);
@@ -120,6 +118,7 @@ const CourseDetailsPage: React.FC = () => {
   const { userInfo } = useAppSelector((state) => state.user);
   const navigate = useNavigate();
 
+  // check subscription status.
   const checkSubscriptionStatus = async (): Promise<boolean> => {
     try {
       const response = await axiosInstance.get(

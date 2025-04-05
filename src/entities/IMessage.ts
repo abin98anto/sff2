@@ -10,5 +10,4 @@ export default interface IMessage {
   content: string;
   contentType: string;
   isRead: boolean;
-  // timestamp: Date;
 }

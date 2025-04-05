@@ -202,6 +202,8 @@ const SubscriptionManagement = () => {
     setIsModalOpen(true);
   };
 
+  // input:form data
+  // output: api call to add subscription.
   const handleSubmit = async () => {
     try {
       if (!formData.name) {
@@ -263,13 +265,15 @@ const SubscriptionManagement = () => {
     setIsConfirmModalOpen(true);
   };
 
+  // input: click on toggle button.
+  // output: api call to toggle status
   const handleConfirmToggle = async () => {
-    if (!subscriptionToToggle || !subscriptionToToggle._id) {
-      showSnackbar("No subscription selected", "error");
-      return;
-    }
-
     try {
+      if (!subscriptionToToggle || !subscriptionToToggle._id) {
+        showSnackbar("No subscription selected", "error");
+        return;
+      }
+
       const newStatus = !subscriptionToToggle.isActive;
       await axiosInstance.put(API.SUBSCRIPTION_UPDATE, {
         ...subscriptionToToggle,

@@ -66,12 +66,11 @@ const Curriculum = ({
   const [publishing, setPublishing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // const [lessonNames, setLessonNames] = useState<string[]>([]);
-
   useEffect(() => {
     setSections(data || []);
   }, [data]);
 
+  // Add a new section
   const addSection = () => {
     const newSection: ISection = {
       name: "New Section",
@@ -83,12 +82,14 @@ const Curriculum = ({
     onUpdate(updatedSections);
   };
 
+  // Edit a section
   const handleEditClick = (section: ISection, sectionIndex: number) => {
     setEditingSectionIndex(sectionIndex);
     setEditingName(section.name);
     setIsEditModalOpen(true);
   };
 
+  // Save the edited section
   const handleSaveEdit = () => {
     if (editingSectionIndex === null) return;
 
@@ -105,11 +106,13 @@ const Curriculum = ({
     setEditingName("");
   };
 
+  // opens add lesson modal.
   const handleAddLessonClick = (sectionIndex: number) => {
     setEditingSectionIndex(sectionIndex);
     setIsAddLessonModalOpen(true);
   };
 
+  // handle video upload.
   const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && validateVideoFile(file)) {
@@ -120,6 +123,7 @@ const Curriculum = ({
     }
   };
 
+  // handle pdf upload.
   const handlePdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
@@ -128,10 +132,12 @@ const Curriculum = ({
     }
   };
 
+  // remove pdf.
   const handleRemovePdf = (index: number) => {
     setNewLessonPdfs((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // Create a new lesson
   const handleCreateLesson = async () => {
     if (!newLessonName.trim()) {
       setError(comments.LESSON_REQ);
@@ -143,7 +149,6 @@ const Curriculum = ({
       return;
     }
 
-    // Extract video duration
     const videoDuration = await updateLessonDuration(newLessonVideo);
 
     setIsLoading(true);
@@ -181,19 +186,9 @@ const Curriculum = ({
       duration: videoDuration,
     };
 
-    // const existingLessons = [...lessonNames, newLesson.name];
-    // setNewLessonName(existingLessons);
-    // setNewLessonName((prev) => [...prev, newLessonName]);
-
-    // Create copy of sections to modify
     const updatedSections = [...sections];
-
-    // Update the specific section with the new lesson
     if (editingSectionIndex !== null) {
-      // Add new lesson to the section
       updatedSections[editingSectionIndex].lessons.push(newLesson);
-
-      // Update the section's duration
       updatedSections[editingSectionIndex].duration = calculateSectionDuration(
         updatedSections[editingSectionIndex].lessons
       );
@@ -206,13 +201,13 @@ const Curriculum = ({
     resetLessonForm();
   };
 
+  // update lesson.
   const handleUpdateLesson = async () => {
     if (!newLessonName.trim()) {
       setError(comments.LESSON_REQ);
       return;
     }
 
-    // Default to existing values if not updating the video
     const currentLesson =
       editingSectionIndex !== null && editingLessonId
         ? sections[editingSectionIndex].lessons.find(
@@ -224,7 +219,6 @@ const Curriculum = ({
     let videoDuration = currentLesson?.duration || 0;
 
     if (newLessonVideo) {
-      // If updating video, get the new duration
       videoDuration = await updateLessonDuration(newLessonVideo);
 
       setIsLoading(true);
@@ -254,10 +248,8 @@ const Curriculum = ({
       .filter((result) => result.success)
       .map((result) => result.url as string);
 
-    // Create a copy of the sections array
     const updatedSections = [...sections];
 
-    // Update the specific lesson
     if (editingSectionIndex !== null && editingLessonId) {
       const sectionToUpdate = updatedSections[editingSectionIndex];
       const lessonIndex = sectionToUpdate.lessons.findIndex(
@@ -265,7 +257,6 @@ const Curriculum = ({
       );
 
       if (lessonIndex !== -1) {
-        // Update the lesson properties
         sectionToUpdate.lessons[lessonIndex] = {
           ...sectionToUpdate.lessons[lessonIndex],
           name: newLessonName,
@@ -276,8 +267,6 @@ const Curriculum = ({
           ],
           duration: videoDuration,
         };
-
-        // Recalculate section duration
         sectionToUpdate.duration = calculateSectionDuration(
           sectionToUpdate.lessons
         );
@@ -290,6 +279,7 @@ const Curriculum = ({
     resetLessonForm();
   };
 
+  // reset lesson fields after closing the lesson modal.
   const resetLessonForm = () => {
     setNewLessonName("");
     setNewLessonVideo(null);
@@ -299,6 +289,7 @@ const Curriculum = ({
     setEditingLessonId(null);
   };
 
+  // validate the form.
   const validateForm = () => {
     if (sections.length === 0) {
       setError(comments.SECTION_REQ);
@@ -307,6 +298,8 @@ const Curriculum = ({
     return true;
   };
 
+  // input: course object.
+  // otuput: course object for backend.
   const prepareCourseDataForBackend = (formData: ICourse): ICourse => {
     const cleanedCurriculum = formData.curriculum.map((section: ISection) => ({
       ...section,
@@ -332,6 +325,8 @@ const Curriculum = ({
     };
   };
 
+  // input: click publish button.
+  // output: publish the course.
   const handlePublish = async () => {
     if (validateForm()) {
       try {
@@ -372,6 +367,7 @@ const Curriculum = ({
     }
   };
 
+  // open edit lesson modal woith values.
   const handleEditLessonClick = (
     sectionIndex: number,
     lessonId: string | number
@@ -388,6 +384,8 @@ const Curriculum = ({
     }
   };
 
+  // input: pdf index, lesson.
+  // output: remmoves pdf.
   const handleRemoveExistingPdf = (
     sectionIndex: number,
     lessonId: string | number,
@@ -401,13 +399,9 @@ const Curriculum = ({
     );
 
     if (lessonIndex !== -1) {
-      // Remove the PDF URL
       section.lessons[lessonIndex].pdfUrls = section.lessons[
         lessonIndex
       ].pdfUrls.filter((url) => url !== pdfUrl);
-
-      // No need to update section duration here as PDF removal doesn't affect duration
-      // But we'll recalculate anyway to ensure consistency
       section.duration = calculateSectionDuration(section.lessons);
     }
 
@@ -415,6 +409,8 @@ const Curriculum = ({
     onUpdate(updatedSections);
   };
 
+  // input: click delete button.
+  // output: open delete confirmation modal.
   const handleDeleteClick = (
     type: "section" | "lesson",
     sectionIndex: number,
@@ -426,27 +422,25 @@ const Curriculum = ({
     setIsDeleteConfirmationOpen(true);
   };
 
+  // input: delete confirmation.
+  // output: delete the item (lesson/section).
   const handleConfirmDelete = () => {
     const updatedSections = [...sections];
 
     if (deletingItemType === "section" && editingSectionIndex !== null) {
-      // Remove the section
       updatedSections.splice(editingSectionIndex, 1);
     } else if (
       deletingItemType === "lesson" &&
       editingSectionIndex !== null &&
       editingLessonId
     ) {
-      // Find the lesson index
       const lessonIndex = updatedSections[
         editingSectionIndex
       ].lessons.findIndex((lesson) => lesson._id === editingLessonId);
 
       if (lessonIndex !== -1) {
-        // Remove the lesson
         updatedSections[editingSectionIndex].lessons.splice(lessonIndex, 1);
 
-        // Update section duration
         updatedSections[editingSectionIndex].duration =
           calculateSectionDuration(
             updatedSections[editingSectionIndex].lessons
@@ -462,7 +456,8 @@ const Curriculum = ({
     setEditingLessonId(null);
   };
 
-  // Function to extract video duration from a file
+  // input: video file.
+  // output: video duration.
   const extractVideoDuration = (file: File): Promise<number> => {
     return new Promise((resolve) => {
       const video = document.createElement("video");
@@ -477,7 +472,8 @@ const Curriculum = ({
     });
   };
 
-  // Function to update lesson duration when a video is uploaded
+  // input: video file.
+  // output: increase total lesson duration.
   const updateLessonDuration = async (file: File | null): Promise<number> => {
     if (!file) return 0;
     try {
@@ -485,11 +481,13 @@ const Curriculum = ({
       setNewLessonDuration(duration);
       return duration;
     } catch (error) {
-      console.error("Error extracting video duration:", error);
+      console.error(comments.LESSON_DURA_UPDATE_FAIL, error);
       return 0;
     }
   };
 
+  // input: array of lessons.
+  // output: total duration of section.
   const calculateSectionDuration = (lessons: ILesson[]): number => {
     return lessons.reduce((sum, lesson) => sum + (lesson.duration || 0), 0);
   };
@@ -614,18 +612,6 @@ const Curriculum = ({
                   className="input-group"
                 />
               </div>
-              {/* <div className="input-group">
-                <label htmlFor="lessonDuration">Duration (seconds)</label>
-                <input
-                  id="lessonDuration"
-                  type="number"
-                  value={newLessonDuration}
-                  onChange={(e) =>
-                    setNewLessonDuration(parseInt(e.target.value) || 0)
-                  }
-                  className="input-group"
-                />
-              </div> */}
               <div className="input-group">
                 <label htmlFor="lessonVideo">Upload Video</label>
                 <div className="upload-button">
@@ -697,18 +683,6 @@ const Curriculum = ({
                   className="input-group"
                 />
               </div>
-              {/* <div className="input-group">
-                <label htmlFor="editLessonDuration">Duration (seconds)</label>
-                <input
-                  id="editLessonDuration"
-                  type="number"
-                  value={newLessonDuration}
-                  onChange={(e) =>
-                    setNewLessonDuration(parseInt(e.target.value) || 0)
-                  }
-                  className="input-group"
-                />
-              </div> */}
               <div className="input-group">
                 <label htmlFor="editLessonVideo">Change Video</label>
                 <div className="upload-button">

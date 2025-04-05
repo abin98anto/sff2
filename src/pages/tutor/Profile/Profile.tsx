@@ -7,7 +7,6 @@ import {
   IconButton,
   Avatar,
   Grid,
-  // Paper,
 } from "@mui/material";
 import { Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import { UploadIcon } from "lucide-react";
@@ -51,7 +50,6 @@ const ProfileSection = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Image upload.
   const [profileImage, setProfileImage] = useState(userInfo?.picture || "");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -94,7 +92,6 @@ const ProfileSection = () => {
     }
   };
 
-  // Resume upload.
   const [resume, setResume] = useState<string | null>(userInfo?.resume || null);
   const handleResumeChange = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -290,44 +287,6 @@ const ProfileSection = () => {
             </Box>
           </form>
         </Grid>
-
-        {/* Right Column - Password Change */}
-        {/* <Grid item xs={12} md={6} className="tutor-right-column">
-          <Paper className="tutor-password-section">
-            <Typography variant="h6" gutterBottom className="tutor-section-title">
-              Change Password
-            </Typography>
-            <TextField
-              fullWidth
-              label="Current Password"
-              type="password"
-              variant="outlined"
-              className="tutor-form-field"
-            />
-            <TextField
-              fullWidth
-              label="New Password"
-              type="password"
-              variant="outlined"
-              className="tutor-form-field"
-            />
-            <TextField
-              fullWidth
-              label="Confirm New Password"
-              type="password"
-              variant="outlined"
-              className="tutor-form-field"
-            />
-            <Box className="tutor-action-buttons tutor-password-actions">
-              <Button variant="contained" color="primary" className="tutor-save-btn">
-                Change Password
-              </Button>
-              <Button variant="outlined" className="tutor-cancel-btn">
-                Cancel
-              </Button>
-            </Box>
-          </Paper>
-        </Grid> */}
       </Grid>
 
       {resume && (

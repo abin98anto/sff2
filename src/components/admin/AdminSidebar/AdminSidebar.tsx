@@ -6,7 +6,6 @@ import {
   Layers,
   Users,
   UserCog,
-  //   BookCheck,
   SquareStack,
 } from "lucide-react";
 
@@ -15,7 +14,6 @@ import { useAppDispatch } from "../../../hooks/reduxHooks";
 import { logout } from "../../../redux/thunks/user/userAuthServices";
 import CustomModal from "../../common/Modal/CustomModal/CustomModal";
 
-// Menu items.
 const menuItems = [
   { title: "Dashboard", icon: BarChart2, path: "/admin/dashboard" },
   {
@@ -35,7 +33,6 @@ const menuItems = [
   },
   { title: "User Management", icon: Users, path: "/admin/user-management" },
   { title: "Tutor Management", icon: UserCog, path: "/admin/tutor-management" },
-  //   { title: "Ledger", icon: BookCheck, path: "/admin/ledger" },
 ];
 
 const AdminSidebar = () => {

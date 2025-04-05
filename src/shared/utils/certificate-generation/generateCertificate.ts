@@ -13,27 +13,21 @@ const generateCertificate = async (
   certificateData: CertificateData
 ): Promise<void> => {
   try {
-    // First, load the Kalam font if it's not already in the document
     const loadKalamFont = async () => {
-      // Check if Kalam font is already loaded in the document
       if (!document.querySelector('link[href*="Kalam"]')) {
-        // Create a link element for the Google Font
         const fontLink = document.createElement("link");
         fontLink.href =
           "https://fonts.googleapis.com/css2?family=Kalam:wght@700&display=swap";
         fontLink.rel = "stylesheet";
         document.head.appendChild(fontLink);
 
-        // Wait a moment for the font to load - longer wait time for better reliability
         return new Promise((resolve) => setTimeout(resolve, 500));
       }
       return Promise.resolve();
     };
 
-    // Load the font first
     await loadKalamFont();
 
-    // Create a temporary div to render our certificate
     const certificateContainer = document.createElement("div");
     certificateContainer.style.width = "1000px";
     certificateContainer.style.height = "700px";
@@ -41,7 +35,6 @@ const generateCertificate = async (
     certificateContainer.style.left = "-9999px";
     certificateContainer.style.top = "-9999px";
 
-    // Set the HTML content for the certificate
     certificateContainer.innerHTML = `
       <div style="
         width: 1000px;
@@ -88,40 +81,34 @@ const generateCertificate = async (
       </div>
     `;
 
-    // Add the certificate container to the document body
     document.body.appendChild(certificateContainer);
 
-    // Wait longer to ensure font is fully applied and layout is complete
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     console.log("Rendering certificate to canvas...");
 
-    // Use html2canvas to convert our HTML to an image
     const canvas = await html2canvas(certificateContainer, {
-      scale: 2, // Higher scale for better quality
+      scale: 2,
       backgroundColor: null,
-      logging: true, // Enable logging for debugging
+      logging: true,
       useCORS: true,
-      allowTaint: true, // Allow cross-origin images
+      allowTaint: true,
     });
 
     console.log("Canvas rendered, creating PDF...");
 
-    // Create a new PDF document
+    // create pdf.
     const pdf = new jsPDF({
       orientation: "landscape",
       unit: "px",
       format: [canvas.width / 2, canvas.height / 2],
     });
 
-    // Add the canvas as an image to the PDF
     const imgData = canvas.toDataURL("image/png");
     pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
 
     console.log("PDF created, initiating download...");
 
-    // Create a blob from the PDF and trigger download using a direct link
-    // This is an alternative approach to pdf.save() which might be more reliable in some browsers
     const pdfBlob = pdf.output("blob");
     const blobUrl = URL.createObjectURL(pdfBlob);
 
@@ -132,7 +119,6 @@ const generateCertificate = async (
     document.body.appendChild(link);
     link.click();
 
-    // Clean up
     setTimeout(() => {
       URL.revokeObjectURL(blobUrl);
       document.body.removeChild(link);
@@ -143,7 +129,6 @@ const generateCertificate = async (
     console.error("Error generating certificate:", error);
     throw new Error("Failed to generate certificate");
   } finally {
-    // Find and remove the temporary container
     const tempContainer = document.querySelector('div[style*="-9999px"]');
     if (tempContainer && tempContainer.parentNode) {
       tempContainer.parentNode.removeChild(tempContainer);

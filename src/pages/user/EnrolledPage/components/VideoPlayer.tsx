@@ -1,15 +1,12 @@
 import React, { useRef, useEffect, useState } from "react";
 import "./VideoPlayer.scss";
 import { ChevronRight, FileText, Star } from "lucide-react";
-// import { Lesson } from "../../../../entities/courses/Course";
 import { useSelector } from "react-redux";
 import { AppRootState } from "../../../../redux/store";
-// import { useLocation } from "react-router-dom";
 import { ILesson } from "../../../../entities/ICourse";
 import axiosInstance from "../../../../shared/config/axiosConfig";
 import CustomModal from "../../../../components/common/Modal/CustomModal/CustomModal";
 import IReview from "../../../../entities/IReview";
-// import axiosInstance from "../../../../utils/axiosConfig";
 import useSnackbar from "../../../../hooks/useSnackbar";
 import CustomSnackbar from "../../../../components/common/CustomSnackbar";
 
