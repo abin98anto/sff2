@@ -477,30 +477,105 @@ const ChatBubble2 = () => {
 
   // input: click on video call button.
   // output: initiate video call.
+  // const initiateVideoCall = async () => {
+  //   try {
+  //     if (activeChat && userId) {
+  //       // setIsExpanded(false);
+  //       const receiverId = activeChat.studentId._id;
+  //       const roomID = `room_${userId}_${receiverId}`;
+  //       const videoCallUrl = `/video-call?userId=${userInfo.name}&studentId=${receiverId}&roomID=${roomID}`;
+
+  //       const videoCallMessage: IMessage = {
+  //         chatId: activeChat._id,
+  //         senderId: userId,
+  //         receiverId: receiverId as string,
+  //         content: "Video call",
+  //         contentType: "video-call",
+  //         isRead: false,
+  //       };
+
+  //       handleNewMessage(videoCallMessage);
+
+  //       await axiosInstance.post(API.MSG_SENT, videoCallMessage);
+  //       window.open(videoCallUrl, "_blank");
+  //     }
+  //   } catch (error) {
+  //     console.log(comments.VIDEO_CALL_INVITE_FAIL, error);
+  //   }
+  // };
+
+  // Modified initiateVideoCall function for ChatBubble2.tsx
   const initiateVideoCall = async () => {
     try {
       if (activeChat && userId) {
+        // Don't close the chat bubble immediately - keep context
         // setIsExpanded(false);
-        const receiverId = activeChat.studentId._id;
-        const roomID = `room_${userId}_${receiverId}`;
-        const videoCallUrl = `/video-call?userId=${userInfo.name}&studentId=${receiverId}&roomID=${roomID}`;
 
+        // Get the correct receiver ID
+        const receiverId =
+          activeChat.tutorId._id === userId
+            ? activeChat.studentId._id
+            : activeChat.tutorId._id;
+
+        // Create a consistent room ID format
+        const roomID = `room_${userId}_${receiverId}`;
+
+        // Use the actual names for better identification
+        const senderName = userInfo.name;
+        const receiverName =
+          activeChat.tutorId._id === userId
+            ? activeChat.studentId.name
+            : activeChat.tutorId.name;
+
+        // Build the video call URL with proper parameters
+        const videoCallUrl = `/video-call?userId=${encodeURIComponent(
+          senderName
+        )}&studentId=${receiverId}&roomID=${encodeURIComponent(roomID)}`;
+
+        // Create the notification message
         const videoCallMessage: IMessage = {
           chatId: activeChat._id,
           senderId: userId,
           receiverId: receiverId as string,
-          content: "Video call",
+          content: "Video call initiated",
           contentType: "video-call",
           isRead: false,
+          createdAt: new Date(),
         };
 
+        // Save the message first before opening the window
+        await axiosInstance.post(API.MSG_SENT, videoCallMessage);
+
+        // Update UI with the new message
         handleNewMessage(videoCallMessage);
 
-        await axiosInstance.post(API.MSG_SENT, videoCallMessage);
-        window.open(videoCallUrl, "_blank");
+        // Open in new tab but don't attempt to manipulate it afterward
+        window.open(videoCallUrl, "_blank", "noopener,noreferrer");
+
+        // Show confirmation
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "info",
+          title: "Video Call",
+          text: `Initiated call with ${receiverName}`,
+          showConfirmButton: false,
+          timer: 3000,
+        });
       }
     } catch (error) {
       console.log(comments.VIDEO_CALL_INVITE_FAIL, error);
+
+      // Show error to user
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "Video Call Failed",
+        text: "Could not initiate video call. Please try again.",
+        showConfirmButton: false,
+        timer: 3000,
+      });
     }
   };
 
