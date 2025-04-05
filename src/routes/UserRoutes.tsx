@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import LandingPage from "../pages/user/LandingPage/LandingPage";
 import UserLayout from "../components/user/UserLayout/UserLayout";
 import PageNotFound from "../components/common/PageNotFound/PageNotFound";
@@ -13,6 +13,8 @@ import ProtectedRoute from "../components/common/ProtectedRoutes/ProtectedRoutes
 import ChatBubble2 from "../components/common/ChatBubble/ChatBubble2";
 
 const UserRoutes = () => {
+  const location = useLocation();
+  const isVideoCallPage = location.pathname === "/video-call";
   return (
     <>
       <Routes>
@@ -28,12 +30,12 @@ const UserRoutes = () => {
             <Route path="/profile" element={<UserProfile />} />
           </Route>
         </Route>
-        <ChatBubble2 />
         {/* <Route element={<ProtectedRoute />}> */}
         <Route path="/video-call" element={<VideoCallPage />} />
         {/* </Route> */}
         <Route path="*" element={<PageNotFound />} />
       </Routes>
+      {!isVideoCallPage && <ChatBubble2 />}
     </>
   );
 };
