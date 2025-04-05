@@ -42,8 +42,10 @@ const VideoCallPage = () => {
     if (roomID && userId && studentId && meetingContainerRef.current) {
       const initializeVideoCall = async () => {
         try {
-          const appID = 381031416;
-          const serverSecret = import.meta.env.VITE_ZEGO_SERVER_SECRET;
+          const appID = 397750971;
+          const serverSecret =
+            import.meta.env.VITE_ZEGO_SERVER_SECRET ||
+            "b83b168eee2c1a2d72409ed5874ff0b9";
           const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
             appID,
             serverSecret,
