@@ -30,9 +30,9 @@ const UserRoutes = () => {
             <Route path="/profile" element={<UserProfile />} />
           </Route>
         </Route>
-        {/* <Route element={<ProtectedRoute />}> */}
-        <Route path="/video-call" element={<VideoCallPage />} />
-        {/* </Route> */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/video-call" element={<VideoCallPage />} />
+        </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>
       {!isVideoCallPage && <ChatBubble2 />}
