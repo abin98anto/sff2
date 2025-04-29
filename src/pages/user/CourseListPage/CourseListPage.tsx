@@ -176,7 +176,7 @@ const CourseListPage = () => {
         if (reviewFilter !== "none") {
           await fetchAllCourseReviews(data);
         } else {
-          setCourses(data);
+          setCourses(coursesData);
         }
 
         setTotalPages(pages);
