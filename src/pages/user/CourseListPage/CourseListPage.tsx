@@ -167,20 +167,20 @@ const CourseListPage = () => {
         const response = await axiosInstance.get(
           `${API.COURSE_GET}?${params.toString()}`
         );
-        const { data } = response.data.data;
-        const coursesData: ICourse[] = data.filter(
-          (course: ICourse) => course.isActive === true
-        );
-        const { totalPages: pages } = response.data.data;
+        // const { data } = response.data.data;
+        // const coursesData: ICourse[] = data.filter(
+        //   (course: ICourse) => course.isActive === true
+        // );
+        const { data, total, totalPages: pages } = response.data.data;
 
         if (reviewFilter !== "none") {
           await fetchAllCourseReviews(data);
         } else {
-          setCourses(coursesData);
+          setCourses(data);
         }
 
         setTotalPages(pages);
-        setTotalCourses(coursesData.length);
+        setTotalCourses(total);
         setLoading(false);
       } catch (err) {
         showSnackbar(comments.COURSE_FETCH_FAIL, "error");
