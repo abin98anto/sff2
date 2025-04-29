@@ -151,6 +151,7 @@ const CourseListPage = () => {
         const params = new URLSearchParams();
         params.append("page", currentPage.toString());
         params.append("limit", coursesPerPage.toString());
+        params.append("isActive", "true");
 
         if (appliedSearchTerm) {
           params.append("search", appliedSearchTerm);
@@ -172,9 +173,7 @@ const CourseListPage = () => {
         if (reviewFilter !== "none") {
           await fetchAllCourseReviews(data);
         } else {
-          setCourses(
-            data.filter((course: ICourse) => course.isActive === true)
-          );
+          setCourses(data);
         }
 
         setTotalPages(pages);
