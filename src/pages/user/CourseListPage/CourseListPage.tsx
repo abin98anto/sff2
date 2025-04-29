@@ -151,7 +151,6 @@ const CourseListPage = () => {
         const params = new URLSearchParams();
         params.append("page", currentPage.toString());
         params.append("limit", coursesPerPage.toString());
-        params.append("isActive", "true");
 
         if (appliedSearchTerm) {
           params.append("search", appliedSearchTerm);
@@ -168,7 +167,11 @@ const CourseListPage = () => {
         const response = await axiosInstance.get(
           `${API.COURSE_GET}?${params.toString()}`
         );
-        const { data, totalPages: pages, total } = response.data.data;
+        const { data } = response.data.data;
+        const coursesData: ICourse[] = data.filter(
+          (course: ICourse) => course.isActive === true
+        );
+        const { totalPages: pages } = response.data.data;
 
         if (reviewFilter !== "none") {
           await fetchAllCourseReviews(data);
@@ -177,7 +180,7 @@ const CourseListPage = () => {
         }
 
         setTotalPages(pages);
-        setTotalCourses(total);
+        setTotalCourses(coursesData.length);
         setLoading(false);
       } catch (err) {
         showSnackbar(comments.COURSE_FETCH_FAIL, "error");
