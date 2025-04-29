@@ -33,7 +33,7 @@ const CourseDetailsPage: React.FC = () => {
     [key: string]: boolean;
   }>({});
   const [reviews, setReviews] = useState<IReview[]>([]);
-  const [tutors, setTutors] = useState<any[]>([]);
+  const [tutors, setTutors] = useState<IUser[]>([]);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
 
@@ -262,7 +262,6 @@ const CourseDetailsPage: React.FC = () => {
                   <div className="tutor-info">
                     <h3 className="tutor-name">{tutor.name}</h3>
                     <h3 className="tutor-name">{tutor.email}</h3>
-                    {tutor.bio && <p className="tutor-bio">{tutor.bio}</p>}
                   </div>
                 </div>
               ))

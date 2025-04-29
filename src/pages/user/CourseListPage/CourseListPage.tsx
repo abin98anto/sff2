@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { SearchIcon, FilterIcon, CalendarIcon, StarIcon } from "lucide-react";
@@ -124,7 +125,7 @@ const CourseListPage = () => {
         };
       });
 
-      let sortedCourses = [...coursesWithReviews];
+      const sortedCourses = [...coursesWithReviews];
 
       if (reviewFilter === "highest") {
         sortedCourses.sort(
@@ -171,7 +172,9 @@ const CourseListPage = () => {
         if (reviewFilter !== "none") {
           await fetchAllCourseReviews(data);
         } else {
-          setCourses(data);
+          setCourses(
+            data.filter((course: ICourse) => course.isActive === true)
+          );
         }
 
         setTotalPages(pages);
