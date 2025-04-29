@@ -3,7 +3,7 @@ import { BarChart2, Users, CircleUserRound, BookOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import "./TutorSidebar.scss";
-import { useAppDispatch } from "../../../hooks/reduxHooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks/reduxHooks";
 import { logout } from "../../../redux/thunks/user/userAuthServices";
 import CustomModal from "../../common/Modal/CustomModal/CustomModal";
 import API from "../../../shared/constants/API";
@@ -31,11 +31,20 @@ const menuItems = [
   },
 ];
 
+const menuItemsUnverified = [
+  {
+    title: "Profile",
+    icon: CircleUserRound,
+    path: API.TUTOR_PROFILE,
+  },
+];
+
 const TutorSidebar = () => {
   const dispatch = useAppDispatch();
   const [isCollapsed] = useState(false);
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { userInfo } = useAppSelector((state) => state.user);
 
   const handleNavClick = (path: string) => {
     navigate(path);
@@ -66,21 +75,39 @@ const TutorSidebar = () => {
           <h1 className="tutor-logo">SkillForge</h1>
         </div>
 
-        <nav className="tutor-sidebar-nav">
-          {menuItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <button
-                key={item.path}
-                onClick={() => handleNavClick(item.path)}
-                className={`tutor-nav-item ${isActive ? "tutor-active" : ""}`}
-              >
-                <item.icon className="tutor-nav-icon" />
-                <span className="tutor-nav-text">{item.title}</span>
-              </button>
-            );
-          })}
-        </nav>
+        {userInfo?.isVerified ? (
+          <nav className="tutor-sidebar-nav">
+            {menuItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <button
+                  key={item.path}
+                  onClick={() => handleNavClick(item.path)}
+                  className={`tutor-nav-item ${isActive ? "tutor-active" : ""}`}
+                >
+                  <item.icon className="tutor-nav-icon" />
+                  <span className="tutor-nav-text">{item.title}</span>
+                </button>
+              );
+            })}
+          </nav>
+        ) : (
+          <nav className="tutor-sidebar-nav">
+            {menuItemsUnverified.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <button
+                  key={item.path}
+                  onClick={() => handleNavClick(item.path)}
+                  className={`tutor-nav-item ${isActive ? "tutor-active" : ""}`}
+                >
+                  <item.icon className="tutor-nav-icon" />
+                  <span className="tutor-nav-text">{item.title}</span>
+                </button>
+              );
+            })}
+          </nav>
+        )}
 
         <div className="tutor-sidebar-footer">
           <button className="tutor-sign-out-button" onClick={openLogoutModal}>
