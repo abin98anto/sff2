@@ -151,6 +151,7 @@ const CourseListPage = () => {
         const params = new URLSearchParams();
         params.append("page", currentPage.toString());
         params.append("limit", coursesPerPage.toString());
+        params.append("isActive", "true");
 
         if (appliedSearchTerm) {
           params.append("search", appliedSearchTerm);
