@@ -37,6 +37,7 @@ interface videCallData {
 
 const ChatBubble2 = () => {
   const { userInfo } = useAppSelector((state) => state.user);
+  console.log("the user ", userInfo);
   const userId = userInfo?._id;
   const [showPlaceholder, setShowPlaceholder] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
