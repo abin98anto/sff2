@@ -631,11 +631,13 @@ const ChatBubble2 = () => {
                     <div className="chat-item-content">
                       <div className="chat-info">
                         <span className="chat-name">
-                          {chat.tutorId._id === userId
+                          {chat.tutorId &&
+                          chat.tutorId._id === userId &&
+                          chat.studentId
                             ? chat.studentId.name
-                            : chat.tutorId._id === userId
-                            ? chat.studentId.name
-                            : chat.tutorId.name}
+                            : chat.tutorId
+                            ? chat.tutorId.name
+                            : "Unknown User"}
                         </span>
                         <span className="chat-course">
                           ({chat.courseId.title})
