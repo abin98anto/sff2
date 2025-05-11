@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-expressions */
 import { useEffect, useRef, useState } from "react";
 import "./ChatBubble.scss";
 import { useAppSelector } from "../../../hooks/reduxHooks";
